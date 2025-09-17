@@ -1,0 +1,223 @@
+import {StyleSheet} from 'react-native';
+import {Layout} from '../../../../generalStyles/layout';
+import {Colors} from '../../../../generalStyles/theme';
+import {
+  FONT_SIZE,
+  HEIGHT_BASE_RATIO,
+  WIDTH_BASE_RATIO,
+} from '../../../../utils/helpers';
+import {Fonts} from '../../../../generalStyles/fontStyles';
+
+export const styles = StyleSheet.create({
+  container: {
+    ...Layout.container,
+    // ...Layout.generalPaddingHorizontal,
+  },
+  bottomSheetRef: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: WIDTH_BASE_RATIO(16),
+    paddingVertical: HEIGHT_BASE_RATIO(40),
+  },
+  bottomSheetRefHeading: {
+    ...Fonts.Jakarta_Sans_SemiBold_18_Black,
+  },
+  chatsMessagesContainer: {
+    ...Layout.generalPaddingHorizontal,
+    flexGrow: 1,
+    gap: HEIGHT_BASE_RATIO(24),
+    paddingVertical: HEIGHT_BASE_RATIO(20),
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: WIDTH_BASE_RATIO(332),
+    height: HEIGHT_BASE_RATIO(50),
+    backgroundColor: Colors.Stroke,
+    borderRadius: 25,
+    paddingHorizontal: WIDTH_BASE_RATIO(16),
+  },
+  voiceButton: {
+    width: FONT_SIZE(50),
+    height: FONT_SIZE(50),
+    backgroundColor: Colors.Primary,
+    borderRadius: FONT_SIZE(25),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatTextInput: {
+    flex: 1,
+    ...Fonts.Jakarta_Sans_Regular_14_Grey,
+    padding: 0,
+  },
+  linkButton: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomContainer: {
+    width: '100%',
+    ...Layout.generalPaddingHorizontal,
+    paddingTop: HEIGHT_BASE_RATIO(16),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignSelf: 'center',
+  },
+  actionsContainer: {
+    padding: HEIGHT_BASE_RATIO(16),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignSelf: 'center',
+    backgroundColor: Colors.Stroke,
+    borderRadius: 17,
+    columnGap: WIDTH_BASE_RATIO(21),
+    position: 'absolute',
+    bottom: HEIGHT_BASE_RATIO(65),
+  },
+  actionContainer: {alignItems: 'center'},
+  actionView: {
+    width: WIDTH_BASE_RATIO(76),
+    height: HEIGHT_BASE_RATIO(72),
+    backgroundColor: Colors.White,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+  },
+  actionBtnTitle: {
+    ...Fonts.Jakarta_Sans_Regular_14_Black,
+    marginTop: HEIGHT_BASE_RATIO(8),
+  },
+  chatMsgContainerClient: {
+    flexDirection: 'row',
+    columnGap: WIDTH_BASE_RATIO(8),
+    alignSelf: 'baseline',
+  },
+  chatMsgContainerUser: {
+    flexDirection: 'row-reverse',
+    columnGap: WIDTH_BASE_RATIO(8),
+    alignSelf: 'flex-end',
+  },
+  chatMsgPfp: {width: 24, height: 24, borderRadius: 12},
+  chatMsgClient: {
+    maxWidth: WIDTH_BASE_RATIO(300),
+    padding: FONT_SIZE(13),
+    backgroundColor: Colors.Stroke,
+    rowGap: HEIGHT_BASE_RATIO(12),
+    borderRadius: 12,
+  },
+  chatMsgUser: {
+    maxWidth: WIDTH_BASE_RATIO(300),
+    padding: FONT_SIZE(13),
+    backgroundColor: Colors.Primary,
+    rowGap: HEIGHT_BASE_RATIO(12),
+    borderRadius: 12,
+  },
+  date: {
+    ...Fonts.Jakarta_Sans_Regular_12_Grey,
+  },
+  messageClient: {
+    ...Fonts.Jakarta_Sans_Regular_14_Black,
+  },
+  messageUser: {
+    ...Fonts.Jakarta_Sans_Regular_14_White,
+  },
+  pfp: {width: 24, height: 24, borderRadius: 12},
+  pollContainer: {
+    flexDirection: 'row',
+    columnGap: WIDTH_BASE_RATIO(8),
+    alignSelf: 'baseline',
+    backgroundColor: Colors.White,
+  },
+  poll: {
+    backgroundColor: Colors.White,
+    borderRadius: 12,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  pollImage: {
+    width: '100%',
+    height: HEIGHT_BASE_RATIO(150),
+    borderRadius: 10,
+  },
+  pollTitle: {
+    ...Fonts.Jakarta_Sans_SemiBold_16_Black,
+    marginVertical: 16,
+  },
+  pollButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.Greyish,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginVertical: 4,
+  },
+  pollButtonText: {
+    ...Fonts.Jakarta_Sans_SemiBold_14_Primary,
+    marginLeft: 16,
+  },
+  pollInfo: {
+    ...Fonts.Jakarta_Sans_Regular_12_Grey,
+    marginTop: 6,
+  },
+  optional: {
+    ...Fonts.Jakarta_Sans_Regular_14_Grey,
+    marginTop: HEIGHT_BASE_RATIO(8),
+  },
+  uploadImageBtn: {
+    width: '100%',
+    height: HEIGHT_BASE_RATIO(144),
+    borderRadius: 10,
+    backgroundColor: Colors.Stroke,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: HEIGHT_BASE_RATIO(-8),
+  },
+  uploadImageTxt: {
+    ...Fonts.Jakarta_Sans_Regular_14_Grey,
+    marginTop: HEIGHT_BASE_RATIO(16),
+    marginBottom: HEIGHT_BASE_RATIO(8),
+  },
+  supportedFormats: {
+    ...Fonts.Jakarta_Sans_Regular_12_Grey,
+  },
+  answerFieldContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    columnGap: HEIGHT_BASE_RATIO(16),
+  },
+  answerField: {flex: 1},
+  removerBtn: {
+    width: WIDTH_BASE_RATIO(40),
+    height: HEIGHT_BASE_RATIO(40),
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.Red,
+  },
+  addAnswerBtn: {
+    width: WIDTH_BASE_RATIO(342),
+    borderRadius: 10,
+    backgroundColor: Colors.FoundationBlue,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: WIDTH_BASE_RATIO(16),
+    paddingVertical: HEIGHT_BASE_RATIO(13),
+    columnGap: WIDTH_BASE_RATIO(12),
+  },
+  fieldsGap: {rowGap: HEIGHT_BASE_RATIO(16)},
+  createPollBtn: {
+    width: '100%',
+    paddingVertical: HEIGHT_BASE_RATIO(20),
+    backgroundColor: Colors.Primary,
+    alignItems: 'center',
+    borderRadius: 12,
+    marginTop: HEIGHT_BASE_RATIO(8),
+  },
+});

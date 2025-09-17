@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --primary: #2d6a87;
+  --light-grey: #f6f6f6;
+  --grey-text: #a1a1a1;
+  --white: #ffffff;
+  --primary-black: #292b29;
+  --black: #000000;
+  --orange: #dc5932;
+  --gray-2: #999a98;
+  --danger: #e23b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+@font-face {
+  font-family: "Urbanist";
+  src: url("/fonts/Urbanist/Urbanist-Regular.ttf");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Urbanist";
+  src: url("/fonts/Urbanist/Urbanist-Medium.ttf");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Urbanist";
+  src: url("/fonts/Urbanist/Urbanist-SemiBold.ttf");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Urbanist";
+  src: url("/fonts/Urbanist/Urbanist-Bold.ttf");
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* Plus Jakarta Sans */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/Plus_Jakarta_Sans/PlusJakartaSans-Regular.ttf")
+    format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/Plus_Jakarta_Sans/PlusJakartaSans-Medium.ttf")
+    format("truetype");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/Plus_Jakarta_Sans/PlusJakartaSans-SemiBold.ttf")
+    format("truetype");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/fonts/Plus_Jakarta_Sans/PlusJakartaSans-Bold.ttf")
+    format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Avenir Next";
+  src:
+    url("/fonts/AvenirNext-Regular.woff2") format("woff2"),
+    url("/fonts/AvenirNext-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir Next";
+  src: url("/fonts/AvenirNext-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.font-jakarta {
+  font-family: "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
+}
+.font-anevir {
+  font-family: "Avenir Next", sans-serif;
+}
+
+.font-urbanist {
+  font-family: "Urbanist", Arial, Helvetica, sans-serif;
+}
+.typo-heading1 {
+  font-size: 2rem; /* 32px */
+  line-height: 2.5rem; /* 40px */
+}
+
+.typo-heading2 {
+  font-size: 1.5rem; /* 24px */
+  line-height: 100%;
+}
+
+.typo-heading3 {
+  font-size: 1.125rem; /* 18px */
+  line-height: 100%;
+}
+
+.typo-body {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.375rem; /* 22px */
+}
+
+.typo-label {
+  font-size: 1rem; /* 16px */
+  line-height: 100%;
+}
+
+.typo-small {
+  font-size: 0.75rem; /* 12px */
+  line-height: 100%;
+}
+.PhoneInputInput {
+  @apply w-full focus:outline-none mt-1.5;
+}
+
+.PhoneInputCountry {
+  @apply mt-1.5;
+}
+
+.shadow-light {
+  box-shadow: 0px 0px 8px 0px #0000001a;
+}
+.shadow-dark {
+  box-shadow: 0px 0px 15px 0px #00000012;
+}
+.scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}

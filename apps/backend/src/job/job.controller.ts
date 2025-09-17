@@ -1,0 +1,344 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+  Query,
+  ForbiddenException,
+} from '@nestjs/common';
+import { JobService } from './job.service';
+import { CreateJobDto } from './dto/create-job.dto';
+import { UpdateJobDto } from './dto/update-job.dto';
+import { JobStatus } from '@prisma/client';
+import { AuthGuard } from '../auth/auth.guard';
+import { Roles } from '../auth/auth.guard';
+import { LanguageService } from '../common/services/language.service';
+
+@Controller('job')
+@UseGuards(AuthGuard)
+export class JobController {
+  constructor(
+    private readonly jobService: JobService,
+    private readonly languageService: LanguageService,
+  ) {}
+
+  private transformJobData(jobs: any[], language: 'en' | 'ar') {
+    return jobs.map((job) => {
+      // Transform main job fields
+      const transformedJob = this.languageService.transformObjectForLanguage(
+        job,
+        language,
+        [
+          'title',
+          'description',
+          'charges',
+          'workDuration',
+          'timeSlot',
+          'location',
+          'experienceLevel',
+        ],
+      );
+
+      // Transform apartment data
+      if (transformedJob.apartment) {
+        transformedJob.apartment =
+          this.languageService.transformObjectForLanguage(
+            transformedJob.apartment,
+            language,
+            ['name', 'address', 'city', 'state', 'country'],
+          );
+      }
+
+      // Transform services array
+      if (transformedJob.services) {
+        transformedJob.services = transformedJob.services.map(
+          (serviceItem: any) => ({
+            ...serviceItem,
+            service: serviceItem.service
+              ? this.languageService.transformObjectForLanguage(
+                  serviceItem.service,
+                  language,
+                  ['name', 'description'],
+                )
+              : serviceItem.service,
+          }),
+        );
+      }
+
+      // Transform bids array
+      if (transformedJob.bids) {
+        transformedJob.bids = transformedJob.bids.map((bid: any) => ({
+          ...bid,
+          coverLetter: this.languageService.extractTranslation(
+            bid.coverLetter,
+            language,
+          ),
+          serviceProvider: bid.serviceProvider
+            ? this.languageService.transformObjectForLanguage(
+                bid.serviceProvider,
+                language,
+                ['name', 'bio', 'firstName', 'lastName'],
+              )
+            : bid.serviceProvider,
+        }));
+      }
+
+      return transformedJob;
+    });
+  }
+
+  @Post()
+  @Roles('HOME_OWNER', 'LEADER')
+  async create(
+    @Body() createJobDto: CreateJobDto,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const result = await this.jobService.create(
+      createJobDto,
+      user.id,
+      user.role,
+    );
+
+    return {
+      ...result,
+      job: result.job
+        ? this.languageService.transformNestedObjectForLanguage(
+            result.job,
+            language,
+            {
+              services: ['service'],
+              apartment: [],
+              leader: [],
+              creator: [],
+              bids: ['serviceProvider'],
+            },
+          )
+        : null,
+    };
+  }
+
+  @Get()
+  async findAll(@Query('lang') lang?: string) {
+    const language = this.languageService.validateLanguage(lang);
+    const jobs = await this.jobService.findAll();
+
+    return this.transformJobData(jobs, language);
+  }
+
+  // @Get('my-jobs')
+  // @Roles('HOME_OWNER', 'LEADER')
+  // async findMyJobs(@Req() req: any, @Query('lang') lang?: string) {
+  //   const user = req['user'];
+  //   const language = this.languageService.validateLanguage(lang);
+  //   const jobs = await this.jobService.findByCreator(user.id);
+
+  //   return this.languageService.transformNestedArrayForLanguage(
+  //     jobs,
+  //     language,
+  //     {
+  //       services: ['service'],
+  //       apartment: [],
+  //       leader: [],
+  //       creator: [],
+  //       bids: ['serviceProvider']
+  //     }
+  //   );
+  // }
+
+  @Get('my-jobs')
+  @Roles('HOME_OWNER', 'LEADER')
+  async findMyJobs(
+    @Req() req: any,
+    @Query('lang') lang?: string,
+    @Query('status') status?: JobStatus,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const jobs = await this.jobService.findByCreator(
+      user.id,
+      user.role,
+      status,
+    );
+
+    return this.transformJobData(jobs, language);
+  }
+
+  @Get('pending-community-jobs')
+  @Roles('LEADER')
+  async findPendingCommunityJobs(
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const jobs = await this.jobService.findPendingCommunityJobs(user.id);
+
+    return this.transformJobData(jobs, language);
+  }
+
+  @Get('leader-jobs')
+  @Roles('LEADER')
+  async findLeaderJobs(@Req() req: any, @Query('lang') lang?: string) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const jobs = await this.jobService.findByLeader(user.id);
+
+    return this.transformJobData(jobs, language);
+  }
+
+  @Get('service-provider-jobs')
+  @Roles('SERVICE_PROVIDER')
+  async findServiceProviderJobs(
+    @Req() req: any,
+    @Query('lang') lang?: string,
+    @Query('jobType') jobType?: string,
+    @Query('status') status?: string,
+  ) {
+    const user = req['user'];
+
+    // Check if this is a service provider
+    if (user.type !== 'serviceProvider') {
+      throw new ForbiddenException(
+        'Only service providers can view their jobs',
+      );
+    }
+
+    const language = this.languageService.validateLanguage(lang);
+    const jobs = await this.jobService.findServiceProviderJobs(
+      user.id,
+      jobType,
+      status,
+    );
+
+    return this.transformJobData(jobs, language);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
+    const language = this.languageService.validateLanguage(lang);
+    const job = await this.jobService.findOne(id);
+
+    return this.transformJobData([job], language)[0];
+  }
+
+  @Patch(':id/approve')
+  @Roles('LEADER')
+  async approveCommunityJob(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const result = await this.jobService.approveCommunityJob(id, user.id);
+
+    return {
+      ...result,
+      job: this.languageService.transformNestedObjectForLanguage(
+        result.job,
+        language,
+        {
+          services: ['service'],
+          apartment: [],
+          leader: [],
+          creator: [],
+        },
+      ),
+    };
+  }
+
+  @Patch(':id/reject')
+  @Roles('LEADER')
+  async rejectCommunityJob(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const result = await this.jobService.rejectCommunityJob(id, user.id);
+
+    return {
+      ...result,
+      job: this.languageService.transformNestedObjectForLanguage(
+        result.job,
+        language,
+        {
+          services: ['service'],
+          apartment: [],
+          leader: [],
+          creator: [],
+        },
+      ),
+    };
+  }
+
+  @Patch(':id')
+  @Roles('LEADER')
+  async update(
+    @Param('id') id: string,
+    @Body() updateJobDto: UpdateJobDto,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const result = await this.jobService.update(id, updateJobDto, user.id);
+
+    return {
+      ...result,
+      job: result.job
+        ? this.languageService.transformNestedObjectForLanguage(
+            result.job,
+            language,
+            {
+              services: ['service'],
+              apartment: [],
+              leader: [],
+            },
+          )
+        : null,
+    };
+  }
+
+  @Patch(':id/status')
+  @Roles('LEADER')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: JobStatus,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const result = await this.jobService.updateStatus(id, status, user.id);
+
+    return {
+      ...result,
+      job: this.languageService.transformNestedObjectForLanguage(
+        result.job,
+        language,
+        {
+          services: ['service'],
+          apartment: [],
+          leader: [],
+        },
+      ),
+    };
+  }
+
+  @Delete(':id')
+  @Roles('LEADER')
+  async remove(@Param('id') id: string, @Req() req: any) {
+    const user = req['user'];
+    return this.jobService.remove(id, user.id);
+  }
+}

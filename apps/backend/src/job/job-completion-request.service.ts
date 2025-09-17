@@ -1,0 +1,596 @@
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateJobCompletionRequestDto } from './dto/create-job-completion-request.dto';
+import {
+  UpdateJobCompletionRequestDto,
+  JobCompletionRequestStatus,
+} from './dto/update-job-completion-request.dto';
+import { TranslationService } from '../common/services/translation.service';
+import { JobStatus } from '@prisma/client';
+
+@Injectable()
+export class JobCompletionRequestService {
+  constructor(
+    private prisma: PrismaService,
+    private translationService: TranslationService,
+  ) {}
+
+  async create(
+    createDto: CreateJobCompletionRequestDto & { completionImages?: string[] },
+    serviceProviderId: string,
+  ) {
+    // Verify the service provider exists and is active
+    const serviceProvider = await this.prisma.serviceProvider.findUnique({
+      where: { id: serviceProviderId },
+    });
+
+    if (!serviceProvider) {
+      throw new NotFoundException('Service provider not found');
+    }
+
+    if (!serviceProvider.isActive) {
+      throw new ForbiddenException('Service provider account is not active');
+    }
+
+    // Verify the job exists and is in progress
+    const job = await this.prisma.job.findUnique({
+      where: { id: createDto.jobId },
+      include: {
+        apartment: true,
+        leader: true,
+        creator: true,
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    if (job.status !== JobStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        'Job must be in progress to create completion request',
+      );
+    }
+
+    // Check if service provider has an accepted bid for this job
+    const acceptedBid = await this.prisma.bid.findFirst({
+      where: {
+        jobId: createDto.jobId,
+        serviceProviderId: serviceProviderId,
+        status: 'ACCEPTED',
+      },
+    });
+
+    if (!acceptedBid) {
+      throw new ForbiddenException(
+        'You must have an accepted bid for this job to create completion request',
+      );
+    }
+
+    // Check if completion request already exists
+    const existingRequest = await this.prisma.jobCompletionRequest.findUnique({
+      where: {
+        jobId_serviceProviderId: {
+          jobId: createDto.jobId,
+          serviceProviderId: serviceProviderId,
+        },
+      },
+    });
+
+    if (existingRequest) {
+      throw new ConflictException(
+        'Completion request already exists for this job',
+      );
+    }
+
+    // Translate completion notes
+    const completionNotesTranslations =
+      await this.translationService.createTranslationObject(
+        createDto.completionNotes,
+      );
+
+    // Create the completion request
+    const completionRequest = await this.prisma.jobCompletionRequest.create({
+      data: {
+        jobId: createDto.jobId,
+        serviceProviderId: serviceProviderId,
+        completionNotes: completionNotesTranslations,
+        completionImages: createDto.completionImages || [],
+        additionalDocumentUrl: createDto.additionalDocumentUrl,
+        status: 'PENDING',
+      },
+      include: {
+        job: {
+          include: {
+            services: {
+              include: {
+                service: true,
+              },
+            },
+            apartment: {
+              select: {
+                id: true,
+                name: true,
+                hoaNumber: true,
+                city: true,
+              },
+            },
+            leader: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+            creator: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+          },
+        },
+        serviceProvider: {
+          select: {
+            id: true,
+            name: true,
+            rating: true,
+            totalJobs: true,
+            totalEarnings: true,
+          },
+        },
+      },
+    });
+
+    return {
+      message: 'Job completion request submitted successfully',
+      completionRequest,
+    };
+  }
+
+  async findByServiceProvider(
+    serviceProviderId: string,
+    jobType?: string,
+    status?: string,
+  ) {
+    const whereClause: any = {
+      serviceProviderId: serviceProviderId,
+    };
+
+    if (jobType) {
+      whereClause.job = {
+        jobType: jobType,
+      };
+    }
+
+    if (status) {
+      whereClause.status = status;
+    }
+
+    return this.prisma.jobCompletionRequest.findMany({
+      where: whereClause,
+      include: {
+        job: {
+          include: {
+            services: {
+              include: {
+                service: true,
+              },
+            },
+            apartment: {
+              select: {
+                id: true,
+                name: true,
+                hoaNumber: true,
+                city: true,
+              },
+            },
+            leader: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+            creator: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+          },
+        },
+        serviceProvider: {
+          select: {
+            id: true,
+            name: true,
+            rating: true,
+            totalJobs: true,
+            totalEarnings: true,
+          },
+        },
+        reviewer: {
+          select: {
+            id: true,
+            nationalId: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findPendingRequests(userId: string, userRole: string) {
+    let whereClause: any = {
+      status: 'PENDING',
+    };
+
+    if (userRole === 'LEADER') {
+      // Leader can see completion requests for jobs in apartments they manage
+      whereClause.job = {
+        apartment: {
+          leaderId: userId,
+        },
+      };
+    } else if (userRole === 'HOME_OWNER') {
+      // Home owner can see completion requests for jobs they created
+      whereClause.job = {
+        createdBy: userId,
+      };
+    } else {
+      throw new ForbiddenException('Invalid user role');
+    }
+
+    return this.prisma.jobCompletionRequest.findMany({
+      where: whereClause,
+      include: {
+        job: {
+          include: {
+            services: {
+              include: {
+                service: true,
+              },
+            },
+            apartment: {
+              select: {
+                id: true,
+                name: true,
+                hoaNumber: true,
+                city: true,
+              },
+            },
+            leader: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+            creator: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+          },
+        },
+        serviceProvider: {
+          select: {
+            id: true,
+            name: true,
+            rating: true,
+            totalJobs: true,
+            totalEarnings: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    const completionRequest = await this.prisma.jobCompletionRequest.findUnique(
+      {
+        where: { id },
+        include: {
+          job: {
+            include: {
+              services: {
+                include: {
+                  service: true,
+                },
+              },
+              apartment: {
+                select: {
+                  id: true,
+                  name: true,
+                  hoaNumber: true,
+                  city: true,
+                },
+              },
+              leader: {
+                select: {
+                  id: true,
+                  nationalId: true,
+                  role: true,
+                },
+              },
+              creator: {
+                select: {
+                  id: true,
+                  nationalId: true,
+                  role: true,
+                },
+              },
+            },
+          },
+          serviceProvider: {
+            select: {
+              id: true,
+              name: true,
+              rating: true,
+              totalJobs: true,
+              totalEarnings: true,
+            },
+          },
+          reviewer: {
+            select: {
+              id: true,
+              nationalId: true,
+              role: true,
+            },
+          },
+        },
+      },
+    );
+
+    if (!completionRequest) {
+      throw new NotFoundException('Job completion request not found');
+    }
+
+    return completionRequest;
+  }
+
+  async updateStatus(
+    id: string,
+    updateDto: UpdateJobCompletionRequestDto,
+    userId: string,
+    userRole: string,
+  ) {
+    // Verify the completion request exists
+    const completionRequest = await this.prisma.jobCompletionRequest.findUnique(
+      {
+        where: { id },
+        include: {
+          job: {
+            include: {
+              apartment: true,
+              leader: true,
+              creator: true,
+            },
+          },
+        },
+      },
+    );
+
+    if (!completionRequest) {
+      throw new NotFoundException('Job completion request not found');
+    }
+
+    if (completionRequest.status !== 'PENDING') {
+      throw new BadRequestException(
+        'Completion request is not in pending status',
+      );
+    }
+
+    // Check authorization based on job type and user role
+    let isAuthorized = false;
+
+    if (completionRequest.job.jobType === 'HOME_SERVICE') {
+      // For home service jobs, only the job creator (home owner) can approve/reject
+      if (
+        userRole === 'HOME_OWNER' &&
+        completionRequest.job.createdBy === userId
+      ) {
+        isAuthorized = true;
+      }
+    } else if (completionRequest.job.jobType === 'COMMUNITY_SERVICE') {
+      // For community service jobs, only the leader can approve/reject
+      if (userRole === 'LEADER' && completionRequest.job.leaderId === userId) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      throw new ForbiddenException(
+        'You are not authorized to update this completion request',
+      );
+    }
+
+    // Translate review notes if provided
+    let reviewNotesTranslations: { en: string; ar: string } | undefined =
+      undefined;
+    if (updateDto.reviewNotes) {
+      reviewNotesTranslations =
+        await this.translationService.createTranslationObject(
+          updateDto.reviewNotes,
+        );
+    }
+
+    // Update the completion request
+    const updatedRequest = await this.prisma.jobCompletionRequest.update({
+      where: { id },
+      data: {
+        status: updateDto.status,
+        reviewNotes: reviewNotesTranslations,
+        reviewedBy: userId,
+      },
+      include: {
+        job: {
+          include: {
+            services: {
+              include: {
+                service: true,
+              },
+            },
+            apartment: {
+              select: {
+                id: true,
+                name: true,
+                hoaNumber: true,
+                city: true,
+              },
+            },
+            leader: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+            creator: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+          },
+        },
+        serviceProvider: {
+          select: {
+            id: true,
+            name: true,
+            rating: true,
+            totalJobs: true,
+            totalEarnings: true,
+          },
+        },
+        reviewer: {
+          select: {
+            id: true,
+            nationalId: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    // If approved, update job status to COMPLETED
+    if (updateDto.status === JobCompletionRequestStatus.APPROVED) {
+      await this.prisma.job.update({
+        where: { id: completionRequest.jobId },
+        data: { status: JobStatus.COMPLETED },
+      });
+    }
+
+    return {
+      message: `Job completion request ${updateDto.status.toLowerCase()} successfully`,
+      completionRequest: updatedRequest,
+    };
+  }
+
+  async getServiceProviderJobs(
+    serviceProviderId: string,
+    jobType?: string,
+    status?: string,
+  ) {
+    const whereClause: any = {
+      bids: {
+        some: {
+          serviceProviderId: serviceProviderId,
+          status: 'ACCEPTED',
+        },
+      },
+    };
+
+    if (jobType) {
+      whereClause.jobType = jobType;
+    }
+
+    if (status) {
+      whereClause.status = status;
+    }
+
+    return this.prisma.job.findMany({
+      where: whereClause,
+      include: {
+        services: {
+          include: {
+            service: true,
+          },
+        },
+        apartment: {
+          select: {
+            id: true,
+            name: true,
+            hoaNumber: true,
+            city: true,
+          },
+        },
+        leader: {
+          select: {
+            id: true,
+            nationalId: true,
+            role: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            nationalId: true,
+            role: true,
+          },
+        },
+        bids: {
+          where: {
+            serviceProviderId: serviceProviderId,
+            status: 'ACCEPTED',
+          },
+          include: {
+            serviceProvider: {
+              select: {
+                id: true,
+                name: true,
+                rating: true,
+                totalJobs: true,
+                totalEarnings: true,
+              },
+            },
+          },
+        },
+        completionRequests: {
+          where: {
+            serviceProviderId: serviceProviderId,
+          },
+          include: {
+            reviewer: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+}

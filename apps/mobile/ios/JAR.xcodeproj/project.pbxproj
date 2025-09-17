@@ -1,0 +1,849 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00E356F31AD99517003FC87E /* JARTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* JARTests.m */; };
+		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
+		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		208E4C37239E4FEABC707257 /* PlusJakartaSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4B5EEB37413647EAAEA1C0B5 /* PlusJakartaSans-SemiBoldItalic.ttf */; };
+		2B324F1204A44DBABD2882AC /* AvenirNextCyr-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F7FD616335D944658864620A /* AvenirNextCyr-Bold.ttf */; };
+		2FDCB1AD44C547B0ACCE4B10 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1D94C63C45E4E718A46D093 /* PlusJakartaSans-Regular.ttf */; };
+		30C93A7E692942B8996A1BB0 /* PlusJakartaSans-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C0DE0E6BAC4D410BA58A1005 /* PlusJakartaSans-Light.ttf */; };
+		36689F87AF92B564FBC988BA /* libPods-JAR-JARTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D354C21839C8DD63B16C917 /* libPods-JAR-JARTests.a */; };
+		37C79B30621F4668B2739D39 /* AvenirNextCyr-ThinItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 237DD917882E4CE19CD7B3A4 /* AvenirNextCyr-ThinItalic.ttf */; };
+		39E42AD20A954C89A4BF7E8E /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 09AA2308CDC7443D84C092BB /* PlusJakartaSans-Bold.ttf */; };
+		3CF891EBBE094EEFA97EE227 /* AvenirNextCyr-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 34B4DDD6C00C41F8832CE4F3 /* AvenirNextCyr-Thin.ttf */; };
+		43D2E3D196BA4C94BCD8E3BD /* AvenirNextCyr-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 879FB24E97874B6B8DFD5E00 /* AvenirNextCyr-Italic.ttf */; };
+		462C885BE9A74D8291E6A046 /* AvenirNextLTPro-It.otf in Resources */ = {isa = PBXBuildFile; fileRef = 904C951718D24E6BBE4C398A /* AvenirNextLTPro-It.otf */; };
+		46F848B4F4A44A36BBE5821D /* AvenirNextCyr-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BB53B7FB31741E89EF46965 /* AvenirNextCyr-Regular.ttf */; };
+		68FC2F0C3BD3468CBFB4142A /* PlusJakartaSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5CD140D40A63477A99FC19A3 /* PlusJakartaSans-Italic.ttf */; };
+		6D74EDA786CA42F0AD115385 /* AvenirNextCyr-UltraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8250A5173DA24F1CBC2F3AF7 /* AvenirNextCyr-UltraLight.ttf */; };
+		6FF43996278A4A4E8D80954E /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 093A6ABB30AB434C9F4EDE17 /* AvenirNextLTPro-Regular.otf */; };
+		6FFAA81666D643E994E3A31D /* PlusJakartaSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B5FE5F3C3A2144AEAAEE7671 /* PlusJakartaSans-BoldItalic.ttf */; };
+		784E89C94D9B42129C95631E /* PlusJakartaSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0824A3EC6710410A8772164D /* PlusJakartaSans-MediumItalic.ttf */; };
+		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		89EB341C139542598CB71DB0 /* AvenirNextCyr-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4878ACCF6214403DA02450AF /* AvenirNextCyr-LightItalic.ttf */; };
+		90B2C71171294881821FB7AA /* AvenirNextCyr-DemiItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDEFF86D193742BE8A079DC1 /* AvenirNextCyr-DemiItalic.ttf */; };
+		9240532E94444AB19988DF31 /* AvenirNextCyr-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E544FFD45A23442181961AFA /* AvenirNextCyr-Medium.ttf */; };
+		A065586651B64421A16C349A /* PlusJakartaSans-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B9A23E2C56B74832AB665685 /* PlusJakartaSans-ExtraLight.ttf */; };
+		A1A5E75B4D249B562ADA8887 /* libPods-JAR.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FABEE335E486B696F7926172 /* libPods-JAR.a */; };
+		A4854250B2CA495582B1CD66 /* PlusJakartaSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D93ADFB2B1374C95B0E48F5B /* PlusJakartaSans-ExtraBoldItalic.ttf */; };
+		AE004EE6B75E44559D1A40A3 /* AvenirNextCyr-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 09B3F628B02B42BDA27916F7 /* AvenirNextCyr-BoldItalic.ttf */; };
+		BCA2E06155AD4A5E92980EE6 /* PlusJakartaSans-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 711D2A4E731348E29E0BDEDC /* PlusJakartaSans-LightItalic.ttf */; };
+		C53516207D7B40DFA5A948CE /* AvenirNextCyr-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BCB280367D6493DB45B65D2 /* AvenirNextCyr-MediumItalic.ttf */; };
+		C8239828D74B48B8835F019F /* AvenirNextCyr-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1399921382D1467C94F49F7F /* AvenirNextCyr-Light.ttf */; };
+		C888EB6F560F4219ABC7D6AF /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 27F22EDB477C458CA42DB36F /* PlusJakartaSans-ExtraBold.ttf */; };
+		C97A17E71FDB4E85A836EFCD /* AvenirNextCyr-UltraLightIt.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 99C12EE72B69488BA0CD0C1A /* AvenirNextCyr-UltraLightIt.ttf */; };
+		D0391293819747989EA4D244 /* AvenirNextCyr-Heavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 332A7011F4D54E7EAACEB92B /* AvenirNextCyr-Heavy.ttf */; };
+		D4D2F7143924475CB7CC276C /* AvenirNextCyr-HeavyItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 107F308B65C743788EE9E1CB /* AvenirNextCyr-HeavyItalic.ttf */; };
+		D6C2873E285E402F8AF829F2 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EF4A4E5FFC7450E9D62EB8B /* PlusJakartaSans-SemiBold.ttf */; };
+		D9B19B75D6174884AE226991 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52E2003C5C5E48298DD9BB8D /* PlusJakartaSans-Medium.ttf */; };
+		DD79A709E6CF4CE9A9A47498 /* PlusJakartaSans-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4211A06A1E9F4DACA48D21E4 /* PlusJakartaSans-ExtraLightItalic.ttf */; };
+		FA9BCE0F11324C35B86FAC08 /* AvenirNextCyr-Demi.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 130EA8B60FB1451A96AFDA6A /* AvenirNextCyr-Demi.ttf */; };
+		FBB48040502A4AE2A004F595 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7326B1549C69418C8EB497E5 /* AvenirNextLTPro-Bold.otf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		00E356F41AD99517003FC87E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
+			remoteInfo = JAR;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00E356EE1AD99517003FC87E /* JARTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JARTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		00E356F21AD99517003FC87E /* JARTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JARTests.m; sourceTree = "<group>"; };
+		0824A3EC6710410A8772164D /* PlusJakartaSans-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-MediumItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-MediumItalic.ttf"; sourceTree = "<group>"; };
+		093A6ABB30AB434C9F4EDE17 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNext/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
+		09AA2308CDC7443D84C092BB /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Bold.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
+		09B3F628B02B42BDA27916F7 /* AvenirNextCyr-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-BoldItalic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-BoldItalic.ttf"; sourceTree = "<group>"; };
+		0D354C21839C8DD63B16C917 /* libPods-JAR-JARTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JAR-JARTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		107F308B65C743788EE9E1CB /* AvenirNextCyr-HeavyItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-HeavyItalic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-HeavyItalic.ttf"; sourceTree = "<group>"; };
+		130EA8B60FB1451A96AFDA6A /* AvenirNextCyr-Demi.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Demi.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Demi.ttf"; sourceTree = "<group>"; };
+		1399921382D1467C94F49F7F /* AvenirNextCyr-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Light.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Light.ttf"; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* JAR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JAR.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = JAR/AppDelegate.h; sourceTree = "<group>"; };
+		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = JAR/AppDelegate.mm; sourceTree = "<group>"; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = JAR/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = JAR/Info.plist; sourceTree = "<group>"; };
+		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = JAR/main.m; sourceTree = "<group>"; };
+		1BCB280367D6493DB45B65D2 /* AvenirNextCyr-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-MediumItalic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-MediumItalic.ttf"; sourceTree = "<group>"; };
+		237DD917882E4CE19CD7B3A4 /* AvenirNextCyr-ThinItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-ThinItalic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-ThinItalic.ttf"; sourceTree = "<group>"; };
+		27F22EDB477C458CA42DB36F /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraBold.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		332A7011F4D54E7EAACEB92B /* AvenirNextCyr-Heavy.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Heavy.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Heavy.ttf"; sourceTree = "<group>"; };
+		34B4DDD6C00C41F8832CE4F3 /* AvenirNextCyr-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Thin.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Thin.ttf"; sourceTree = "<group>"; };
+		4211A06A1E9F4DACA48D21E4 /* PlusJakartaSans-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLightItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
+		4878ACCF6214403DA02450AF /* AvenirNextCyr-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-LightItalic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-LightItalic.ttf"; sourceTree = "<group>"; };
+		4B5EEB37413647EAAEA1C0B5 /* PlusJakartaSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBoldItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
+		52E2003C5C5E48298DD9BB8D /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Medium.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
+		5CD140D40A63477A99FC19A3 /* PlusJakartaSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Italic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Italic.ttf"; sourceTree = "<group>"; };
+		67B0CCD246E17DB7DD326810 /* Pods-JAR-JARTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JAR-JARTests.release.xcconfig"; path = "Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests.release.xcconfig"; sourceTree = "<group>"; };
+		6BB53B7FB31741E89EF46965 /* AvenirNextCyr-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Regular.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Regular.ttf"; sourceTree = "<group>"; };
+		6EF4A4E5FFC7450E9D62EB8B /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBold.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		711D2A4E731348E29E0BDEDC /* PlusJakartaSans-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-LightItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-LightItalic.ttf"; sourceTree = "<group>"; };
+		7326B1549C69418C8EB497E5 /* AvenirNextLTPro-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Bold.otf"; path = "../src/assets/fonts/AvenirNext/AvenirNextLTPro-Bold.otf"; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = JAR/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8250A5173DA24F1CBC2F3AF7 /* AvenirNextCyr-UltraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-UltraLight.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-UltraLight.ttf"; sourceTree = "<group>"; };
+		879FB24E97874B6B8DFD5E00 /* AvenirNextCyr-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Italic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Italic.ttf"; sourceTree = "<group>"; };
+		904C951718D24E6BBE4C398A /* AvenirNextLTPro-It.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-It.otf"; path = "../src/assets/fonts/AvenirNext/AvenirNextLTPro-It.otf"; sourceTree = "<group>"; };
+		99C12EE72B69488BA0CD0C1A /* AvenirNextCyr-UltraLightIt.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-UltraLightIt.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-UltraLightIt.ttf"; sourceTree = "<group>"; };
+		9ACEEC9E563B87A4A7D171BC /* Pods-JAR.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JAR.debug.xcconfig"; path = "Target Support Files/Pods-JAR/Pods-JAR.debug.xcconfig"; sourceTree = "<group>"; };
+		B1D94C63C45E4E718A46D093 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Regular.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
+		B5FE5F3C3A2144AEAAEE7671 /* PlusJakartaSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-BoldItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-BoldItalic.ttf"; sourceTree = "<group>"; };
+		B9A23E2C56B74832AB665685 /* PlusJakartaSans-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraLight.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-ExtraLight.ttf"; sourceTree = "<group>"; };
+		C0DE0E6BAC4D410BA58A1005 /* PlusJakartaSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Light.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Light.ttf"; sourceTree = "<group>"; };
+		CE4D951F5A1FF54C7712E38C /* Pods-JAR-JARTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JAR-JARTests.debug.xcconfig"; path = "Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests.debug.xcconfig"; sourceTree = "<group>"; };
+		D93ADFB2B1374C95B0E48F5B /* PlusJakartaSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-ExtraBoldItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
+		E544FFD45A23442181961AFA /* AvenirNextCyr-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Medium.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Medium.ttf"; sourceTree = "<group>"; };
+		EA06A0377360B457F7FC3EB4 /* Pods-JAR.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JAR.release.xcconfig"; path = "Target Support Files/Pods-JAR/Pods-JAR.release.xcconfig"; sourceTree = "<group>"; };
+		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F73B4975A15E24CE885F41F6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = JAR/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F7FD616335D944658864620A /* AvenirNextCyr-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Bold.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Bold.ttf"; sourceTree = "<group>"; };
+		FABEE335E486B696F7926172 /* libPods-JAR.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JAR.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDEFF86D193742BE8A079DC1 /* AvenirNextCyr-DemiItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-DemiItalic.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-DemiItalic.ttf"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00E356EB1AD99517003FC87E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				36689F87AF92B564FBC988BA /* libPods-JAR-JARTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1A5E75B4D249B562ADA8887 /* libPods-JAR.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		00E356EF1AD99517003FC87E /* JARTests */ = {
+			isa = PBXGroup;
+			children = (
+				00E356F21AD99517003FC87E /* JARTests.m */,
+				00E356F01AD99517003FC87E /* Supporting Files */,
+			);
+			path = JARTests;
+			sourceTree = "<group>";
+		};
+		00E356F01AD99517003FC87E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				00E356F11AD99517003FC87E /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		027C6D5B6219468FA5C37A72 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7326B1549C69418C8EB497E5 /* AvenirNextLTPro-Bold.otf */,
+				904C951718D24E6BBE4C398A /* AvenirNextLTPro-It.otf */,
+				093A6ABB30AB434C9F4EDE17 /* AvenirNextLTPro-Regular.otf */,
+				F7FD616335D944658864620A /* AvenirNextCyr-Bold.ttf */,
+				09B3F628B02B42BDA27916F7 /* AvenirNextCyr-BoldItalic.ttf */,
+				130EA8B60FB1451A96AFDA6A /* AvenirNextCyr-Demi.ttf */,
+				FDEFF86D193742BE8A079DC1 /* AvenirNextCyr-DemiItalic.ttf */,
+				332A7011F4D54E7EAACEB92B /* AvenirNextCyr-Heavy.ttf */,
+				107F308B65C743788EE9E1CB /* AvenirNextCyr-HeavyItalic.ttf */,
+				879FB24E97874B6B8DFD5E00 /* AvenirNextCyr-Italic.ttf */,
+				1399921382D1467C94F49F7F /* AvenirNextCyr-Light.ttf */,
+				4878ACCF6214403DA02450AF /* AvenirNextCyr-LightItalic.ttf */,
+				E544FFD45A23442181961AFA /* AvenirNextCyr-Medium.ttf */,
+				1BCB280367D6493DB45B65D2 /* AvenirNextCyr-MediumItalic.ttf */,
+				6BB53B7FB31741E89EF46965 /* AvenirNextCyr-Regular.ttf */,
+				34B4DDD6C00C41F8832CE4F3 /* AvenirNextCyr-Thin.ttf */,
+				237DD917882E4CE19CD7B3A4 /* AvenirNextCyr-ThinItalic.ttf */,
+				8250A5173DA24F1CBC2F3AF7 /* AvenirNextCyr-UltraLight.ttf */,
+				99C12EE72B69488BA0CD0C1A /* AvenirNextCyr-UltraLightIt.ttf */,
+				09AA2308CDC7443D84C092BB /* PlusJakartaSans-Bold.ttf */,
+				B5FE5F3C3A2144AEAAEE7671 /* PlusJakartaSans-BoldItalic.ttf */,
+				27F22EDB477C458CA42DB36F /* PlusJakartaSans-ExtraBold.ttf */,
+				D93ADFB2B1374C95B0E48F5B /* PlusJakartaSans-ExtraBoldItalic.ttf */,
+				B9A23E2C56B74832AB665685 /* PlusJakartaSans-ExtraLight.ttf */,
+				4211A06A1E9F4DACA48D21E4 /* PlusJakartaSans-ExtraLightItalic.ttf */,
+				5CD140D40A63477A99FC19A3 /* PlusJakartaSans-Italic.ttf */,
+				C0DE0E6BAC4D410BA58A1005 /* PlusJakartaSans-Light.ttf */,
+				711D2A4E731348E29E0BDEDC /* PlusJakartaSans-LightItalic.ttf */,
+				52E2003C5C5E48298DD9BB8D /* PlusJakartaSans-Medium.ttf */,
+				0824A3EC6710410A8772164D /* PlusJakartaSans-MediumItalic.ttf */,
+				B1D94C63C45E4E718A46D093 /* PlusJakartaSans-Regular.ttf */,
+				6EF4A4E5FFC7450E9D62EB8B /* PlusJakartaSans-SemiBold.ttf */,
+				4B5EEB37413647EAAEA1C0B5 /* PlusJakartaSans-SemiBoldItalic.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		13B07FAE1A68108700A75B9A /* JAR */ = {
+			isa = PBXGroup;
+			children = (
+				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
+				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
+				13B07FB51A68108700A75B9A /* Images.xcassets */,
+				13B07FB61A68108700A75B9A /* Info.plist */,
+				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+				13B07FB71A68108700A75B9A /* main.m */,
+				F73B4975A15E24CE885F41F6 /* PrivacyInfo.xcprivacy */,
+			);
+			name = JAR;
+			sourceTree = "<group>";
+		};
+		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
+				FABEE335E486B696F7926172 /* libPods-JAR.a */,
+				0D354C21839C8DD63B16C917 /* libPods-JAR-JARTests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		83CBB9F61A601CBA00E9B192 = {
+			isa = PBXGroup;
+			children = (
+				13B07FAE1A68108700A75B9A /* JAR */,
+				832341AE1AAA6A7D00B99B32 /* Libraries */,
+				00E356EF1AD99517003FC87E /* JARTests */,
+				83CBBA001A601CBA00E9B192 /* Products */,
+				2D16E6871FA4F8E400B85C8A /* Frameworks */,
+				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				027C6D5B6219468FA5C37A72 /* Resources */,
+			);
+			indentWidth = 2;
+			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
+		};
+		83CBBA001A601CBA00E9B192 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				13B07F961A680F5B00A75B9A /* JAR.app */,
+				00E356EE1AD99517003FC87E /* JARTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9ACEEC9E563B87A4A7D171BC /* Pods-JAR.debug.xcconfig */,
+				EA06A0377360B457F7FC3EB4 /* Pods-JAR.release.xcconfig */,
+				CE4D951F5A1FF54C7712E38C /* Pods-JAR-JARTests.debug.xcconfig */,
+				67B0CCD246E17DB7DD326810 /* Pods-JAR-JARTests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		00E356ED1AD99517003FC87E /* JARTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "JARTests" */;
+			buildPhases = (
+				C5271E9CD9C100457B039965 /* [CP] Check Pods Manifest.lock */,
+				00E356EA1AD99517003FC87E /* Sources */,
+				00E356EB1AD99517003FC87E /* Frameworks */,
+				00E356EC1AD99517003FC87E /* Resources */,
+				40F6514AF1D7125CCB8EC836 /* [CP] Embed Pods Frameworks */,
+				F22FFC2ECC276E99A9C83A6A /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				00E356F51AD99517003FC87E /* PBXTargetDependency */,
+			);
+			name = JARTests;
+			productName = JARTests;
+			productReference = 00E356EE1AD99517003FC87E /* JARTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		13B07F861A680F5B00A75B9A /* JAR */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "JAR" */;
+			buildPhases = (
+				F925ABDC3CB425E35B676F0E /* [CP] Check Pods Manifest.lock */,
+				13B07F871A680F5B00A75B9A /* Sources */,
+				13B07F8C1A680F5B00A75B9A /* Frameworks */,
+				13B07F8E1A680F5B00A75B9A /* Resources */,
+				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
+				DC96BC3AC57AD2CC08F73F5A /* [CP] Embed Pods Frameworks */,
+				0FF8B23E93922B1EE401D42C /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = JAR;
+			productName = JAR;
+			productReference = 13B07F961A680F5B00A75B9A /* JAR.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		83CBB9F71A601CBA00E9B192 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1210;
+				TargetAttributes = {
+					00E356ED1AD99517003FC87E = {
+						CreatedOnToolsVersion = 6.2;
+						TestTargetID = 13B07F861A680F5B00A75B9A;
+					};
+					13B07F861A680F5B00A75B9A = {
+						LastSwiftMigration = 1120;
+					};
+				};
+			};
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "JAR" */;
+			compatibilityVersion = "Xcode 12.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 83CBB9F61A601CBA00E9B192;
+			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				13B07F861A680F5B00A75B9A /* JAR */,
+				00E356ED1AD99517003FC87E /* JARTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		00E356EC1AD99517003FC87E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13B07F8E1A680F5B00A75B9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				FBB48040502A4AE2A004F595 /* AvenirNextLTPro-Bold.otf in Resources */,
+				462C885BE9A74D8291E6A046 /* AvenirNextLTPro-It.otf in Resources */,
+				6FF43996278A4A4E8D80954E /* AvenirNextLTPro-Regular.otf in Resources */,
+				2B324F1204A44DBABD2882AC /* AvenirNextCyr-Bold.ttf in Resources */,
+				AE004EE6B75E44559D1A40A3 /* AvenirNextCyr-BoldItalic.ttf in Resources */,
+				FA9BCE0F11324C35B86FAC08 /* AvenirNextCyr-Demi.ttf in Resources */,
+				90B2C71171294881821FB7AA /* AvenirNextCyr-DemiItalic.ttf in Resources */,
+				D0391293819747989EA4D244 /* AvenirNextCyr-Heavy.ttf in Resources */,
+				D4D2F7143924475CB7CC276C /* AvenirNextCyr-HeavyItalic.ttf in Resources */,
+				43D2E3D196BA4C94BCD8E3BD /* AvenirNextCyr-Italic.ttf in Resources */,
+				C8239828D74B48B8835F019F /* AvenirNextCyr-Light.ttf in Resources */,
+				89EB341C139542598CB71DB0 /* AvenirNextCyr-LightItalic.ttf in Resources */,
+				9240532E94444AB19988DF31 /* AvenirNextCyr-Medium.ttf in Resources */,
+				C53516207D7B40DFA5A948CE /* AvenirNextCyr-MediumItalic.ttf in Resources */,
+				46F848B4F4A44A36BBE5821D /* AvenirNextCyr-Regular.ttf in Resources */,
+				3CF891EBBE094EEFA97EE227 /* AvenirNextCyr-Thin.ttf in Resources */,
+				37C79B30621F4668B2739D39 /* AvenirNextCyr-ThinItalic.ttf in Resources */,
+				6D74EDA786CA42F0AD115385 /* AvenirNextCyr-UltraLight.ttf in Resources */,
+				C97A17E71FDB4E85A836EFCD /* AvenirNextCyr-UltraLightIt.ttf in Resources */,
+				39E42AD20A954C89A4BF7E8E /* PlusJakartaSans-Bold.ttf in Resources */,
+				6FFAA81666D643E994E3A31D /* PlusJakartaSans-BoldItalic.ttf in Resources */,
+				C888EB6F560F4219ABC7D6AF /* PlusJakartaSans-ExtraBold.ttf in Resources */,
+				A4854250B2CA495582B1CD66 /* PlusJakartaSans-ExtraBoldItalic.ttf in Resources */,
+				A065586651B64421A16C349A /* PlusJakartaSans-ExtraLight.ttf in Resources */,
+				DD79A709E6CF4CE9A9A47498 /* PlusJakartaSans-ExtraLightItalic.ttf in Resources */,
+				68FC2F0C3BD3468CBFB4142A /* PlusJakartaSans-Italic.ttf in Resources */,
+				30C93A7E692942B8996A1BB0 /* PlusJakartaSans-Light.ttf in Resources */,
+				BCA2E06155AD4A5E92980EE6 /* PlusJakartaSans-LightItalic.ttf in Resources */,
+				D9B19B75D6174884AE226991 /* PlusJakartaSans-Medium.ttf in Resources */,
+				784E89C94D9B42129C95631E /* PlusJakartaSans-MediumItalic.ttf in Resources */,
+				2FDCB1AD44C547B0ACCE4B10 /* PlusJakartaSans-Regular.ttf in Resources */,
+				D6C2873E285E402F8AF829F2 /* PlusJakartaSans-SemiBold.ttf in Resources */,
+				208E4C37239E4FEABC707257 /* PlusJakartaSans-SemiBoldItalic.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/.xcode.env",
+			);
+			name = "Bundle React Native code and images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+		};
+		0FF8B23E93922B1EE401D42C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR/Pods-JAR-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR/Pods-JAR-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JAR/Pods-JAR-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		40F6514AF1D7125CCB8EC836 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C5271E9CD9C100457B039965 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-JAR-JARTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DC96BC3AC57AD2CC08F73F5A /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR/Pods-JAR-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR/Pods-JAR-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JAR/Pods-JAR-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F22FFC2ECC276E99A9C83A6A /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F925ABDC3CB425E35B676F0E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-JAR-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		00E356EA1AD99517003FC87E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00E356F31AD99517003FC87E /* JARTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		13B07F871A680F5B00A75B9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				13B07FC11A68108700A75B9A /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		00E356F51AD99517003FC87E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 13B07F861A680F5B00A75B9A /* JAR */;
+			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00E356F61AD99517003FC87E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CE4D951F5A1FF54C7712E38C /* Pods-JAR-JARTests.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = JARTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JAR.app/JAR";
+			};
+			name = Debug;
+		};
+		00E356F71AD99517003FC87E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 67B0CCD246E17DB7DD326810 /* Pods-JAR-JARTests.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COPY_PHASE_STRIP = NO;
+				INFOPLIST_FILE = JARTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-lc++",
+					"$(inherited)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JAR.app/JAR";
+			};
+			name = Release;
+		};
+		13B07F941A680F5B00A75B9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9ACEEC9E563B87A4A7D171BC /* Pods-JAR.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 5C47325LT3;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = JAR/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = JAR;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.JAR;
+				PRODUCT_NAME = JAR;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		13B07F951A680F5B00A75B9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = EA06A0377360B457F7FC3EB4 /* Pods-JAR.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 5C47325LT3;
+				INFOPLIST_FILE = JAR/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = JAR;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.JAR;
+				PRODUCT_NAME = JAR;
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		83CBBA201A601CBA00E9B192 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CXX = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD = "";
+				LDPLUSPLUS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SDKROOT)/usr/lib/swift\"",
+					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
+					"\"$(inherited)\"",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DFOLLY_NO_CONFIG",
+					"-DFOLLY_MOBILE=1",
+					"-DFOLLY_USE_LIBCPP=1",
+					"-DFOLLY_CFG_NO_COROUTINES=1",
+					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+				);
+				OTHER_LDFLAGS = "$(inherited)  ";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = true;
+			};
+			name = Debug;
+		};
+		83CBBA211A601CBA00E9B192 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				CXX = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD = "";
+				LDPLUSPLUS = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SDKROOT)/usr/lib/swift\"",
+					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
+					"\"$(inherited)\"",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DFOLLY_NO_CONFIG",
+					"-DFOLLY_MOBILE=1",
+					"-DFOLLY_USE_LIBCPP=1",
+					"-DFOLLY_CFG_NO_COROUTINES=1",
+					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+				);
+				OTHER_LDFLAGS = "$(inherited)  ";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				SDKROOT = iphoneos;
+				USE_HERMES = true;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "JARTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00E356F61AD99517003FC87E /* Debug */,
+				00E356F71AD99517003FC87E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "JAR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13B07F941A680F5B00A75B9A /* Debug */,
+				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "JAR" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83CBBA201A601CBA00E9B192 /* Debug */,
+				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
+}
