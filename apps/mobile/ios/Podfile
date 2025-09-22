@@ -17,7 +17,7 @@ end
 
 target 'JAR' do
   config = use_native_modules!
-  pod 'RNReactNativeHapticFeedback', :path => '../node_modules/react-native-haptic-feedback'
+  pod 'RNReactNativeHapticFeedback', :path => '../../../node_modules/react-native-haptic-feedback'
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
