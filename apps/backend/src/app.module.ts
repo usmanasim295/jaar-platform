@@ -9,6 +9,7 @@ import { ServiceModule } from './service/service.module';
 import { JobModule } from './job/job.module';
 import { ServiceProviderModule } from './service-provider/service-provider.module';
 import { ApartmentModule } from './apartment/apartment.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ApartmentModule } from './apartment/apartment.module';
     JobModule,
     ServiceProviderModule,
     ApartmentModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
