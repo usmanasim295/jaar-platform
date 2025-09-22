@@ -9,6 +9,7 @@ import { ApartmentModule } from 'src/apartment/apartment.module';
 import { S3Service } from 'src/common/services/s3.service';
 import { TranslationService } from 'src/common/services/translation.service';
 import { LanguageService } from 'src/common/services/language.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { LanguageService } from 'src/common/services/language.service';
     S3Service,
     TranslationService,
     LanguageService,
+    ChatService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
