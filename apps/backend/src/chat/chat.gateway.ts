@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
+import { RealtimeService } from './realtime.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
 @WebSocketGateway({
@@ -27,7 +28,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private chatService: ChatService,
     private jwtService: JwtService,
+    private realtimeService: RealtimeService,
   ) {}
+
+  afterInit() {
+    // Set the server reference in RealtimeService to avoid circular dependency
+    this.realtimeService.setServer(this.server);
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -114,12 +121,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.handshake.auth.token ||
         client.handshake.headers.authorization?.replace('Bearer ', '');
       const payload = this.jwtService.verify(token);
-      const userId = payload.id;
+      const user = { id: payload.id, type: payload.type || 'user' };
 
-      const message = await this.chatService.sendMessage(userId, data);
-
-      // Broadcast message to all users in the chat
-      this.server.to(`chat:${data.chatId}`).emit('new_message', message);
+      const message = await this.chatService.sendMessage(user, data);
 
       // Send confirmation to sender
       client.emit('message_sent', { messageId: message.id });
@@ -140,12 +144,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = this.jwtService.verify(token);
       const userId = payload.id;
 
-      // Broadcast typing indicator to other users in the chat
-      client.to(`chat:${data.chatId}`).emit('user_typing', {
-        chatId: data.chatId,
-        userId,
-        isTyping: true,
-      });
+      // Use RealtimeService for consistent typing indicators
+      this.realtimeService.emitTypingIndicator(data.chatId, userId, true);
     } catch (error) {
       // Ignore typing errors
     }
@@ -163,29 +163,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = this.jwtService.verify(token);
       const userId = payload.id;
 
-      // Broadcast typing indicator to other users in the chat
-      client.to(`chat:${data.chatId}`).emit('user_typing', {
-        chatId: data.chatId,
-        userId,
-        isTyping: false,
-      });
+      // Use RealtimeService for consistent typing indicators
+      this.realtimeService.emitTypingIndicator(data.chatId, userId, false);
     } catch (error) {
       // Ignore typing errors
     }
   }
 
-  // Method to notify users about new community members
-  async notifyNewCommunityMember(communityId: string, userId: string) {
-    this.server.to(`community:${communityId}`).emit('new_member', { userId });
-  }
-
-  // Method to notify users about new polls
-  async notifyNewPoll(chatId: string, poll: any) {
-    this.server.to(`chat:${chatId}`).emit('new_poll', poll);
-  }
-
-  // Method to notify users about poll votes
-  async notifyPollVote(chatId: string, pollId: string, voterId: string) {
-    this.server.to(`chat:${chatId}`).emit('poll_vote', { pollId, voterId });
-  }
+  // These methods are now handled by RealtimeService for consistency
 }
