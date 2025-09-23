@@ -19,4 +19,8 @@ export class QueryMessagesDto {
   @IsOptional()
   @IsEnum(['asc', 'desc'])
   order?: 'asc' | 'desc' = 'desc';
+
+  @IsOptional()
+  @IsString()
+  lang?: string;
 }

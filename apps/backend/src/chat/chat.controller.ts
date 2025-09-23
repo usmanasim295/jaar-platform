@@ -9,13 +9,14 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { CreatePollDto } from './dto/create-poll.dto';
@@ -85,12 +86,12 @@ export class ChatController {
     };
   }
 
-  // Single File Upload API for all file types
+  // Multiple File Upload API for all file types
   @Post('message/upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('file', 10)) // Allow up to 10 files
   async uploadFile(
     @Req() req: Request,
-    @UploadedFile(
+    @UploadedFiles(
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
@@ -99,21 +100,86 @@ export class ChatController {
         fileIsRequired: true,
       }),
     )
-    file: Express.Multer.File,
+    files: Express.Multer.File[],
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
-    const fileType = this.fileManagementService.getFileTypeFromMime(
-      file.mimetype,
+    const language = this.languageService.validateLanguage(lang);
+
+    // Get parameters from form-data
+    const chatId = (req as any).body?.chatId;
+    const content = (req as any).body?.content;
+    const replyToId = (req as any).body?.replyToId;
+
+    if (!chatId) {
+      throw new BadRequestException('chatId is required');
+    }
+
+    if (!content) {
+      throw new BadRequestException('content is required');
+    }
+
+    if (!files || files.length === 0) {
+      throw new BadRequestException('At least one file is required');
+    }
+
+    // Upload all files and collect file data
+    const uploadedFiles: any[] = [];
+    for (const file of files) {
+      const fileType = this.fileManagementService.getFileTypeFromMime(
+        file.mimetype,
+      );
+      const fileData = await this.fileManagementService.uploadChatFile(
+        file,
+        fileType,
+        user.id,
+      );
+      uploadedFiles.push(fileData);
+    }
+
+    // Determine message type based on the first file
+    const firstFileType = this.fileManagementService.getFileTypeFromMime(
+      files[0].mimetype,
     );
-    const fileData = await this.fileManagementService.uploadChatFile(
-      file,
-      fileType,
-      user.id,
-    );
+    let messageType: any;
+    if (firstFileType === 'images') {
+      messageType = 'IMAGE';
+    } else if (firstFileType === 'voice') {
+      messageType = 'VOICE_NOTE';
+    } else if (firstFileType === 'documents' || firstFileType === 'files') {
+      messageType = 'FILE';
+    } else {
+      messageType = 'FILE'; // Default to FILE for unknown types
+    }
+
+    // Create message with multiple files
+    const messageDto = {
+      chatId,
+      content,
+      type: messageType,
+      replyToId: replyToId || undefined,
+      fileUrl: uploadedFiles[0].fileUrl, // Primary file URL
+      fileName: uploadedFiles[0].fileName, // Primary file name
+      fileSize: uploadedFiles[0].fileSize, // Primary file size
+      mimeType: uploadedFiles[0].mimeType, // Primary file MIME type
+      // Store additional files in a custom field (you might want to add this to your schema)
+      additionalFiles: uploadedFiles.slice(1).map((file) => ({
+        fileUrl: file.fileUrl,
+        fileName: file.fileName,
+        fileSize: file.fileSize,
+        mimeType: file.mimeType,
+      })),
+    };
+
+    const message = await this.chatService.sendMessage(user, messageDto);
 
     return {
-      ...fileData,
-      metadata: this.fileManagementService.getFileMetadata(file),
+      message: this.languageService.transformObjectForLanguage(
+        message,
+        language,
+        ['content'],
+      ),
+      uploadedFiles: uploadedFiles, // Return all uploaded file info
     };
   }
 
@@ -128,11 +194,35 @@ export class ChatController {
 
     return {
       ...result,
-      messages: result.messages.map((message) =>
-        this.languageService.transformObjectForLanguage(message, language, [
-          'content',
-        ]),
-      ),
+      messages: result.messages.map((message) => {
+        // Transform the main message object
+        const transformedMessage =
+          this.languageService.transformObjectForLanguage(message, language, [
+            'content',
+          ]);
+
+        // Transform poll data if it exists
+        if (message.poll) {
+          transformedMessage.poll =
+            this.languageService.transformObjectForLanguage(
+              message.poll,
+              language,
+              ['question'],
+            );
+
+          // Transform poll options array
+          if (message.poll.options && Array.isArray(message.poll.options)) {
+            transformedMessage.poll.options =
+              this.languageService.transformArrayForLanguage(
+                message.poll.options,
+                language,
+                ['text'],
+              );
+          }
+        }
+
+        return transformedMessage;
+      }),
     };
   }
 
@@ -147,11 +237,24 @@ export class ChatController {
     const language = this.languageService.validateLanguage(lang);
     const poll = await this.chatService.createPoll(user.id, dto);
 
+    // Transform the poll object with proper handling of nested options array
+    const transformedPoll = this.languageService.transformObjectForLanguage(
+      poll,
+      language,
+      ['question'],
+    );
+
+    // Transform the options array separately
+    if (poll.options && Array.isArray(poll.options)) {
+      transformedPoll.options = this.languageService.transformArrayForLanguage(
+        poll.options,
+        language,
+        ['text'],
+      );
+    }
+
     return {
-      poll: this.languageService.transformObjectForLanguage(poll, language, [
-        'question',
-        'options',
-      ]),
+      poll: transformedPoll,
     };
   }
 
@@ -169,11 +272,24 @@ export class ChatController {
     const language = this.languageService.validateLanguage(lang);
     const poll = await this.chatService.getPollResults(pollId);
 
+    // Transform the poll object with proper handling of nested options array
+    const transformedPoll = this.languageService.transformObjectForLanguage(
+      poll,
+      language,
+      ['question'],
+    );
+
+    // Transform the options array separately
+    if (poll.options && Array.isArray(poll.options)) {
+      transformedPoll.options = this.languageService.transformArrayForLanguage(
+        poll.options,
+        language,
+        ['text'],
+      );
+    }
+
     return {
-      poll: this.languageService.transformObjectForLanguage(poll, language, [
-        'question',
-        'options',
-      ]),
+      poll: transformedPoll,
     };
   }
 

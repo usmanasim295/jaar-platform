@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
+import { RealtimeService } from './realtime.service';
 import { FileManagementService } from './file-management.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { TranslationService } from 'src/common/services/translation.service';
@@ -21,11 +22,12 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [
     ChatService,
     ChatGateway,
+    RealtimeService,
     FileManagementService,
     TranslationService,
     S3Service,
     LanguageService,
   ],
-  exports: [ChatService],
+  exports: [ChatService, RealtimeService],
 })
 export class ChatModule {}

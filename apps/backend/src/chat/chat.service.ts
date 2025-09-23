@@ -14,6 +14,7 @@ import { QueryMessagesDto } from './dto/query-messages.dto';
 import { TranslationService } from 'src/common/services/translation.service';
 import { S3Service } from 'src/common/services/s3.service';
 import { Role, ChatType, MessageType, CommunityRole } from '@prisma/client';
+import { RealtimeService } from './realtime.service';
 
 @Injectable()
 export class ChatService {
@@ -21,6 +22,7 @@ export class ChatService {
     private prisma: PrismaService,
     private translationService: TranslationService,
     private s3Service: S3Service,
+    private realtimeService: RealtimeService,
   ) {}
 
   // Community Management - These methods are used internally during signup
@@ -112,13 +114,18 @@ export class ChatService {
     const communityRole =
       user.role === Role.LEADER ? CommunityRole.LEADER : CommunityRole.MEMBER;
 
-    return this.prisma.communityMember.create({
+    const member = await this.prisma.communityMember.create({
       data: {
         communityId: community.id,
         userId,
         role: communityRole,
       },
     });
+
+    // Emit real-time event for new community member
+    this.realtimeService.emitNewCommunityMember(community.id, userId);
+
+    return member;
   }
 
   // Chat Management
@@ -185,12 +192,17 @@ export class ChatService {
     }
 
     // Add user to the chat
-    return this.prisma.chatParticipant.create({
+    const participant = await this.prisma.chatParticipant.create({
       data: {
         chatId,
         userId,
       },
     });
+
+    // Emit real-time event for user joining chat
+    this.realtimeService.emitUserJoinedChat(chatId, userId);
+
+    return participant;
   }
 
   // Add user to all existing community group chats
@@ -534,8 +546,16 @@ export class ChatService {
             },
           },
         },
+        poll: {
+          include: {
+            options: true,
+          },
+        },
       },
     });
+
+    // Emit real-time event for new message
+    this.realtimeService.emitNewMessage(dto.chatId, message);
 
     return message;
   }
@@ -633,11 +653,52 @@ export class ChatService {
       data: optionsData,
     });
 
+    // Get the created options
+    const createdOptions = await this.prisma.pollOption.findMany({
+      where: { pollId: poll.id },
+    });
+
+    // Create a message in the chat for the poll
+    if (dto.chatId) {
+      const message = await this.prisma.message.create({
+        data: {
+          chatId: dto.chatId,
+          senderId: creatorId,
+          type: 'POLL',
+          content: questionTranslation, // Store poll question as message content
+          pollId: poll.id,
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              nationalId: true,
+              role: true,
+            },
+          },
+          poll: {
+            include: {
+              options: true,
+            },
+          },
+        },
+      });
+
+      // Emit real-time events for new poll
+      this.realtimeService.emitNewPoll(dto.chatId, {
+        id: poll.id,
+        chatId: dto.chatId,
+        question: questionTranslation,
+        options: createdOptions,
+        createdBy: creatorId,
+        createdAt: poll.createdAt,
+      });
+      this.realtimeService.emitNewMessage(dto.chatId, message);
+    }
+
     return {
       ...poll,
-      options: await this.prisma.pollOption.findMany({
-        where: { pollId: poll.id },
-      }),
+      options: createdOptions,
     };
   }
 
@@ -694,6 +755,18 @@ export class ChatService {
         voterId,
       })),
     });
+
+    // Emit real-time events for each vote
+    if (poll.chatId) {
+      for (const optionId of dto.optionIds) {
+        this.realtimeService.emitPollVote(
+          poll.chatId,
+          dto.pollId,
+          voterId,
+          optionId,
+        );
+      }
+    }
 
     return votes;
   }
