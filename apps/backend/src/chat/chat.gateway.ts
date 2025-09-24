@@ -86,9 +86,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = this.jwtService.verify(token);
       const userId = payload.id;
 
-      // Verify user has access to this chat
-      const chats = await this.chatService.getUserChats(userId);
-      const hasAccess = chats.some((chat) => chat.id === data.chatId);
+      let hasAccess = false;
+
+      // Check access based on user type
+      if (payload.serviceProviderId) {
+        // For service providers, get their chats
+        const chats = await this.chatService.getServiceProviderChats(userId);
+        hasAccess = chats.some((chat) => chat.id === data.chatId);
+      } else {
+        // For regular users, get their chats
+        const chats = await this.chatService.getUserChats(userId);
+        hasAccess = chats.some((chat) => chat.id === data.chatId);
+      }
 
       if (!hasAccess) {
         client.emit('error', { message: 'Access denied to this chat' });
@@ -98,6 +107,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await client.join(`chat:${data.chatId}`);
       client.emit('joined_chat', { chatId: data.chatId });
     } catch (error) {
+      console.error('Join chat error:', error);
       client.emit('error', { message: 'Failed to join chat' });
     }
   }
@@ -121,7 +131,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.handshake.auth.token ||
         client.handshake.headers.authorization?.replace('Bearer ', '');
       const payload = this.jwtService.verify(token);
-      const user = { id: payload.id, type: payload.type || 'user' };
+      const user = {
+        id: payload.id,
+        type: payload.serviceProviderId ? 'serviceProvider' : 'user',
+      };
 
       const message = await this.chatService.sendMessage(user, data);
 

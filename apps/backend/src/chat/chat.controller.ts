@@ -305,8 +305,24 @@ export class ChatController {
         const transformedChat = this.languageService.transformObjectForLanguage(
           chat,
           language,
-          ['name', 'community', 'job', 'messages'],
+          ['name', 'community', 'job'],
         );
+
+        // Transform messages array separately to avoid corruption
+        if (
+          transformedChat.messages &&
+          Array.isArray(transformedChat.messages)
+        ) {
+          transformedChat.messages = transformedChat.messages.map(
+            (message: any) => {
+              return this.languageService.transformObjectForLanguage(
+                message,
+                language,
+                ['content'],
+              );
+            },
+          );
+        }
 
         // Ensure community field is properly handled
         if (
@@ -374,8 +390,24 @@ export class ChatController {
         const transformedChat = this.languageService.transformObjectForLanguage(
           chat,
           language,
-          ['name', 'community', 'job', 'messages'],
+          ['name', 'community', 'job'],
         );
+
+        // Transform messages array separately to avoid corruption
+        if (
+          transformedChat.messages &&
+          Array.isArray(transformedChat.messages)
+        ) {
+          transformedChat.messages = transformedChat.messages.map(
+            (message: any) => {
+              return this.languageService.transformObjectForLanguage(
+                message,
+                language,
+                ['content'],
+              );
+            },
+          );
+        }
 
         // Ensure community field is properly handled
         if (

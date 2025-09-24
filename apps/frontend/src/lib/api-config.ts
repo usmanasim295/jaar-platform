@@ -1,4 +1,4 @@
-import { CONFIG } from "./config";
+import { CONFIG } from './config';
 
 // API Configuration
 export const API_CONFIG = {
@@ -10,41 +10,53 @@ export const API_CONFIG = {
 // API Endpoints
 export const API_ENDPOINTS = {
   // Authentication
-  SIGNUP: "/service-provider/signup",
-  SIGNIN: "/service-provider/login",
+  SIGNUP: '/service-provider/signup',
+  SIGNIN: '/service-provider/login',
 
   // Profile Setup Steps
-  STEP1: "/service-provider/step1",
-  STEP2: "/service-provider/step2",
-  STEP3: "/service-provider/step3",
-  STEP4: "/service-provider/step4",
-  STEP5: "/service-provider/step5",
-  STEP6: "/service-provider/step6",
-  STEP7: "/service-provider/step7",
+  STEP1: '/service-provider/step1',
+  STEP2: '/service-provider/step2',
+  STEP3: '/service-provider/step3',
+  STEP4: '/service-provider/step4',
+  STEP5: '/service-provider/step5',
+  STEP6: '/service-provider/step6',
+  STEP7: '/service-provider/step7',
 
   // Services
-  SERVICES: "/service",
+  SERVICES: '/service',
 
   // Profile
-  PROFILE: "/service-provider/profile",
+  PROFILE: '/service-provider/profile',
 
   // Jobs
-  JOBS: "/job",
-  JOB_DETAIL: "/job",
-  SERVICE_PROVIDER_JOBS: "/job/service-provider-jobs",
+  JOBS: '/job',
+  JOB_DETAIL: '/job',
+  SERVICE_PROVIDER_JOBS: '/job/service-provider-jobs',
 
   // Bids
-  BID: "/bid",
-  MY_BIDS: "/bid/my-bids",
+  BID: '/bid',
+  MY_BIDS: '/bid/my-bids',
 
   // Job Completion Requests
-  JOB_COMPLETION_REQUEST: "/job-completion-request",
-  MY_COMPLETION_REQUESTS: "/job-completion-request/my-requests",
+  JOB_COMPLETION_REQUEST: '/job-completion-request',
+  MY_COMPLETION_REQUESTS: '/job-completion-request/my-requests',
+
+  // Chat
+  USER_CHATS: 'chat/user-chats',
+  SERVICE_PROVIDER_CHATS: 'chat/service-provider/chats',
+  CHAT_MESSAGES: 'chat/message',
+  SEND_MESSAGE: 'chat/message',
+  UPLOAD_MESSAGE_FILE: 'chat/message/upload',
+  MARK_MESSAGES_READ: 'chat/chat',
+  UNREAD_COUNT: 'chat/unread-count',
+  CREATE_POLL: 'chat/poll',
+  VOTE_POLL: 'chat/poll/vote',
+  POLL_RESULTS: 'chat/poll',
 } as const;
 
 // Request Headers
 export const getHeaders = (token?: string) => ({
-  "Content-Type": "application/json",
+  'Content-Type': 'application/json',
   ...(token && { Authorization: `Bearer ${token}` }),
 });
 
