@@ -1,0 +1,15 @@
+export const Chats = {
+  communityMembers: 'chat/community/',
+  members: 'members',
+  onrToOneChat: 'chat/one-to-one',
+  userChats: 'chat/user-chats',
+  sendTextMessage: 'chat/message',
+  sendFileOrImage: 'chat/message/upload',
+  getChatMessages: 'chat/message/',
+  poll: 'chat/poll',
+  voteOnPole: 'chat/poll/vote',
+  pollResults: 'results',
+  chat: 'chat/chat/',
+  markRead: 'mark-read',
+  unreadCount: 'chat/unread-count',
+};

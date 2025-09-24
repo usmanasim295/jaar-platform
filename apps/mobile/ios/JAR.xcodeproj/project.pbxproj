@@ -46,6 +46,7 @@
 		D9B19B75D6174884AE226991 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52E2003C5C5E48298DD9BB8D /* PlusJakartaSans-Medium.ttf */; };
 		DD79A709E6CF4CE9A9A47498 /* PlusJakartaSans-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4211A06A1E9F4DACA48D21E4 /* PlusJakartaSans-ExtraLightItalic.ttf */; };
 		FA9BCE0F11324C35B86FAC08 /* AvenirNextCyr-Demi.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 130EA8B60FB1451A96AFDA6A /* AvenirNextCyr-Demi.ttf */; };
+		FACD8E13BA7223A4F7F5C426 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6028801792108A41BDD74E37 /* PrivacyInfo.xcprivacy */; };
 		FBB48040502A4AE2A004F595 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7326B1549C69418C8EB497E5 /* AvenirNextLTPro-Bold.otf */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +88,7 @@
 		4B5EEB37413647EAAEA1C0B5 /* PlusJakartaSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBoldItalic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		52E2003C5C5E48298DD9BB8D /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Medium.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
 		5CD140D40A63477A99FC19A3 /* PlusJakartaSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-Italic.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-Italic.ttf"; sourceTree = "<group>"; };
+		6028801792108A41BDD74E37 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = JAR/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		67B0CCD246E17DB7DD326810 /* Pods-JAR-JARTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JAR-JARTests.release.xcconfig"; path = "Target Support Files/Pods-JAR-JARTests/Pods-JAR-JARTests.release.xcconfig"; sourceTree = "<group>"; };
 		6BB53B7FB31741E89EF46965 /* AvenirNextCyr-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextCyr-Regular.ttf"; path = "../src/assets/fonts/AvenirNext/AvenirNextCyr-Regular.ttf"; sourceTree = "<group>"; };
 		6EF4A4E5FFC7450E9D62EB8B /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlusJakartaSans-SemiBold.ttf"; path = "../src/assets/fonts/Jakarta_Sans/PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				F73B4975A15E24CE885F41F6 /* PrivacyInfo.xcprivacy */,
+				6028801792108A41BDD74E37 /* PrivacyInfo.xcprivacy */,
 			);
 			name = JAR;
 			sourceTree = "<group>";
@@ -385,6 +388,7 @@
 				2FDCB1AD44C547B0ACCE4B10 /* PlusJakartaSans-Regular.ttf in Resources */,
 				D6C2873E285E402F8AF829F2 /* PlusJakartaSans-SemiBold.ttf in Resources */,
 				208E4C37239E4FEABC707257 /* PlusJakartaSans-SemiBoldItalic.ttf in Resources */,
+				FACD8E13BA7223A4F7F5C426 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -732,8 +736,11 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
@@ -805,8 +812,11 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
-				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
