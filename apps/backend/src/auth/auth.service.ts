@@ -16,6 +16,7 @@ import { ChangePasswordDto } from './dtos/change-password.dto';
 import { S3Service } from 'src/common/services/s3.service';
 import { ApartmentService } from 'src/apartment/apartment.service';
 import { TranslationService } from 'src/common/services/translation.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,7 @@ export class AuthService {
     private s3Service: S3Service,
     private apartmentService: ApartmentService,
     private translationService: TranslationService,
+    private chatService: ChatService,
   ) {}
 
   // Single signup method for all user types
@@ -179,12 +181,35 @@ export class AuthService {
       });
     }
 
+    // Create or get community and add user to it
+    let community: any = null;
+    if (apartmentRecord) {
+      community = await this.chatService.createOrGetCommunity(
+        dto.hoaNumber,
+        apartmentRecord.id,
+      );
+      await this.chatService.addUserToCommunity(user.id, dto.hoaNumber);
+
+      // Create or get community group chat and add user to it
+      if (community) {
+        const groupChat = await this.chatService.createCommunityGroupChat(
+          community.id,
+        );
+        // Add user to all existing community group chats (including the one just created/retrieved)
+        await this.chatService.addUserToAllCommunityGroupChats(
+          user.id,
+          community.id,
+        );
+      }
+    }
+
     const { password, ...userWithoutPassword } = user;
     return {
       message: 'User registered successfully',
       user: userWithoutPassword,
       documentUrl: s3Url,
       apartment: apartment || apartmentRecord,
+      community,
     };
   }
 

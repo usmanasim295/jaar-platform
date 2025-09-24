@@ -9,11 +9,13 @@ import { ApartmentModule } from 'src/apartment/apartment.module';
 import { S3Service } from 'src/common/services/s3.service';
 import { TranslationService } from 'src/common/services/translation.service';
 import { LanguageService } from 'src/common/services/language.service';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
   imports: [
     PrismaModule,
     ApartmentModule,
+    ChatModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

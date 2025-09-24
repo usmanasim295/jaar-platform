@@ -26,23 +26,31 @@ model User {
   // Home owner apartment assignment
   apartmentId String?
   apartment   Apartment? @relation("ApartmentOwner", fields: [apartmentId], references: [id])
+
+  // Chat relations
+  communityMemberships CommunityMember[]
+  chatParticipants     ChatParticipant[]
+  sentMessages         Message[]
+  createdPolls         Poll[]
+  pollVotes            PollVote[]
 }
 
 model Apartment {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      Json // Apartment name with translations {en: string, ar: string}
-  hoaNumber String   @unique // HOA number - unique across system
+  hoaNumber String     @unique // HOA number - unique across system
   address   Json // Full address with translations {en: string, ar: string}
   city      Json // City with translations {en: string, ar: string}
   state     Json? // State with translations {en: string, ar: string}
-  country   Json     @default("{\"en\": \"Saudi Arabia\", \"ar\": \"السعودية\"}")
+  country   Json       @default("{\"en\": \"Saudi Arabia\", \"ar\": \"السعودية\"}")
   leaderId  String? // User ID who is the leader (optional initially)
-  leader    User?    @relation("ApartmentLeader", fields: [leaderId], references: [id])
+  leader    User?      @relation("ApartmentLeader", fields: [leaderId], references: [id])
   houses    House[] // Multiple houses in this apartment
   jobs      Job[] // Jobs posted for this apartment
-  owners    User[]   @relation("ApartmentOwner") // Home owners belonging to this apartment
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  owners    User[]     @relation("ApartmentOwner") // Home owners belonging to this apartment
+  community Community? // One community per apartment
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model House {
@@ -82,6 +90,11 @@ model ServiceProvider {
   totalJobs          Int                    @default(0)
   bids               Bid[] // Bids made by this service provider
   completionRequests JobCompletionRequest[] // Completion requests made by this service provider
+
+  // Chat relations
+  chatParticipants ChatParticipant[]
+  sentMessages     Message[]
+  pollVotes        PollVote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -165,6 +178,7 @@ model Job {
   services           JobService[] // Multiple services for this job
   bids               Bid[] // Bids received for this job
   completionRequests JobCompletionRequest[] // Completion requests for this job
+  chats              Chat[] // Chats related to this job
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
 }
@@ -245,4 +259,151 @@ enum JobCompletionRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// Chat and Community Models
+model Community {
+  id          String            @id @default(uuid())
+  hoaNumber   String            @unique // One community per HOA number
+  name        Json // Community name with translations {en: string, ar: string}
+  apartmentId String            @unique
+  apartment   Apartment         @relation(fields: [apartmentId], references: [id])
+  members     CommunityMember[]
+  chats       Chat[]
+  polls       Poll[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model CommunityMember {
+  id          String        @id @default(uuid())
+  communityId String
+  community   Community     @relation(fields: [communityId], references: [id])
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  role        CommunityRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+
+  @@unique([communityId, userId])
+}
+
+enum CommunityRole {
+  LEADER
+  MEMBER
+}
+
+model Chat {
+  id           String            @id @default(uuid())
+  type         ChatType
+  name         Json? // Chat name with translations (for group chats)
+  communityId  String? // For community group chats
+  community    Community?        @relation(fields: [communityId], references: [id])
+  jobId        String? // For service provider chats
+  job          Job?              @relation(fields: [jobId], references: [id])
+  participants ChatParticipant[]
+  messages     Message[]
+  polls        Poll[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+enum ChatType {
+  COMMUNITY_GROUP // Community group chat
+  ONE_TO_ONE // Leader to homeowner chat
+  SERVICE_CHAT // Service provider chat
+}
+
+model ChatParticipant {
+  id                String           @id @default(uuid())
+  chatId            String
+  chat              Chat             @relation(fields: [chatId], references: [id])
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id])
+  serviceProviderId String?
+  serviceProvider   ServiceProvider? @relation(fields: [serviceProviderId], references: [id])
+  joinedAt          DateTime         @default(now())
+  lastReadAt        DateTime?
+
+  @@unique([chatId, userId])
+  @@unique([chatId, serviceProviderId])
+}
+
+model Message {
+  id                      String           @id @default(uuid())
+  chatId                  String
+  chat                    Chat             @relation(fields: [chatId], references: [id])
+  senderId                String?
+  sender                  User?            @relation(fields: [senderId], references: [id])
+  senderServiceProviderId String?
+  senderServiceProvider   ServiceProvider? @relation(fields: [senderServiceProviderId], references: [id])
+  type                    MessageType      @default(TEXT)
+  content                 Json? // Message content with translations {en: string, ar: string}
+  fileUrl                 String? // For file attachments
+  fileName                String? // Original file name
+  fileSize                Int? // File size in bytes
+  mimeType                String? // MIME type of the file
+  pollId                  String? // For poll messages
+  poll                    Poll?            @relation(fields: [pollId], references: [id])
+  replyToId               String? // For reply messages
+  replyTo                 Message?         @relation("MessageReply", fields: [replyToId], references: [id])
+  replies                 Message[]        @relation("MessageReply")
+  isEdited                Boolean          @default(false)
+  editedAt                DateTime?
+  isDeleted               Boolean          @default(false)
+  deletedAt               DateTime?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VOICE_NOTE
+  FILE
+  POLL
+  SYSTEM
+}
+
+model Poll {
+  id               String       @id @default(uuid())
+  communityId      String?
+  community        Community?   @relation(fields: [communityId], references: [id])
+  chatId           String?
+  chat             Chat?        @relation(fields: [chatId], references: [id])
+  question         Json // Poll question with translations {en: string, ar: string}
+  options          PollOption[]
+  votes            PollVote[]
+  messages         Message[]
+  isActive         Boolean      @default(true)
+  isMultipleChoice Boolean      @default(false)
+  expiresAt        DateTime?
+  createdBy        String
+  creator          User         @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model PollOption {
+  id        String     @id @default(uuid())
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id])
+  text      Json // Option text with translations {en: string, ar: string}
+  votes     PollVote[]
+  createdAt DateTime   @default(now())
+}
+
+model PollVote {
+  id                     String           @id @default(uuid())
+  pollId                 String
+  poll                   Poll             @relation(fields: [pollId], references: [id])
+  optionId               String
+  option                 PollOption       @relation(fields: [optionId], references: [id])
+  voterId                String?
+  voter                  User?            @relation(fields: [voterId], references: [id])
+  voterServiceProviderId String?
+  voterServiceProvider   ServiceProvider? @relation(fields: [voterServiceProviderId], references: [id])
+  createdAt              DateTime         @default(now())
+
+  @@unique([pollId, voterId])
+  @@unique([pollId, voterServiceProviderId])
 }
