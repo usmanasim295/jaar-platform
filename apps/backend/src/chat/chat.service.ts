@@ -430,10 +430,7 @@ export class ChatService {
         participants.push({ chatId: chat.id, userId: job.apartment.leader.id });
       }
     } else {
-      // Home service - both leader and job creator can chat
-      if (job.apartment.leader) {
-        participants.push({ chatId: chat.id, userId: job.apartment.leader.id });
-      }
+      // Home service - only job creator can chat
       participants.push({ chatId: chat.id, userId: job.creator.id });
     }
 
@@ -554,6 +551,31 @@ export class ChatService {
       },
     });
 
+    // Update sender's lastReadAt to prevent their own messages from being counted as unread
+    if (isServiceProvider) {
+      // For service providers, update their chat participant record
+      await this.prisma.chatParticipant.updateMany({
+        where: {
+          chatId: dto.chatId,
+          serviceProviderId: senderId,
+        },
+        data: {
+          lastReadAt: new Date(),
+        },
+      });
+    } else {
+      // For regular users, update their chat participant record
+      await this.prisma.chatParticipant.updateMany({
+        where: {
+          chatId: dto.chatId,
+          userId: senderId,
+        },
+        data: {
+          lastReadAt: new Date(),
+        },
+      });
+    }
+
     // Emit real-time event for new message
     this.realtimeService.emitNewMessage(dto.chatId, message);
 
@@ -595,6 +617,13 @@ export class ChatService {
                 id: true,
                 nationalId: true,
                 role: true,
+              },
+            },
+            senderServiceProvider: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
           },
@@ -835,7 +864,7 @@ export class ChatService {
       where: {
         participants: {
           some: {
-            userId,
+            OR: [{ userId }, { serviceProviderId: userId }],
           },
         },
       },
@@ -881,6 +910,13 @@ export class ChatService {
                 id: true,
                 nationalId: true,
                 role: true,
+              },
+            },
+            senderServiceProvider: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
           },
@@ -951,6 +987,13 @@ export class ChatService {
                 id: true,
                 nationalId: true,
                 role: true,
+              },
+            },
+            senderServiceProvider: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               },
             },
           },
@@ -1103,7 +1146,8 @@ export class ChatService {
 
   // Mark messages as read
   async markMessagesAsRead(userId: string, chatId: string) {
-    const participant = await this.prisma.chatParticipant.findUnique({
+    // First, try to find the participant as a regular user
+    let participant = await this.prisma.chatParticipant.findUnique({
       where: {
         chatId_userId: {
           chatId,
@@ -1111,28 +1155,62 @@ export class ChatService {
         },
       },
     });
+
+    // If not found as regular user, try as service provider
+    if (!participant) {
+      participant = await this.prisma.chatParticipant.findUnique({
+        where: {
+          chatId_serviceProviderId: {
+            chatId,
+            serviceProviderId: userId,
+          },
+        },
+      });
+    }
 
     if (!participant) {
       throw new NotFoundException('User not found in this chat');
     }
 
-    return this.prisma.chatParticipant.update({
-      where: {
-        chatId_userId: {
-          chatId,
-          userId,
+    // Update the participant's lastReadAt
+    if (participant.userId) {
+      // Update for regular user
+      return this.prisma.chatParticipant.update({
+        where: {
+          chatId_userId: {
+            chatId,
+            userId,
+          },
         },
-      },
-      data: {
-        lastReadAt: new Date(),
-      },
-    });
+        data: {
+          lastReadAt: new Date(),
+        },
+      });
+    } else if (participant.serviceProviderId) {
+      // Update for service provider
+      return this.prisma.chatParticipant.update({
+        where: {
+          chatId_serviceProviderId: {
+            chatId,
+            serviceProviderId: userId,
+          },
+        },
+        data: {
+          lastReadAt: new Date(),
+        },
+      });
+    }
+
+    throw new NotFoundException('Invalid participant record');
   }
 
   // Get unread message count
   async getUnreadCount(userId: string) {
+    // Get chats where user is a participant (either as regular user or service provider)
     const userChats = await this.prisma.chatParticipant.findMany({
-      where: { userId },
+      where: {
+        OR: [{ userId }, { serviceProviderId: userId }],
+      },
       include: {
         chat: true,
       },
@@ -1144,14 +1222,36 @@ export class ChatService {
     for (const participant of userChats) {
       const lastReadAt = participant.lastReadAt || new Date(0);
 
-      const unreadCount = await this.prisma.message.count({
+      // Get all unread messages in this chat
+      const unreadMessages = await this.prisma.message.findMany({
         where: {
           chatId: participant.chatId,
-          senderId: { not: userId },
           createdAt: { gt: lastReadAt },
+        },
+        select: {
+          senderId: true,
+          senderServiceProviderId: true,
         },
       });
 
+      // Filter out messages sent by this user (either as regular user or service provider)
+      const unreadFromOthers = unreadMessages.filter((message) => {
+        // If message has senderId, check if it's not from this user
+        if (message.senderId && message.senderId !== userId) {
+          return true;
+        }
+        // If message has senderServiceProviderId, check if it's not from this user
+        if (
+          message.senderServiceProviderId &&
+          message.senderServiceProviderId !== userId
+        ) {
+          return true;
+        }
+        // If message has no sender (shouldn't happen), exclude it
+        return false;
+      });
+
+      const unreadCount = unreadFromOthers.length;
       totalUnread += unreadCount;
       chatUnreadCounts[participant.chatId] = unreadCount;
     }
