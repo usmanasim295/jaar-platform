@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "JAR",
-  description: "HOA Web ",
+  description: "جار لإدارة المجتمعات السكنية و إتحادات الملاك",
   icons: "/assets/icons/SiteLogo.svg",
 };
 
