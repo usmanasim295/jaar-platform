@@ -152,6 +152,7 @@ export interface ChatMessage {
       ar: string;
     };
     options: PollOption[];
+    isMultipleChoice?: boolean;
   };
   isDeleted: boolean;
   createdAt: string;
