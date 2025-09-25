@@ -1,7 +1,7 @@
-"use client";
-import React, { useState } from "react";
-import Button from "@/components/ui/Button";
-import JobDetails from "@/components/modals/JobDetails";
+'use client';
+import React, { useState } from 'react';
+import Button from '@/components/ui/Button';
+import JobDetails from '@/components/modals/JobDetails';
 import {
   AlignBottom,
   CLeaning,
@@ -9,32 +9,34 @@ import {
   MapPin,
   Star,
   Clock,
+  CalenderBlank,
   AirConditionIcon,
   CleaningIcon,
   CableIcon,
   PlumberIcon,
   PainterIcon,
   PestControl,
-} from "@/components/assets/icons";
-import { Job } from "@/components/modals/type";
-import { tagIcons } from "@/components/modals/tagIcons";
-import { useTranslation } from "react-i18next";
-import { RouteProtection } from "@/components/RouteProtection";
-import { useAuth } from "@/contexts/AuthContext";
-import { useGetProfileQuery, useGetJobsQuery } from "@/store/api";
-import { useEffect } from "react";
-import i18n from "@/i18n";
-import type { ServiceProviderService, ServiceProviderRate } from "@/types/api";
-import type { Job as ApiJob } from "@/types/api";
+  Currency,
+} from '@/components/assets/icons';
+import { Job } from '@/components/modals/type';
+import { tagIcons } from '@/components/modals/tagIcons';
+import { useTranslation } from 'react-i18next';
+import { RouteProtection } from '@/components/RouteProtection';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGetProfileQuery, useGetJobsQuery } from '@/store/api';
+import { useEffect } from 'react';
+import i18n from '@/i18n';
+import type { ServiceProviderService, ServiceProviderRate } from '@/types/api';
+import type { Job as ApiJob } from '@/types/api';
 
 // Service icon mapping
 const serviceIconMap: Record<string, React.ElementType> = {
-  "AC Services": AirConditionIcon,
-  "Cleaning Services": CleaningIcon,
+  'AC Services': AirConditionIcon,
+  'Cleaning Services': CleaningIcon,
   Electrician: CableIcon,
   Plumber: PlumberIcon,
   Painter: PainterIcon,
-  "Pest Control": PestControl,
+  'Pest Control': PestControl,
 };
 
 // Check if current service provider has already bid on a job
@@ -44,23 +46,21 @@ const hasUserBidded = (
 ): boolean => {
   if (!currentUserId) return false;
   return (
-    job.bids?.some((bid) => bid.serviceProviderId === currentUserId) || false
+    job.bids?.some(bid => bid.serviceProviderId === currentUserId) || false
   );
 };
 
 // Get user's bid status for a job
 const getUserBidStatus = (job: ApiJob, currentUserId: string | undefined) => {
   if (!currentUserId) return null;
-  return (
-    job.bids?.find((bid) => bid.serviceProviderId === currentUserId) || null
-  );
+  return job.bids?.find(bid => bid.serviceProviderId === currentUserId) || null;
 };
 
 export default function Home() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -68,8 +68,8 @@ export default function Home() {
   // Get detailed profile data
   const { data: profileData, isLoading: isProfileLoading } = useGetProfileQuery(
     isAuthenticated && user
-      ? { serviceProviderId: user.id, lang: i18n.language as "en" | "ar" }
-      : { serviceProviderId: "", lang: "en" as "en" | "ar" },
+      ? { serviceProviderId: user.id, lang: i18n.language as 'en' | 'ar' }
+      : { serviceProviderId: '', lang: 'en' as 'en' | 'ar' },
     { skip: !isAuthenticated || !user }
   );
 
@@ -78,7 +78,7 @@ export default function Home() {
     data: jobsData,
     isLoading: isJobsLoading,
     refetch: refetchJobs,
-  } = useGetJobsQuery(i18n.language as "en" | "ar", { skip: !isAuthenticated });
+  } = useGetJobsQuery(i18n.language as 'en' | 'ar', { skip: !isAuthenticated });
 
   // Refetch jobs when component mounts or when returning from job details
   useEffect(() => {
@@ -96,10 +96,10 @@ export default function Home() {
         (now.getTime() - date.getTime()) / (1000 * 60 * 60)
       );
 
-      if (diffInHours < 1) return t("Just now");
-      if (diffInHours < 24) return `${diffInHours} ${t("hours ago")}`;
+      if (diffInHours < 1) return t('Just now');
+      if (diffInHours < 24) return `${diffInHours} ${t('hours ago')}`;
       const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 7) return `${diffInDays} ${t("days ago")}`;
+      if (diffInDays < 7) return `${diffInDays} ${t('days ago')}`;
       return date.toLocaleDateString();
     };
 
@@ -109,7 +109,7 @@ export default function Home() {
       id: apiJob.id,
       title: apiJob.title,
       desc: apiJob.description,
-      tags: apiJob.services.map((service) => service.service.name),
+      tags: apiJob.services.map(service => service.service.name),
       location: apiJob.location,
       posted: getTimeAgo(apiJob.createdAt),
       charges: apiJob.charges,
@@ -128,30 +128,30 @@ export default function Home() {
   const jobs = jobsData ? jobsData.map(transformJob) : [];
 
   const filteredJobs = jobs.filter(
-    (job) =>
+    job =>
       job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()))
+      job.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
   );
   return (
     <RouteProtection>
-      <div className="flex justify-center px-10  pt-8 gap-6 font-jakarta ">
+      <div className="flex justify-center px-10 pt-8 gap-6 font-jakarta min-h-screen">
         <title>Find Jobs</title>
         <div className="w-full max-w-[1300px] flex justify-between gap-6 flex-col-reverse lg:flex-row">
-          <div className="lg:w-[75%] ">
+          <div className="lg:w-[75%]">
             <div className="flex-1">
               <div className="relative w-full p-4 flex items-center gap-4 mb-6 text-(--grey-text) bg-(--light-grey) h-[50px] rounded-[10px]">
                 <MagnifyingGlass />
                 <input
                   type="text"
-                  placeholder={t("Search Jobs")}
+                  placeholder={t('Search Jobs')}
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={e => setSearch(e.target.value)}
                   className="w-full bg-(--light-grey) placeholder:typo-body pr-4 py-3 typo-body text-(--black) focus:outline-none"
                 />
               </div>
 
               <h2 className="text-(--primary-black) typo-heading3 sm:text-xl font-semibold mb-4">
-                {t("Find Jobs")}
+                {t('Find Jobs')}
               </h2>
 
               {/*  Job Cards */}
@@ -186,7 +186,7 @@ export default function Home() {
                   <div className="p-6 rounded-2xl shadow-dark bg-[#ffffff]">
                     <div className="flex justify-between items-start">
                       <h3 className="typo-heading3 font-semibold text-(--primary-black)">
-                        {t("No jobs found.")}
+                        {t('No jobs found.')}
                       </h3>
                     </div>
                   </div>
@@ -194,7 +194,7 @@ export default function Home() {
                   filteredJobs.map((job, idx) => {
                     // Get the original API job data for bidding status check
                     const originalJob = jobsData?.find(
-                      (apiJob) => apiJob.id === job.id
+                      apiJob => apiJob.id === job.id
                     );
                     const userBidStatus = originalJob
                       ? getUserBidStatus(originalJob, user?.id)
@@ -214,7 +214,7 @@ export default function Home() {
                           </h3>
                           <div className="flex flex-col items-end gap-1">
                             <span className="typo-small font-medium text-(--grey-text)">
-                              {t("Posted")} {job.posted}
+                              {t('Posted')} {job.posted}
                             </span>
                             {job.charges && (
                               <span className="typo-small font-semibold text-green-600">
@@ -223,7 +223,7 @@ export default function Home() {
                             )}
                             {hasBidded && userBidStatus && (
                               <span className="typo-small font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                                {t("Already Bidded")} -{" "}
+                                {t('Already Bidded')} -{' '}
                                 {t(userBidStatus.status)}
                               </span>
                             )}
@@ -236,45 +236,49 @@ export default function Home() {
                         {/* Additional job details */}
                         <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-600">
                           {job.workDuration && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {job.workDuration}
+                            <span className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">
+                                {job.workDuration}
+                              </span>
                             </span>
                           )}
                           {job.timeSlot && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {job.timeSlot}
+                            <span className="flex items-center gap-2">
+                              <Star className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">
+                                {job.timeSlot}
+                              </span>
                             </span>
                           )}
                           {job.jobType && (
                             <span
                               className={`px-2 py-1 rounded text-xs ${
-                                job.jobType === "COMMUNITY_SERVICE"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-green-100 text-green-800"
+                                job.jobType === 'COMMUNITY_SERVICE'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-green-100 text-green-800'
                               }`}
                             >
-                              {job.jobType === "COMMUNITY_SERVICE"
-                                ? t("Community Service")
-                                : t("Home Service")}
+                              {job.jobType === 'COMMUNITY_SERVICE'
+                                ? t('Community Service')
+                                : t('Home Service')}
                             </span>
                           )}
                           {job.status && (
                             <span
                               className={`px-2 py-1 rounded text-xs ${
-                                job.status === "OPEN"
-                                  ? "bg-green-100 text-green-800"
-                                  : job.status === "IN_PROGRESS"
-                                  ? "bg-orange-100 text-orange-800"
-                                  : job.status === "COMPLETED"
-                                  ? "bg-gray-100 text-gray-800"
-                                  : job.status === "CANCELLED"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-blue-100 text-blue-800"
+                                job.status === 'OPEN'
+                                  ? 'bg-green-100 text-green-800'
+                                  : job.status === 'IN_PROGRESS'
+                                    ? 'bg-orange-100 text-orange-800'
+                                    : job.status === 'COMPLETED'
+                                      ? 'bg-gray-100 text-gray-800'
+                                      : job.status === 'CANCELLED'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-blue-100 text-blue-800'
                               }`}
                             >
-                              {t(job.status.replace(/_/g, " "))}
+                              {t(job.status.replace(/_/g, ' '))}
                             </span>
                           )}
                         </div>
@@ -304,7 +308,7 @@ export default function Home() {
                             className={`!h-[35px] !w-[52px] !p-[10px] !text-xs !rounded-lg !font-medium `}
                           >
                             {/* {hasBidded ? t("View Bid") : t("View")} */}
-                            {t("View")}
+                            {t('View')}
                           </Button>
                         </div>
                       </div>
@@ -315,9 +319,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex lg:w-[25%] ">
-            <div className="w-full ">
-              <div className="sticky top-28 ">
+          <div className="lg:w-[25%] lg:pl-4">
+            <div className="w-full">
+              <div className="sticky top-24 space-y-6">
                 <div className="bg-(--white) p-6 rounded-2xl shadow-dark">
                   <div className="flex items-center gap-3 pb-6">
                     <div className="w-[60px] h-[60px] rounded-full bg-gray-200 overflow-hidden">
@@ -331,7 +335,7 @@ export default function Home() {
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
-                          {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                       )}
                     </div>
@@ -340,7 +344,7 @@ export default function Home() {
                         {isProfileLoading ? (
                           <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
                         ) : (
-                          profileData?.name || user?.name || "User"
+                          profileData?.name || user?.name || 'User'
                         )}
                       </div>
                       {profileData?.bio && (
@@ -353,7 +357,7 @@ export default function Home() {
                   <hr className="border-(--light-grey) w-[100%] " />
                   <div className="flex items-center text-(--primary) gap-2 font-semibold typo-label py-6">
                     <AlignBottom />
-                    <h3>{t("Statistics")}</h3>
+                    <h3>{t('Statistics')}</h3>
                   </div>
                   <div className="flex gap-2 font-medium typo-small items-center ">
                     <Star />
@@ -375,7 +379,7 @@ export default function Home() {
                         )}
                       </h2>
                       <p className="font-normal typo-small">
-                        {t("Total Earnings")}
+                        {t('Total Earnings')}
                       </p>
                     </div>
                     <div>
@@ -387,15 +391,15 @@ export default function Home() {
                         )}
                       </h2>
                       <p className="font-normal typo-small">
-                        {t("Total Jobs")}
+                        {t('Total Jobs')}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-(--white) p-6 rounded-lg shadow-dark mt-6 ">
+                <div className="bg-(--white) p-6 rounded-lg shadow-dark my-6 ">
                   <h4 className="font-semibold typo-heading3 mb-[18px] text-(--primary-black)">
-                    {t("Services Provided By You")}
+                    {t('Services Provided By You')}
                   </h4>
                   <div className="space-y-2">
                     {isProfileLoading ? (
@@ -406,8 +410,11 @@ export default function Home() {
                             key={i}
                             className="flex items-center p-4 border border-(--light-grey) rounded-lg gap-4"
                           >
-                            <div className="h-[32px] w-[32px] bg-gray-200 animate-pulse rounded" />
-                            <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
+                            <div className="w-12 h-12 bg-gray-200 animate-pulse rounded flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="h-4 w-24 bg-gray-200 animate-pulse rounded mb-1" />
+                              <div className="h-3 w-16 bg-gray-200 animate-pulse rounded" />
+                            </div>
                           </div>
                         ))
                     ) : profileData?.services &&
@@ -418,7 +425,7 @@ export default function Home() {
                           i: number
                         ) => {
                           const serviceName =
-                            serviceProviderService.service?.name || "Service";
+                            serviceProviderService.service?.name || 'Service';
                           const IconComponent =
                             serviceIconMap[serviceName] || CLeaning;
 
@@ -427,8 +434,10 @@ export default function Home() {
                               key={i}
                               className="flex items-center p-4 border border-(--light-grey) rounded-lg typo-body text-(--primary-black) gap-4"
                             >
-                              <IconComponent className="h-[32px] w-[32px]" />
-                              <div>
+                              <div className="flex-shrink-0 flex items-center justify-center w-12 h-12">
+                                <IconComponent className=" text-gray-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
                                 <p className="font-medium">{serviceName}</p>
                                 {profileData.serviceRates?.find(
                                   (rate: ServiceProviderRate) =>
@@ -454,7 +463,7 @@ export default function Home() {
                       )
                     ) : (
                       <div className="text-center text-gray-500 py-4">
-                        <p>{t("No services added yet")}</p>
+                        <p>{t('No services added yet')}</p>
                       </div>
                     )}
                   </div>

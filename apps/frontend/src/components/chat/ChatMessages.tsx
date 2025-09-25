@@ -13,6 +13,9 @@ import {
   MicIcon,
 } from 'lucide-react';
 import { socketService } from '@/lib/socket';
+// import { AudioPlayer } from './AudioPlayer'; // Commented out for testing video approach
+import { ImageModal } from './ImageModal';
+import { VideoModal } from './VideoModal';
 
 interface ChatMessagesProps {
   chat: Chat | null;
@@ -54,6 +57,20 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Modal states
+  const [imageModal, setImageModal] = useState<{
+    isOpen: boolean;
+    src: string;
+    alt?: string;
+    fileName?: string;
+  }>({ isOpen: false, src: '', alt: '', fileName: '' });
+
+  const [videoModal, setVideoModal] = useState<{
+    isOpen: boolean;
+    src: string;
+    fileName?: string;
+  }>({ isOpen: false, src: '', fileName: '' });
 
   // Handle typing indicators
   const handleTypingStart = () => {
@@ -349,15 +366,27 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   // Render message content based on type
   const renderMessageContent = (message: ChatMessage) => {
+    console.log('🎨 Rendering message:', {
+      type: message.type,
+      mimeType: message.mimeType,
+      fileUrl: message.fileUrl,
+    });
     switch (message.type) {
       case 'IMAGE':
         return (
           <div className="space-y-2">
             <img
               src={message.fileUrl}
-              alt="Shared image"
+              alt={message.fileName || 'Shared image'}
               className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => window.open(message.fileUrl, '_blank')}
+              onClick={() =>
+                setImageModal({
+                  isOpen: true,
+                  src: message.fileUrl || '',
+                  alt: message.fileName || 'Shared image',
+                  fileName: message.fileName || 'image',
+                })
+              }
             />
             {getMessageContent(message) && (
               <p className="text-sm">{getMessageContent(message)}</p>
@@ -368,23 +397,30 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       case 'VOICE_NOTE':
         return (
           <div className="space-y-2">
-            <div className="flex items-center gap-3 p-3 bg-gray-100 rounded-lg">
-              <button
-                onClick={() => {
-                  const audio = new Audio(message.fileUrl);
-                  audio.play().catch(console.error);
-                }}
-                className="flex items-center justify-center w-8 h-8 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
-              >
-                <Mic className="w-4 h-4" />
-              </button>
-              <div className="flex-1">
-                <span className="text-sm font-medium">Voice note</span>
-                {message.fileName && (
-                  <p className="text-xs text-gray-500">{message.fileName}</p>
-                )}
-              </div>
-            </div>
+            {/* AudioPlayer - commented out for testing video approach */}
+            {/* <AudioPlayer
+              src={message.fileUrl || ''}
+              fileName={message.fileName || 'Voice Note'}
+              className="max-w-xs"
+            /> */}
+
+            {/* Video element for audio playback - browser handles WebM audio better */}
+            <video
+              controls
+              className="max-w-xs rounded-lg"
+              style={{
+                height: '40px',
+                width: '250px',
+                backgroundColor: '#f3f4f6',
+              }}
+            >
+              <source
+                src={message.fileUrl || ''}
+                type={message.mimeType || 'audio/webm'}
+              />
+              Your browser does not support the audio element.
+            </video>
+
             {getMessageContent(message) && (
               <p className="text-sm">{getMessageContent(message)}</p>
             )}
@@ -402,8 +438,15 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
               <video
                 src={message.fileUrl}
                 controls
-                className="max-w-xs rounded-lg"
+                className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                 preload="metadata"
+                onClick={() =>
+                  setVideoModal({
+                    isOpen: true,
+                    src: message.fileUrl || '',
+                    fileName: message.fileName || 'Video',
+                  })
+                }
               >
                 Your browser does not support the video tag.
               </video>
@@ -417,14 +460,30 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         if (isAudio) {
           return (
             <div className="space-y-2">
-              <audio
-                src={message.fileUrl}
+              {/* AudioPlayer - commented out for testing video approach */}
+              {/* <AudioPlayer
+                src={message.fileUrl || ''}
+                fileName={message.fileName || 'Voice Note'}
+                className="max-w-xs"
+              /> */}
+
+              {/* Video element for audio playback - browser handles WebM audio better */}
+              <video
                 controls
-                className="w-full max-w-xs"
-                preload="metadata"
+                className="max-w-xs rounded-lg"
+                style={{
+                  height: '40px',
+                  width: '250px',
+                  backgroundColor: '#f3f4f6',
+                }}
               >
-                Your browser does not support the audio tag.
-              </audio>
+                <source
+                  src={message.fileUrl || ''}
+                  type={message.mimeType || 'audio/webm'}
+                />
+                Your browser does not support the audio element.
+              </video>
+
               {getMessageContent(message) && (
                 <p className="text-sm">{getMessageContent(message)}</p>
               )}
@@ -439,7 +498,14 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 src={message.fileUrl}
                 alt={message.fileName || 'Shared image'}
                 className="max-w-xs rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => window.open(message.fileUrl, '_blank')}
+                onClick={() =>
+                  setImageModal({
+                    isOpen: true,
+                    src: message.fileUrl || '',
+                    alt: message.fileName || 'Shared image',
+                    fileName: message.fileName || 'image',
+                  })
+                }
               />
               {getMessageContent(message) && (
                 <p className="text-sm">{getMessageContent(message)}</p>
@@ -763,6 +829,23 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         className="hidden"
         onChange={handleFileUpload}
         accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+      />
+
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={imageModal.isOpen}
+        onClose={() => setImageModal(prev => ({ ...prev, isOpen: false }))}
+        src={imageModal.src}
+        alt={imageModal.alt}
+        fileName={imageModal.fileName}
+      />
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={videoModal.isOpen}
+        onClose={() => setVideoModal(prev => ({ ...prev, isOpen: false }))}
+        src={videoModal.src}
+        fileName={videoModal.fileName}
       />
     </div>
   );
