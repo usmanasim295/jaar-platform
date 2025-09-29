@@ -7,26 +7,24 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json* ./
+COPY package.json ./
 # Install dependencies based on the preferred package manager
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 
 COPY . .
 
 # Build-time environment variables (for NEXT_PUBLIC_ variables)
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_DEFAULT_LANGUAGE
-ARG NEXT_PUBLIC_WS_BASE_URL
 
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_DEFAULT_LANGUAGE=$NEXT_PUBLIC_DEFAULT_LANGUAGE
-ENV NEXT_PUBLIC_WS_BASE_URL=$NEXT_PUBLIC_WS_BASE_URL
 
 # Build the application
 RUN npm run build
@@ -70,8 +68,8 @@ WORKDIR /app
 ENV NODE_ENV=development
 
 # Copy package files and install all dependencies (including dev)
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 
 # Copy source code
 COPY . .

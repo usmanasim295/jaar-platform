@@ -16,7 +16,7 @@ class SocketService {
         return;
       }
 
-      this.socket = io(CONFIG.WS_BASE_URL || 'ws://localhost:3000', {
+      this.socket = io(CONFIG.WS_BASE_URL, {
         auth: {
           token,
         },

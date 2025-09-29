@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client'],
   },
+  devIndicators: false,
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,

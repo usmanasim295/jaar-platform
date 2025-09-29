@@ -284,7 +284,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       <div className="flex items-center gap-3">
         <button
           onClick={togglePlayPause}
-          className="flex-shrink-0 w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center text-white transition-colors disabled:opacity-50"
+          className="flex-shrink-0 w-10 h-10 bg-(--primary) hover:opacity-90 rounded-full flex items-center justify-center text-white transition-colors disabled:opacity-50"
           disabled={!isLoaded}
           title={!isLoaded ? 'Loading...' : ''}
         >
