@@ -326,6 +326,18 @@ export const useChatMessages = (chatId: string | null) => {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  // Helper function to deduplicate messages by ID
+  const deduplicateMessages = (messages: ChatMessage[]): ChatMessage[] => {
+    const seen = new Set<string>();
+    return messages.filter(message => {
+      if (seen.has(message.id)) {
+        return false;
+      }
+      seen.add(message.id);
+      return true;
+    });
+  };
+
   // Fetch messages for a specific chat
   const fetchMessages = useCallback(
     async (cursor?: string, append = false) => {
@@ -338,7 +350,7 @@ export const useChatMessages = (chatId: string | null) => {
         const params = new URLSearchParams({
           page: '1',
           limit: '50',
-          order: 'asc',
+          order: 'desc',
           lang: API_CONFIG.DEFAULT_LANGUAGE || 'en',
           ...(cursor && { cursor }),
         });
@@ -358,11 +370,14 @@ export const useChatMessages = (chatId: string | null) => {
         const data = await response.json();
 
         if (append) {
-          // For ascending order, prepend older messages to the beginning
-          setMessages(prev => [...data.messages, ...prev]);
+          // For descending order, append older messages to the end, avoiding duplicates
+          setMessages(prev => {
+            const combined = [...prev, ...data.messages];
+            return deduplicateMessages(combined);
+          });
         } else {
-          // Initial load - set messages as they come
-          setMessages(data.messages || []);
+          // Initial load - set messages as they come (newest first)
+          setMessages(deduplicateMessages(data.messages || []));
 
           // Auto-scroll to bottom when initially loading messages
           setTimeout(() => {
@@ -592,9 +607,11 @@ export const useChatMessages = (chatId: string | null) => {
   const addMessage = useCallback((message: ChatMessage) => {
     console.log('🎯 useChatMessages - Adding message:', message);
     setMessages(prev => {
-      const newMessages = [...prev, message];
-      console.log('📝 useChatMessages - Updated messages:', newMessages);
-      return newMessages;
+      // Add new message to the beginning since we're using descending order
+      const newMessages = [message, ...prev];
+      const deduplicated = deduplicateMessages(newMessages);
+      console.log('📝 useChatMessages - Updated messages:', deduplicated);
+      return deduplicated;
     });
 
     // Scroll to bottom

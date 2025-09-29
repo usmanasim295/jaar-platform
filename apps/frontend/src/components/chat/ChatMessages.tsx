@@ -16,6 +16,7 @@ import { socketService } from '@/lib/socket';
 // import { AudioPlayer } from './AudioPlayer'; // Commented out for testing video approach
 import { ImageModal } from './ImageModal';
 import { VideoModal } from './VideoModal';
+import ImageCollage from './ImageCollage';
 
 interface ChatMessagesProps {
   chat: Chat | null;
@@ -57,6 +58,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const recordingTimeRef = useRef(0);
 
   // Modal states
   const [imageModal, setImageModal] = useState<{
@@ -118,14 +120,18 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   // Handle file upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !chat) return;
+    const files = e.target.files;
+    if (!files || !chat) return;
 
     setIsUploading(true);
     try {
-      await onUploadFile(file, `Shared ${file.name}`);
+      // Upload all selected files
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        await onUploadFile(file, `Shared ${file.name}`);
+      }
     } catch (error) {
-      console.error('Failed to upload file:', error);
+      console.error('Failed to upload files:', error);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -195,6 +201,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       mediaRecorder.onstop = async () => {
         console.log('Recording stopped, processing audio...');
 
+        // Clear the recording state - timer will be cleared by useEffect
+        setIsRecording(false);
+        setRecordingTime(0);
+        recordingTimeRef.current = 0;
+
         if (audioChunksRef.current.length === 0) {
           console.error('No audio data recorded');
           alert('No audio was recorded. Please try again.');
@@ -241,20 +252,19 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         alert('Recording error occurred. Please try again.');
         setIsRecording(false);
         setRecordingTime(0);
-        if (recordingIntervalRef.current) {
-          clearInterval(recordingIntervalRef.current);
-        }
+        recordingTimeRef.current = 0;
+        // Timer will be cleared by useEffect
       };
 
       // Start recording with timeslice for better data handling
       mediaRecorder.start(1000); // Collect data every second
       setIsRecording(true);
       setRecordingTime(0);
+      recordingTimeRef.current = 0;
+      console.log('Recording state set to true, timer started');
 
-      // Start recording timer
-      recordingIntervalRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
+      // Timer will be handled by useEffect
+      console.log('Recording timer will be handled by useEffect');
 
       console.log('Recording started successfully');
     } catch (error) {
@@ -285,19 +295,18 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     if (mediaRecorderRef.current && isRecording) {
       try {
         console.log('Stopping recording...');
+        console.log('Current timer interval ID:', recordingIntervalRef.current);
         mediaRecorderRef.current.stop();
-        setIsRecording(false);
-        setRecordingTime(0);
-
-        if (recordingIntervalRef.current) {
-          clearInterval(recordingIntervalRef.current);
-        }
+        // Don't set isRecording to false here - let the onstop event handle it
+        // This ensures the timer keeps running until the recording is actually processed
       } catch (error) {
         console.error('Error stopping recording:', error);
         setIsRecording(false);
         setRecordingTime(0);
+        recordingTimeRef.current = 0;
 
         if (recordingIntervalRef.current) {
+          console.log('Clearing timer interval due to error:', recordingIntervalRef.current);
           clearInterval(recordingIntervalRef.current);
         }
       }
@@ -362,6 +371,42 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
     }
     return `https://ui-avatars.com/api/?name=User&background=random`;
+  };
+
+  // Group consecutive image messages for collage display
+  const groupConsecutiveImages = (messages: ChatMessage[]) => {
+    const grouped: (ChatMessage | ChatMessage[])[] = [];
+    let currentImageGroup: ChatMessage[] = [];
+
+    for (let i = 0; i < messages.length; i++) {
+      const message = messages[i];
+      const isImage = message.type === 'IMAGE';
+      const isFromSameUser =
+        currentImageGroup.length > 0 &&
+        isCurrentUserMessage(message) ===
+          isCurrentUserMessage(currentImageGroup[0]);
+
+      if (isImage && isFromSameUser) {
+        currentImageGroup.push(message);
+      } else {
+        if (currentImageGroup.length > 0) {
+          grouped.push(currentImageGroup);
+          currentImageGroup = [];
+        }
+
+        if (isImage) {
+          currentImageGroup = [message];
+        } else {
+          grouped.push(message);
+        }
+      }
+    }
+
+    if (currentImageGroup.length > 0) {
+      grouped.push(currentImageGroup);
+    }
+
+    return grouped;
   };
 
   // Render message content based on type
@@ -460,7 +505,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         if (isAudio) {
           return (
             <div className="space-y-2">
-              {/* AudioPlayer - commented out for testing video approach */}
+              {/* AudioPlayer - commented out for testing video tag */}
               {/* <AudioPlayer
                 src={message.fileUrl || ''}
                 fileName={message.fileName || 'Voice Note'}
@@ -529,7 +574,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
               </div>
               <button
                 onClick={() => window.open(message.fileUrl, '_blank')}
-                className="px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 transition-colors"
+                className="px-3 py-1 bg-(--primary) text-white text-xs rounded hover:opacity-90 transition-colors"
               >
                 Download
               </button>
@@ -595,6 +640,46 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       }
     };
   }, []);
+
+  // Timer effect for recording
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | undefined;
+    
+    if (isRecording) {
+      console.log('Starting timer effect for recording...');
+      intervalId = setInterval(() => {
+        console.log('Timer effect fired! Current recordingTimeRef:', recordingTimeRef.current);
+        recordingTimeRef.current += 1;
+        console.log('Updated recordingTimeRef to:', recordingTimeRef.current);
+        setRecordingTime(recordingTimeRef.current);
+        console.log('State updated with recordingTime:', recordingTimeRef.current);
+      }, 1000);
+      console.log('Timer effect interval set up with ID:', intervalId);
+    }
+
+    return () => {
+      if (intervalId) {
+        console.log('Clearing timer effect interval:', intervalId);
+        clearInterval(intervalId);
+      }
+    };
+  }, [isRecording]);
+
+  useEffect(() => {
+    if (isRecording || typingUsers.size > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [isRecording, typingUsers.size]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [messages.length]);
 
   // Cleanup recording on unmount
   useEffect(() => {
@@ -664,7 +749,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           <button
             onClick={handleSendMessage}
             disabled={!messageInput.trim() || isUploading}
-            className="bg-orange-500 p-2 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-(--primary) p-2 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5 text-white" />
           </button>
@@ -676,6 +761,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           className="hidden"
           onChange={handleFileUpload}
           accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+          multiple
         />
       </div>
     );
@@ -694,46 +780,104 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           </button>
         )}
 
-        {messages.map(message => (
-          <div
-            key={message.id}
-            className={`flex items-start gap-2 ${
-              isCurrentUserMessage(message) ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            {!isCurrentUserMessage(message) && (
-              <img
-                src={getSenderAvatar(message)}
-                alt={getSenderName(message)}
-                width={24}
-                height={24}
-                className="rounded-full shrink-0"
-              />
-            )}
+        {groupConsecutiveImages([...messages].reverse()).map(
+          (messageOrGroup, index) => {
+            // Handle grouped images
+            if (Array.isArray(messageOrGroup)) {
+              const firstMessage = messageOrGroup[0];
+              const isCurrentUser = isCurrentUserMessage(firstMessage);
 
-            <div
-              className={`max-w-[85%] p-3 rounded-xl typo-body font-normal break-words leading-5 ${
-                isCurrentUserMessage(message)
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-900'
-              }`}
-            >
-              {renderMessageContent(message)}
+              return (
+                <div
+                  key={`group-${firstMessage.id}`}
+                  className={`flex items-start gap-2 ${
+                    isCurrentUser ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  {!isCurrentUser && (
+                    <img
+                      src={getSenderAvatar(firstMessage)}
+                      alt={getSenderName(firstMessage)}
+                      width={24}
+                      height={24}
+                      className="rounded-full shrink-0"
+                    />
+                  )}
 
+                  <div
+                    className={`max-w-[85%] p-3 rounded-xl typo-body font-normal break-words leading-5 ${
+                      isCurrentUser
+                        ? 'bg-(--primary) text-white'
+                        : 'bg-gray-100 text-gray-900'
+                    }`}
+                  >
+                    <ImageCollage
+                      images={messageOrGroup.map(msg => ({
+                        src: msg.fileUrl || '',
+                        alt: msg.fileName || 'Shared image',
+                        fileName: msg.fileName || 'image',
+                      }))}
+                      className="max-w-xs"
+                    />
+
+                    <div
+                      className={`typo-small mt-2.5 leading-4 ${
+                        isCurrentUser ? 'text-white/80' : 'text-gray-500'
+                      }`}
+                    >
+                      {formatMessageTime(firstMessage.createdAt)}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Handle single message
+            const message = messageOrGroup;
+            return (
               <div
-                className={`typo-small mt-2.5 leading-4 ${
+                key={message.id}
+                className={`flex items-start gap-2 ${
                   isCurrentUserMessage(message)
-                    ? 'text-white/80'
-                    : 'text-gray-500'
+                    ? 'justify-end'
+                    : 'justify-start'
                 }`}
               >
-                {formatMessageTime(message.createdAt)}
-              </div>
-            </div>
-          </div>
-        ))}
+                {!isCurrentUserMessage(message) && (
+                  <img
+                    src={getSenderAvatar(message)}
+                    alt={getSenderName(message)}
+                    width={24}
+                    height={24}
+                    className="rounded-full shrink-0"
+                  />
+                )}
 
-        {/* Recording indicator */}
+                <div
+                  className={`max-w-[85%] p-3 rounded-xl typo-body font-normal break-words leading-5 ${
+                    isCurrentUserMessage(message)
+                      ? 'bg-(--primary) text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  {renderMessageContent(message)}
+
+                  <div
+                    className={`text-[11px] mt-2.5 leading-0 text-end ${
+                      isCurrentUserMessage(message)
+                        ? 'text-white/80'
+                        : 'text-gray-500'
+                    }`}
+                  >
+                    {formatMessageTime(message.createdAt)}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+        )}
+
+        {/* Recording indicator - aligned with chat messages */}
         {isRecording && (
           <div className="flex items-start gap-2 justify-end">
             <div className="max-w-[85%] p-3 rounded-xl bg-red-100 border border-red-200">
@@ -742,6 +886,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 <span className="text-sm text-red-700 font-medium">
                   Recording... {formatRecordingTime(recordingTime)}
                 </span>
+                <button
+                  onClick={stopRecording}
+                  className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"
+                >
+                  Stop
+                </button>
               </div>
             </div>
           </div>
@@ -789,31 +939,38 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           >
             <Paperclip className="w-5 h-5" />
           </button>
-          <button
-            onMouseDown={startRecording}
-            onMouseUp={stopRecording}
-            onMouseLeave={stopRecording}
-            onTouchStart={startRecording}
-            onTouchEnd={stopRecording}
-            className={`cursor-pointer p-2 rounded-full transition-all duration-200 ${
-              isRecording
-                ? 'bg-red-500 text-white animate-pulse'
-                : 'hover:bg-gray-200 text-gray-600'
-            }`}
-            disabled={isUploading}
-            title={
-              isRecording
-                ? `Recording... ${formatRecordingTime(recordingTime)}`
-                : 'Hold to record voice note'
-            }
-          >
-            <Mic className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
-          </button>
+          <div className="relative">
+            <button
+              onMouseDown={startRecording}
+              onMouseUp={stopRecording}
+              onMouseLeave={stopRecording}
+              onTouchStart={startRecording}
+              onTouchEnd={stopRecording}
+              className={`cursor-pointer p-2 rounded-full transition-all duration-200 ${
+                isRecording
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'hover:bg-gray-200 text-gray-600'
+              }`}
+              disabled={isUploading}
+              title={
+                isRecording
+                  ? `Recording... ${formatRecordingTime(recordingTime)} - Click Stop to finish`
+                  : 'Hold to record voice note'
+              }
+            >
+              <Mic className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
+            </button>
+            {isRecording && (
+              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                {formatRecordingTime(recordingTime)}
+              </span>
+            )}
+          </div>
         </div>
         <button
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || isUploading}
-          className="bg-orange-500 p-2 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-(--primary) p-2 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isUploading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -829,6 +986,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         className="hidden"
         onChange={handleFileUpload}
         accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+        multiple
       />
 
       {/* Image Modal */}

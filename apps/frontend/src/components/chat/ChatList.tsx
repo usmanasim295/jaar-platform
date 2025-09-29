@@ -187,7 +187,7 @@ export const ChatList: React.FC<ChatListProps> = ({
             onClick={() => setActiveTab(tab)}
             className={`px-3 py-1 rounded-[6px] typo-body font-medium transition-colors duration-200 ${
               tab === activeTab
-                ? 'bg-orange-500 text-white'
+                ? 'bg-(--primary) text-white'
                 : 'text-[#333333] hover:bg-gray-100'
             }`}
           >
@@ -277,7 +277,7 @@ export const ChatList: React.FC<ChatListProps> = ({
                         {getChatDisplayName(chat)}
                       </p>
                       <span className="text-xs text-gray-400 shrink-0 ml-2">
-                        {formatTime(chat.updatedAt)}
+                        {formatTime(chat.messages[0].updatedAt)}
                       </span>
                     </div>
                     <p className="typo-body font-normal text-[#808080] truncate">
