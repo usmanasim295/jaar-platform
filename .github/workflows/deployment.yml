@@ -12,7 +12,7 @@ env:
   FRONTEND_REPO: hoa-fe
   ECS_CLUSTER: dev-app-cluster
   BACKEND_SERVICE: hoa-be-service
-  FRONTEND_SERVICE: hoa-fe-service
+  FRONTEND_SERVICE: hoe-fe-service
 
 jobs:
   backend:
