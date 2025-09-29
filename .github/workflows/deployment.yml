@@ -1,0 +1,111 @@
+name: Deploy to AWS ECS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: eu-north-1
+  ECR_REGISTRY: 050451372957.dkr.ecr.eu-north-1.amazonaws.com
+  BACKEND_REPO: hoa-be
+  FRONTEND_REPO: hoa-fe
+  ECS_CLUSTER: dev-app-cluster
+  BACKEND_SERVICE: hoa-be-service
+  FRONTEND_SERVICE: hoa-fe-service
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'skip-be') == false
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if backend changed
+        id: backend-check
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+
+      - name: Stop if backend not changed
+        if: steps.backend-check.outputs.backend != 'true'
+        run: exit 0
+
+      - name: Configure AWS credentials
+        if: steps.backend-check.outputs.backend == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        if: steps.backend-check.outputs.backend == 'true'
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push backend image
+        if: steps.backend-check.outputs.backend == 'true'
+        run: |
+          docker build -t $ECR_REGISTRY/$BACKEND_REPO:latest .
+          docker push $ECR_REGISTRY/$BACKEND_REPO:latest
+
+      - name: Deploy backend to ECS
+        if: steps.backend-check.outputs.backend == 'true'
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $BACKEND_SERVICE \
+            --force-new-deployment
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if frontend changed
+        id: frontend-check
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend/**'
+
+      - name: Stop if frontend not changed
+        if: steps.frontend-check.outputs.frontend != 'true'
+        run: exit 0
+
+      - name: Configure AWS credentials
+        if: steps.frontend-check.outputs.frontend == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        if: steps.frontend-check.outputs.frontend == 'true'
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push frontend image
+        if: steps.frontend-check.outputs.frontend == 'true'
+        run: |
+          docker build -t $ECR_REGISTRY/$FRONTEND_REPO:latest .
+          docker push $ECR_REGISTRY/$FRONTEND_REPO:latest
+
+      - name: Deploy frontend to ECS
+        if: steps.frontend-check.outputs.frontend == 'true'
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $FRONTEND_SERVICE \
+            --force-new-deployment
