@@ -1,0 +1,85 @@
+name: Deploy to AWS ECS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/backend/**"
+      - "apps/frontend/**"
+
+env:
+  AWS_REGION: eu-north-1 
+  ECR_REGISTRY: 050451372957.dkr.ecr.us-east-1.amazonaws.com
+  BACKEND_REPO: hoa-be
+  FRONTEND_REPO: hoa-fe
+  ECS_CLUSTER: dev-app-cluster
+  BACKEND_SERVICE: hoa-be-service
+  FRONTEND_SERVICE: hoa-fe-service
+
+jobs:
+  backend:
+    if: contains(github.event.head_commit.message, 'backend') || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push backend image
+        run: |
+          docker build -t $ECR_REGISTRY/$BACKEND_REPO:latest .
+          docker push $ECR_REGISTRY/$BACKEND_REPO:latest
+
+      - name: Deploy backend to ECS
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $BACKEND_SERVICE \
+            --force-new-deployment
+
+  frontend:
+    if: contains(github.event.head_commit.message, 'frontend') || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push frontend image
+        run: |
+          docker build -t $ECR_REGISTRY/$FRONTEND_REPO:latest .
+          docker push $ECR_REGISTRY/$FRONTEND_REPO:latest
+
+      - name: Deploy frontend to ECS
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $FRONTEND_SERVICE \
+            --force-new-deployment
