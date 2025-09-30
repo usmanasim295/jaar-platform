@@ -441,6 +441,166 @@ export class ChatService {
     return chat;
   }
 
+  // Service provider initiates chat (from their bids)
+  async initiateServiceProviderChat(jobId: string, serviceProviderId: string) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        apartment: {
+          include: { leader: true },
+        },
+        creator: true,
+        bids: {
+          where: { serviceProviderId },
+          select: { id: true, status: true },
+        },
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    // Verify the service provider has a bid for this job
+    if (!job.bids || job.bids.length === 0) {
+      throw new ForbiddenException(
+        'You must have a bid on this job to initiate a chat',
+      );
+    }
+
+    // Check if chat already exists for this job and service provider
+    const existingChat = await this.prisma.chat.findFirst({
+      where: {
+        jobId,
+        type: ChatType.SERVICE_CHAT,
+        participants: {
+          some: {
+            serviceProviderId,
+          },
+        },
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+            serviceProvider: {
+              select: {
+                id: true,
+                name: true,
+                profilePictureUrl: true,
+              },
+            },
+          },
+        },
+        job: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (existingChat) {
+      return existingChat;
+    }
+
+    // Get service provider details for chat name
+    const serviceProvider = await this.prisma.serviceProvider.findUnique({
+      where: { id: serviceProviderId },
+      select: { name: true },
+    });
+
+    if (!serviceProvider) {
+      throw new NotFoundException('Service provider not found');
+    }
+
+    // Create chat name with service provider name
+    const serviceProviderName = serviceProvider.name as any;
+    const displayName =
+      serviceProviderName?.en || serviceProviderName?.ar || 'Service Provider';
+
+    const chatName = await this.translationService.createTranslationObject(
+      `Service Chat - ${displayName}`,
+    );
+
+    const chat = await this.prisma.chat.create({
+      data: {
+        type: ChatType.SERVICE_CHAT,
+        name: chatName,
+        jobId,
+      },
+    });
+
+    // Add participants based on job type
+    const participants: any[] = [{ chatId: chat.id, serviceProviderId }];
+
+    if (job.jobType === 'COMMUNITY_SERVICE') {
+      // For community service, chat with the leader
+      if (!job.apartment.leader) {
+        // Cleanup if no leader found
+        await this.prisma.chat.delete({ where: { id: chat.id } });
+        throw new NotFoundException(
+          'Leader not found for this community service job',
+        );
+      }
+      participants.push({ chatId: chat.id, userId: job.apartment.leader.id });
+    } else if (job.jobType === 'HOME_SERVICE') {
+      // For home service, chat with the job creator (home owner)
+      if (!job.creator) {
+        // Cleanup if no creator found
+        await this.prisma.chat.delete({ where: { id: chat.id } });
+        throw new NotFoundException(
+          'Job creator not found for this home service job',
+        );
+      }
+      participants.push({ chatId: chat.id, userId: job.creator.id });
+    }
+
+    await this.prisma.chatParticipant.createMany({
+      data: participants,
+    });
+
+    // Return the chat with full details
+    return this.prisma.chat.findUnique({
+      where: { id: chat.id },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
+            serviceProvider: {
+              select: {
+                id: true,
+                name: true,
+                profilePictureUrl: true,
+              },
+            },
+          },
+        },
+        job: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+          },
+        },
+      },
+    });
+  }
+
   // Message Management
   async sendMessage(
     sender: any,

@@ -53,6 +53,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [isSending, setIsSending] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -76,9 +78,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   // Handle typing indicators
   const handleTypingStart = () => {
-    if (!chat || !isTyping) {
+    if (!chat) return;
+
+    // Only send typing start if we're not already typing
+    if (!isTyping) {
       setIsTyping(true);
-      socketService.startTyping(chat?.id || '');
+      socketService.startTyping(chat.id);
     }
 
     // Clear existing timeout
@@ -93,9 +98,15 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   };
 
   const handleTypingStop = () => {
-    if (isTyping) {
+    if (isTyping && chat) {
       setIsTyping(false);
-      socketService.stopTyping(chat?.id || '');
+      socketService.stopTyping(chat.id);
+    }
+
+    // Clear the timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = undefined;
     }
   };
 
@@ -107,14 +118,26 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   // Handle send message
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !chat) return;
+    if (!messageInput.trim() || !chat || isSending) return;
+
+    const messageContent = messageInput.trim();
 
     try {
-      await onSendMessage(messageInput.trim());
+      // Store the message content and clear input immediately
+      setPendingMessage(messageContent);
       setMessageInput('');
+      setIsSending(true);
+
+      // Stop typing before sending message
       handleTypingStop();
+      await onSendMessage(messageContent);
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Restore the message to input if sending failed
+      setMessageInput(messageContent);
+    } finally {
+      setIsSending(false);
+      setPendingMessage('');
     }
   };
 
@@ -180,8 +203,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         mimeType = 'audio/wav';
       }
 
-      console.log('Using audio format:', mimeType);
-
       // Create MediaRecorder with proper options
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: mimeType,
@@ -192,15 +213,12 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = event => {
-        console.log('Audio data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
-        console.log('Recording stopped, processing audio...');
-
         // Clear the recording state - timer will be cleared by useEffect
         setIsRecording(false);
         setRecordingTime(0);
@@ -214,12 +232,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
         // Create blob with the detected mime type
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        console.log(
-          'Audio blob created:',
-          audioBlob.size,
-          'bytes, type:',
-          audioBlob.type
-        );
 
         // Determine file extension based on mime type
         let extension = 'webm';
@@ -237,7 +249,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         try {
           // Upload the audio file
           await onUploadFile(audioFile, 'Voice note');
-          console.log('Voice note uploaded successfully');
         } catch (uploadError) {
           console.error('Failed to upload voice note:', uploadError);
           alert('Failed to upload voice note. Please try again.');
@@ -261,12 +272,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       setIsRecording(true);
       setRecordingTime(0);
       recordingTimeRef.current = 0;
-      console.log('Recording state set to true, timer started');
-
-      // Timer will be handled by useEffect
-      console.log('Recording timer will be handled by useEffect');
-
-      console.log('Recording started successfully');
     } catch (error) {
       console.error('Error starting recording:', error);
 
@@ -294,8 +299,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       try {
-        console.log('Stopping recording...');
-        console.log('Current timer interval ID:', recordingIntervalRef.current);
         mediaRecorderRef.current.stop();
         // Don't set isRecording to false here - let the onstop event handle it
         // This ensures the timer keeps running until the recording is actually processed
@@ -306,7 +309,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         recordingTimeRef.current = 0;
 
         if (recordingIntervalRef.current) {
-          console.log('Clearing timer interval due to error:', recordingIntervalRef.current);
           clearInterval(recordingIntervalRef.current);
         }
       }
@@ -411,11 +413,6 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   // Render message content based on type
   const renderMessageContent = (message: ChatMessage) => {
-    console.log('🎨 Rendering message:', {
-      type: message.type,
-      mimeType: message.mimeType,
-      fileUrl: message.fileUrl,
-    });
     switch (message.type) {
       case 'IMAGE':
         return (
@@ -632,6 +629,19 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     };
   }, [chat, currentUserId]);
 
+  // Reset typing state when chat changes
+  useEffect(() => {
+    // Reset local typing state when chat changes
+    setIsTyping(false);
+    setTypingUsers(new Set());
+
+    // Clear any existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = undefined;
+    }
+  }, [chat?.id]);
+
   // Cleanup typing timeout
   useEffect(() => {
     return () => {
@@ -644,34 +654,28 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   // Timer effect for recording
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined;
-    
+
     if (isRecording) {
-      console.log('Starting timer effect for recording...');
       intervalId = setInterval(() => {
-        console.log('Timer effect fired! Current recordingTimeRef:', recordingTimeRef.current);
         recordingTimeRef.current += 1;
-        console.log('Updated recordingTimeRef to:', recordingTimeRef.current);
         setRecordingTime(recordingTimeRef.current);
-        console.log('State updated with recordingTime:', recordingTimeRef.current);
       }, 1000);
-      console.log('Timer effect interval set up with ID:', intervalId);
     }
 
     return () => {
       if (intervalId) {
-        console.log('Clearing timer effect interval:', intervalId);
         clearInterval(intervalId);
       }
     };
   }, [isRecording]);
 
   useEffect(() => {
-    if (isRecording || typingUsers.size > 0) {
+    if (isRecording || typingUsers.size > 0 || isSending) {
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }
-  }, [isRecording, typingUsers.size]);
+  }, [isRecording, typingUsers.size, isSending]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -719,7 +723,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full justify-between">
         <EmptyState
           title="No Messages Yet"
           description="Start the conversation by sending a message."
@@ -748,10 +752,14 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           </div>
           <button
             onClick={handleSendMessage}
-            disabled={!messageInput.trim() || isUploading}
+            disabled={!messageInput.trim() || isUploading || isSending}
             className="bg-(--primary) p-2 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="w-5 h-5 text-white" />
+            {isSending ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-5 h-5 text-white" />
+            )}
           </button>
         </div>
 
@@ -768,7 +776,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full justify-between">
       {/* Messages */}
       <div className="flex-1 p-6 space-y-4 overflow-y-auto">
         {hasMore && (
@@ -821,7 +829,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                     />
 
                     <div
-                      className={`typo-small mt-2.5 leading-4 ${
+                      className={`typo-small mt-2.5 leading-4 text-end ${
                         isCurrentUser ? 'text-white/80' : 'text-gray-500'
                       }`}
                     >
@@ -897,6 +905,25 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           </div>
         )}
 
+        {/* Sending indicator - aligned with chat messages */}
+        {isSending && pendingMessage && (
+          <div className="flex items-start gap-2 justify-end">
+            <div className="max-w-[85%] p-3 rounded-xl bg-[#2d6a87]">
+              <div className="space-y-2">
+                <p className="text-white text-sm break-words">
+                  {pendingMessage}
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-(--primary) rounded-full animate-pulse" />
+                  <span className="text-xs text-blue-200 font-medium">
+                    Sending...
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Typing indicators */}
         {typingUsers.size > 0 && (
           <div className="flex items-start gap-2">
@@ -958,7 +985,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                   : 'Hold to record voice note'
               }
             >
-              <Mic className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
+              <Mic
+                className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`}
+              />
             </button>
             {isRecording && (
               <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
@@ -969,10 +998,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         </div>
         <button
           onClick={handleSendMessage}
-          disabled={!messageInput.trim() || isUploading}
+          disabled={!messageInput.trim() || isUploading || isSending}
           className="bg-(--primary) p-2 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isUploading ? (
+          {isUploading || isSending ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
             <Send className="w-5 h-5 text-white" />

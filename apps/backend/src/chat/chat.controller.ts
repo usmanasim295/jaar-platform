@@ -51,7 +51,7 @@ export class ChatController {
     return this.chatService.createOneToOneChat(user.id, body.otherUserId);
   }
 
-  // Service Provider Chat
+  // Service Provider Chat (created by Leader or Home Owner)
   @Post('service-provider')
   @Roles('LEADER', 'HOME_OWNER')
   async createServiceProviderChat(
@@ -63,6 +63,23 @@ export class ChatController {
       body.jobId,
       body.serviceProviderId,
       user.id,
+    );
+  }
+
+  // Service Provider Initiates Chat (from their bids)
+  @Post('service-provider/initiate')
+  @Roles('SERVICE_PROVIDER')
+  async initiateServiceProviderChat(
+    @Req() req: Request,
+    @Body() body: { jobId: string },
+  ) {
+    const user = req['user'];
+    if (!user.serviceProviderId) {
+      throw new BadRequestException('Service provider ID not found');
+    }
+    return this.chatService.initiateServiceProviderChat(
+      body.jobId,
+      user.serviceProviderId,
     );
   }
 
@@ -305,7 +322,7 @@ export class ChatController {
         const transformedChat = this.languageService.transformObjectForLanguage(
           chat,
           language,
-          ['name', 'community', 'job'],
+          ['name', 'community'],
         );
 
         // Transform messages array separately to avoid corruption
@@ -357,6 +374,19 @@ export class ChatController {
               }
               return participant;
             },
+          );
+        }
+
+        // Transform job title if present
+        if (
+          transformedChat.job &&
+          typeof transformedChat.job === 'object' &&
+          transformedChat.job.title
+        ) {
+          transformedChat.job = this.languageService.transformObjectForLanguage(
+            transformedChat.job,
+            language,
+            ['title'],
           );
         }
 
@@ -390,7 +420,7 @@ export class ChatController {
         const transformedChat = this.languageService.transformObjectForLanguage(
           chat,
           language,
-          ['name', 'community', 'job'],
+          ['name', 'community'],
         );
 
         // Transform messages array separately to avoid corruption
@@ -442,6 +472,19 @@ export class ChatController {
               }
               return participant;
             },
+          );
+        }
+
+        // Transform job title if present
+        if (
+          transformedChat.job &&
+          typeof transformedChat.job === 'object' &&
+          transformedChat.job.title
+        ) {
+          transformedChat.job = this.languageService.transformObjectForLanguage(
+            transformedChat.job,
+            language,
+            ['title'],
           );
         }
 

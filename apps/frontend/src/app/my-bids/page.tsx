@@ -1,7 +1,11 @@
 'use client';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGetMyBidsQuery, useDeleteBidMutation } from '@/store/api';
+import {
+  useGetMyBidsQuery,
+  useDeleteBidMutation,
+  useInitiateChatMutation,
+} from '@/store/api';
 import { useAuth } from '@/contexts/AuthContext';
 import i18n from '@/i18n';
 import type { Language, MyBid } from '@/types/api';
@@ -11,11 +15,16 @@ import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function MyBids() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [initiatingChatForJob, setInitiatingChatForJob] = useState<
+    string | null
+  >(null);
 
   // Get user's bids
   const {
@@ -26,6 +35,9 @@ export default function MyBids() {
 
   // Delete bid mutation
   const [deleteBid, { isLoading: isDeleting }] = useDeleteBidMutation();
+
+  // Initiate chat mutation
+  const [initiateChat] = useInitiateChatMutation();
 
   // Get localized text based on current language
   const getLocalizedText = (text: { ar: string; en: string }) => {
@@ -90,6 +102,40 @@ export default function MyBids() {
   // Check if bid can be deleted (only pending bids)
   const canDeleteBid = (status: string) => {
     return status === 'PENDING';
+  };
+
+  // Handle initiate chat
+  const handleInitiateChat = async (jobId: string) => {
+    setInitiatingChatForJob(jobId);
+    try {
+      const result = await initiateChat({ jobId }).unwrap();
+
+      // Check if chat already existed or was newly created
+      const wasExisting =
+        result &&
+        result.createdAt &&
+        new Date(result.createdAt).getTime() < Date.now() - 1000;
+
+      if (wasExisting) {
+        toast.info(t('Opening existing chat...'));
+      } else {
+        toast.success(t('Chat created successfully'));
+      }
+
+      // Redirect to messages page with the chat ID
+      if (result && result.id) {
+        router.push(`/messages?chatId=${result.id}`);
+      } else {
+        router.push('/messages');
+      }
+    } catch (error: any) {
+      console.error('Initiate chat failed:', error);
+      toast.error(
+        error?.data?.message || t('Failed to initiate chat. Please try again.')
+      );
+    } finally {
+      setInitiatingChatForJob(null);
+    }
   };
 
   // Loading state
@@ -246,6 +292,17 @@ export default function MyBids() {
                           {t('View Document')}
                         </a>
                       )}
+                      <Button
+                        variant="primary"
+                        onClick={() => handleInitiateChat(bid.jobId)}
+                        disabled={initiatingChatForJob === bid.jobId}
+                        className="px-4 py-2 text-sm"
+                      >
+                        💬{' '}
+                        {initiatingChatForJob === bid.jobId
+                          ? t('Loading...')
+                          : t('Message')}
+                      </Button>
                       <Link href={`/job/${bid.jobId}`}>
                         <Button
                           variant="secondary"

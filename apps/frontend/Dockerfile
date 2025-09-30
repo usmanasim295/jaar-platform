@@ -49,8 +49,11 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy public directory if it exists (for static assets)
-COPY --from=builder /app/public ./public
+# Copy public directory with proper permissions (for static assets)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Ensure public directory has correct permissions
+RUN chmod -R 755 ./public
 
 USER nextjs
 
