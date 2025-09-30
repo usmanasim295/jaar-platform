@@ -46,10 +46,12 @@ RUN addgroup --system --gid 1001 nodejs \
 # Copy standalone build
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./standalone
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./standalone/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./standalone/public
+
+# ✅ Copy public directory into root /app/public (not /standalone/public)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Ensure proper permissions
-RUN chmod -R 755 ./standalone/public
+RUN chmod -R 755 ./public
 
 WORKDIR /app/standalone
 USER nextjs
@@ -77,6 +79,7 @@ COPY . .
 
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
+
 
 # # Use Node 20 for better compatibility with Next.js 15 and React 19
 # FROM node:20-alpine AS base
