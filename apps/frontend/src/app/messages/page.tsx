@@ -7,10 +7,13 @@ import { useChat, useChatMessages } from '@/hooks/useChat';
 import { ChatList } from '@/components/chat/ChatList';
 import { ChatMessages } from '@/components/chat/ChatMessages';
 import { Chat } from '@/components/modals/type';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function ChatUI() {
   const { t } = useTranslation();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 
@@ -36,6 +39,19 @@ export default function ChatUI() {
     fetchChats,
     markMessagesAsRead,
   } = useChat(selectedChat?.id, addMessage);
+
+  // Auto-select chat from URL parameter - MUST BE BEFORE CONDITIONAL RETURNS
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      const chatIdFromUrl = searchParams.get('chatId');
+      if (chatIdFromUrl && chats.length > 0 && !selectedChat) {
+        const chatToSelect = chats.find(chat => chat.id === chatIdFromUrl);
+        if (chatToSelect) {
+          setSelectedChat(chatToSelect);
+        }
+      }
+    }
+  }, [searchParams, chats, selectedChat, isLoading, isAuthenticated]);
 
   // Show loading state while auth is loading
   if (isLoading) {
@@ -76,6 +92,9 @@ export default function ChatUI() {
   const handleSelectChat = (chat: Chat) => {
     setSelectedChat(chat);
     setSidebarOpen(false); // Close sidebar on mobile
+
+    // Update URL with the new chat ID
+    router.push(`/messages?chatId=${chat.id}`, { scroll: false });
   };
 
   // Handle mark messages as read

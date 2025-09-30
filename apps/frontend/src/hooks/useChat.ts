@@ -124,7 +124,6 @@ export const useChat = (
         .connect(token)
         .then(() => {
           setIsConnected(true);
-          console.log('Socket connected successfully');
         })
         .catch(err => {
           console.error('Socket connection failed:', err);
@@ -281,14 +280,10 @@ export const useChat = (
     // Listen for poll votes
     socketService.onPollVote(vote => {
       // You can update poll results here if needed
-      console.log('Poll vote received:', vote);
     });
 
-    // Listen for user typing
-    socketService.onUserTyping(data => {
-      // Handle typing indicators
-      console.log('User typing:', data);
-    });
+    // Note: Typing indicators are handled by individual chat components
+    // No need to handle them here as they're managed by ChatMessages component
 
     // Listen for errors
     socketService.onError(error => {
@@ -300,7 +295,6 @@ export const useChat = (
       socketService.offNewMessage();
       socketService.offNewPoll();
       socketService.offPollVote();
-      socketService.offUserTyping();
       socketService.offError();
     };
   }, [isConnected, chats, selectedChatId, markMessagesAsRead]);
@@ -605,12 +599,10 @@ export const useChatMessages = (chatId: string | null) => {
 
   // Function to add a new message to the state (called by parent)
   const addMessage = useCallback((message: ChatMessage) => {
-    console.log('🎯 useChatMessages - Adding message:', message);
     setMessages(prev => {
       // Add new message to the beginning since we're using descending order
       const newMessages = [message, ...prev];
       const deduplicated = deduplicateMessages(newMessages);
-      console.log('📝 useChatMessages - Updated messages:', deduplicated);
       return deduplicated;
     });
 

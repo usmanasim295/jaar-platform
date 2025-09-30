@@ -4,12 +4,15 @@ import {
   ForbiddenException,
   BadRequestException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { S3Service } from '../common/services/s3.service';
 import { CreateBidDto } from './dto/create-bid.dto';
 import { BidStatus } from '@prisma/client';
 import { TranslationService } from '../common/services/translation.service';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class BidService {
@@ -17,6 +20,8 @@ export class BidService {
     private prisma: PrismaService,
     private s3Service: S3Service,
     private translationService: TranslationService,
+    @Inject(forwardRef(() => ChatService))
+    private chatService: ChatService,
   ) {}
 
   async create(
@@ -366,12 +371,23 @@ export class BidService {
       },
     });
 
-    // If bid is accepted, update job status to IN_PROGRESS
+    // If bid is accepted, update job status to IN_PROGRESS and create chat
     if (status === BidStatus.ACCEPTED) {
       await this.prisma.job.update({
         where: { id: bid.jobId },
         data: { status: 'IN_PROGRESS' },
       });
+
+      // Create chat between service provider and job poster
+      try {
+        await this.chatService.initiateServiceProviderChat(
+          bid.jobId,
+          bid.serviceProviderId,
+        );
+      } catch (error) {
+        // If chat already exists or creation fails, log but don't fail the bid acceptance
+        console.log('Chat creation info:', error.message);
+      }
     }
 
     return {

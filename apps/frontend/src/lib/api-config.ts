@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   // Chat
   USER_CHATS: 'chat/user-chats',
   SERVICE_PROVIDER_CHATS: 'chat/service-provider/chats',
+  INITIATE_CHAT: 'chat/service-provider/initiate',
   CHAT_MESSAGES: 'chat/message',
   SEND_MESSAGE: 'chat/message',
   UPLOAD_MESSAGE_FILE: 'chat/message/upload',

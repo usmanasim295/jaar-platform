@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JobService } from './job.service';
 import { JobController } from './job.controller';
 import { BidService } from './bid.service';
@@ -9,9 +9,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { S3Service } from '../common/services/s3.service';
 import { TranslationService } from '../common/services/translation.service';
 import { LanguageService } from '../common/services/language.service';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, forwardRef(() => ChatModule)],
   controllers: [JobController, BidController, JobCompletionRequestController],
   providers: [
     JobService,

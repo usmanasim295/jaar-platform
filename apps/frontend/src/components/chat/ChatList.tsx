@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MagnifyingGlass } from '@/components/assets/icons';
 import { Chat, UnreadCount } from '@/components/modals/type';
@@ -30,22 +30,60 @@ export const ChatList: React.FC<ChatListProps> = ({
   const [activeTab, setActiveTab] = useState<'All' | 'Unread'>('All');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter chats based on active tab and search term
-  const filteredChats = chats.filter(chat => {
-    // Safe access to chat name with fallbacks
-    const chatNameEn = chat.name?.en || '';
-    const chatNameAr = chat.name?.ar || '';
+  // Add custom scrollbar styles
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .chat-list-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .chat-list-scroll::-webkit-scrollbar-track {
+        background: #f7fafc;
+      }
+      .chat-list-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 3px;
+      }
+      .chat-list-scroll::-webkit-scrollbar-thumb:hover {
+        background: #a0aec0;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
-    const nameMatch =
-      chatNameEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      chatNameAr.toLowerCase().includes(searchTerm.toLowerCase());
+  // Filter and sort chats based on active tab and search term
+  const filteredChats = chats
+    .filter(chat => {
+      // Safe access to chat name with fallbacks
+      const chatNameEn = chat.name?.en || '';
+      const chatNameAr = chat.name?.ar || '';
 
-    if (activeTab === 'Unread') {
-      return nameMatch && (unreadCount.chatUnreadCounts[chat.id] || 0) > 0;
-    }
+      const nameMatch =
+        chatNameEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        chatNameAr.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return nameMatch;
-  });
+      if (activeTab === 'Unread') {
+        return nameMatch && (unreadCount.chatUnreadCounts[chat.id] || 0) > 0;
+      }
+
+      return nameMatch;
+    })
+    .sort((a, b) => {
+      // Sort by most recent message or chat update (WhatsApp style)
+      const aTime =
+        a.messages && a.messages[0]
+          ? new Date(a.messages[0].updatedAt).getTime()
+          : new Date(a.updatedAt).getTime();
+      const bTime =
+        b.messages && b.messages[0]
+          ? new Date(b.messages[0].updatedAt).getTime()
+          : new Date(b.updatedAt).getTime();
+
+      return bTime - aTime; // Most recent first
+    });
 
   const getChatDisplayName = (chat: Chat) => {
     // For service provider chats, show the other participant's name
@@ -62,6 +100,21 @@ export const ChatList: React.FC<ChatListProps> = ({
     }
 
     return chat.name?.en || chat.name?.ar || 'Unknown Chat';
+  };
+
+  const getChatSubtitle = (chat: Chat) => {
+    // For service chats, show the job title
+    if (chat.type === 'SERVICE_CHAT' && chat.job && chat.job.title) {
+      // Handle both string and object formats
+      if (typeof chat.job.title === 'string') {
+        return chat.job.title;
+      }
+      // If it's an object with language keys
+      if (typeof chat.job.title === 'object') {
+        return (chat.job.title as any).en || (chat.job.title as any).ar || '';
+      }
+    }
+    return '';
   };
 
   const getChatAvatar = (chat: Chat) => {
@@ -178,9 +231,9 @@ export const ChatList: React.FC<ChatListProps> = ({
   // Don't show empty state - always show the tabs and search bar
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {/* Tabs */}
-      <div className="flex justify-center p-[6px] gap-2 rounded-lg border border-[#E5E5E5] m-6">
+      <div className="flex justify-center p-[6px] gap-2 rounded-lg border border-[#E5E5E5] m-6 flex-shrink-0">
         {(['All', 'Unread'] as const).map(tab => (
           <button
             key={tab}
@@ -202,7 +255,7 @@ export const ChatList: React.FC<ChatListProps> = ({
       </div>
 
       {/* Search */}
-      <div className="m-6 p-2 rounded-[10px] border border-[#E5E5E5] text-sm flex gap-2 w-auto items-center">
+      <div className="m-6 mt-0 p-2 rounded-[10px] border border-[#E5E5E5] text-sm flex gap-2 w-auto items-center flex-shrink-0">
         <MagnifyingGlass />
         <input
           type="text"
@@ -214,7 +267,13 @@ export const ChatList: React.FC<ChatListProps> = ({
       </div>
 
       {/* Chat List */}
-      <div className="space-y-1">
+      <div
+        className="chat-list-scroll flex-1 overflow-y-auto overflow-x-hidden space-y-1"
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#CBD5E0 #F7FAFC',
+        }}
+      >
         {filteredChats.length === 0 ? (
           <div className="px-6 py-8 text-center">
             <div className="text-gray-400 mb-2">
@@ -273,14 +332,23 @@ export const ChatList: React.FC<ChatListProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <p className="font-medium typo-label text-[#15120F] truncate">
-                        {getChatDisplayName(chat)}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium typo-label text-[#15120F] truncate">
+                          {getChatDisplayName(chat)}
+                        </p>
+                        {getChatSubtitle(chat) && (
+                          <p className="text-xs font-medium text-[#2d6a87] truncate mt-0.5 capitalize">
+                            {getChatSubtitle(chat)}
+                          </p>
+                        )}
+                      </div>
                       <span className="text-xs text-gray-400 shrink-0 ml-2">
-                        {formatTime(chat.messages[0].updatedAt)}
+                        {chat.messages && chat.messages[0]
+                          ? formatTime(chat.messages[0].updatedAt)
+                          : formatTime(chat.updatedAt)}
                       </span>
                     </div>
-                    <p className="typo-body font-normal text-[#808080] truncate">
+                    <p className="typo-body font-normal text-[#808080] truncate max-w-[170px] mt-[-4px]">
                       {getLastMessage(chat)}
                     </p>
                   </div>
