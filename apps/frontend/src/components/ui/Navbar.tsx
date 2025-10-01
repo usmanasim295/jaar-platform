@@ -1,25 +1,27 @@
-"use client";
-import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import LanguageToggleButton from "../LanguageToggleButton";
-import { useTranslation } from "react-i18next";
-import { Menu, LogOut, User } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import Button from "./Button";
+'use client';
+import Image from 'next/image';
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import LanguageToggleButton from '../LanguageToggleButton';
+import { useTranslation } from 'react-i18next';
+import { Menu, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import Button from './Button';
 
 export default function Navbar() {
   const { t } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { label: "Find Job", path: "/" },
-    { label: "On Going Jobs", path: "/ongoingjobs" },
-    { label: "My Bids", path: "/my-bids" },
-    { label: "Messages", path: "/messages" },
+    { label: 'Find Jobs', path: '/' },
+    { label: 'Ongoing Jobs', path: '/ongoingjobs' },
+    { label: 'My Bids', path: '/my-bids' },
+    { label: 'Messages', path: '/messages' },
   ];
 
   const handleLogout = () => {
@@ -37,9 +39,9 @@ export default function Navbar() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -59,24 +61,43 @@ export default function Navbar() {
         <div className="flex items-center gap-10">
           <div className="hidden lg:flex items-center gap-10">
             <LanguageToggleButton />
-            {isAuthenticated &&
-              navItems.map((item) => (
-                <Link key={item.label} href={item.path}>
-                  {t(item.label)}
-                </Link>
-              ))}
+            {!isLoading &&
+              isAuthenticated &&
+              navItems.map(item => {
+                const isActive = pathname === item.path;
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.path}
+                    className={`relative pb-1 transition-colors duration-300 ${
+                      isActive
+                        ? 'text-[#2d6a87] font-medium'
+                        : 'text-gray-700 hover:text-[#2d6a87]'
+                    }`}
+                  >
+                    {t(item.label)}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2d6a87]" />
+                    )}
+                  </Link>
+                );
+              })}
           </div>
 
-          {isAuthenticated ? (
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 border-2 border-gray-300 border-t-[#2d6a87] rounded-full animate-spin" />
+            </div>
+          ) : isAuthenticated ? (
             <div className="flex gap-4 items-center">
-              <div className="flex items-center justify-center rounded-full h-11 w-11 bg-(--primary) shrink-0">
+              {/* <div className="flex items-center justify-center rounded-full h-11 w-11 bg-(--primary) shrink-0">
                 <Image
                   src={"/assets/icons/Bell.svg"}
                   width={24}
                   height={24}
                   alt="bell"
                 />
-              </div>
+              </div> */}
 
               {/* User Profile Dropdown */}
               <div className="relative" ref={userMenuRef}>
@@ -86,7 +107,7 @@ export default function Navbar() {
                 >
                   <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                     {user?.name ? (
-                      <span className="text-sm font-semibold text-gray-700">
+                      <span className="text-sm font-semibold text-gray-700 capitalize">
                         {user.name.charAt(0).toUpperCase()}
                       </span>
                     ) : (
@@ -94,7 +115,7 @@ export default function Navbar() {
                     )}
                   </div>
                   <span className="hidden md:block text-sm font-medium text-gray-700">
-                    {user?.name || "User"}
+                    {user?.name || 'User'}
                   </span>
                 </button>
 
@@ -111,7 +132,7 @@ export default function Navbar() {
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" />
-                      {t("Logout")}
+                      {t('Logout')}
                     </button>
                   </div>
                 )}
@@ -121,12 +142,12 @@ export default function Navbar() {
             <div className="flex gap-4">
               <Link href="/signin">
                 <Button variant="secondary" className="px-4 py-2">
-                  {t("Sign In")}
+                  {t('Sign In')}
                 </Button>
               </Link>
               <Link href="/signup">
                 <Button variant="primary" className="px-4 py-2">
-                  {t("Sign Up")}
+                  {t('Sign Up')}
                 </Button>
               </Link>
             </div>
@@ -149,16 +170,23 @@ export default function Navbar() {
             <LanguageToggleButton />
             {isAuthenticated ? (
               <>
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    className="block px-4 py-2 text-sm rounded-md hover:bg-gray-100"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {t(item.label)}
-                  </Link>
-                ))}
+                {navItems.map(item => {
+                  const isActive = pathname === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className={`block px-4 py-2 text-sm rounded-md transition-colors duration-300 ${
+                        isActive
+                          ? 'text-[#2d6a87] font-medium bg-blue-50'
+                          : 'text-gray-700 hover:text-[#2d6a87] hover:bg-gray-100'
+                      }`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {t(item.label)}
+                    </Link>
+                  );
+                })}
                 <div className="border-t border-gray-200 pt-2 cursor-pointer">
                   <div className="px-4 py-2">
                     <p className="text-sm font-medium text-gray-900">
@@ -174,7 +202,7 @@ export default function Navbar() {
                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                   >
                     <LogOut className="w-4 h-4" />
-                    {t("Logout")}
+                    {t('Logout')}
                   </button>
                 </div>
               </>
@@ -185,14 +213,14 @@ export default function Navbar() {
                   className="block px-4 py-2 text-sm rounded-md hover:bg-gray-100"
                   onClick={() => setIsOpen(false)}
                 >
-                  {t("Sign In")}
+                  {t('Sign In')}
                 </Link>
                 <Link
                   href="/signup"
                   className="block px-4 py-2 text-sm rounded-md hover:bg-gray-100"
                   onClick={() => setIsOpen(false)}
                 >
-                  {t("Sign Up")}
+                  {t('Sign Up')}
                 </Link>
               </div>
             )}

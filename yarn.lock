@@ -2578,6 +2578,7 @@
     i18next "^25.5.0"
     i18next-browser-languagedetector "^8.2.0"
     i18next-http-backend "^3.0.2"
+    lamejs "^1.2.1"
     lucide-react "^0.537.0"
     next "15.4.5"
     react "19.1.0"

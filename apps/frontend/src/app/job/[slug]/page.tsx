@@ -435,13 +435,13 @@ ${user?.name || t('Service Provider')}`}
                 {t('Job Information')}
               </h2>
               <div className="flex items-center gap-4 pb-6">
-                <div className="w-[60px] h-[60px] rounded-full bg-gray-300 flex items-center justify-center">
+                <div className="min-w-[45px] min-h-[45px] rounded-full bg-gray-300 flex items-center justify-center">
                   <span className="text-lg font-semibold text-gray-600">
                     {jobData.apartment?.name?.charAt(0) || 'J'}
                   </span>
                 </div>
                 <div>
-                  <p className="font-semibold typo-heading3 text-(--primary)">
+                  <p className="font-semibold typo-heading3 text-(--primary) truncate max-w-[170px]">
                     {jobData.apartment?.name || t('Job')}
                   </p>
                   <p className="text-sm text-gray-600">
