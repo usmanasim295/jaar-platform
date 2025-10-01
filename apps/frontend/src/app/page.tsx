@@ -29,14 +29,22 @@ import i18n from '@/i18n';
 import type { ServiceProviderService, ServiceProviderRate } from '@/types/api';
 import type { Job as ApiJob } from '@/types/api';
 
-// Service icon mapping
+// Service icon mapping (works for both English and Arabic)
 const serviceIconMap: Record<string, React.ElementType> = {
+  // English names
   'AC Services': AirConditionIcon,
   'Cleaning Services': CleaningIcon,
   Electrician: CableIcon,
   Plumber: PlumberIcon,
   Painter: PainterIcon,
   'Pest Control': PestControl,
+  // Arabic names
+  'خدمات تكييف الهواء': AirConditionIcon,
+  'خدمات التنظيف': CleaningIcon,
+  كهربائي: CableIcon,
+  سباك: PlumberIcon,
+  رسام: PainterIcon,
+  'مكافحة الآفات': PestControl,
 };
 
 // Check if current service provider has already bid on a job
@@ -427,7 +435,7 @@ export default function Home() {
                           const serviceName =
                             serviceProviderService.service?.name || 'Service';
                           const IconComponent =
-                            serviceIconMap[serviceName] || CLeaning;
+                            serviceIconMap[serviceName] || CleaningIcon;
 
                           return (
                             <div
