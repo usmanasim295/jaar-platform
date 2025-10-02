@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import LanguageToggleButton from '../LanguageToggleButton';
 import { useTranslation } from 'react-i18next';
 import { Menu, LogOut, User } from 'lucide-react';
@@ -13,8 +13,10 @@ export default function Navbar() {
   const { t } = useTranslation();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -69,6 +71,7 @@ export default function Navbar() {
                   <Link
                     key={item.label}
                     href={item.path}
+                    prefetch={false}
                     className={`relative pb-1 transition-colors duration-300 ${
                       isActive
                         ? 'text-[#2d6a87] font-medium'
@@ -176,6 +179,7 @@ export default function Navbar() {
                     <Link
                       key={item.path}
                       href={item.path}
+                      prefetch={false}
                       className={`block px-4 py-2 text-sm rounded-md transition-colors duration-300 ${
                         isActive
                           ? 'text-[#2d6a87] font-medium bg-blue-50'

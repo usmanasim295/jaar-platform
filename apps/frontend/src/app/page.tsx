@@ -74,11 +74,18 @@ export default function Home() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   // Get detailed profile data
-  const { data: profileData, isLoading: isProfileLoading } = useGetProfileQuery(
+  const {
+    data: profileData,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useGetProfileQuery(
     isAuthenticated && user
       ? { serviceProviderId: user.id, lang: i18n.language as 'en' | 'ar' }
       : { serviceProviderId: '', lang: 'en' as 'en' | 'ar' },
-    { skip: !isAuthenticated || !user }
+    {
+      skip: !isAuthenticated || !user,
+      refetchOnMountOrArgChange: true,
+    }
   );
 
   // Get jobs data
@@ -86,14 +93,18 @@ export default function Home() {
     data: jobsData,
     isLoading: isJobsLoading,
     refetch: refetchJobs,
-  } = useGetJobsQuery(i18n.language as 'en' | 'ar', { skip: !isAuthenticated });
+  } = useGetJobsQuery(i18n.language as 'en' | 'ar', {
+    skip: !isAuthenticated,
+    refetchOnMountOrArgChange: true,
+  });
 
-  // Refetch jobs when component mounts or when returning from job details
+  // Refetch data when user changes or component mounts
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
+      refetchProfile();
       refetchJobs();
     }
-  }, [isAuthenticated, refetchJobs]);
+  }, [isAuthenticated, user?.id, refetchJobs, refetchProfile]);
 
   // Transform API jobs to modal format
   const transformJob = (apiJob: ApiJob): Job => {

@@ -21,9 +21,11 @@ COPY . .
 
 # Build-time environment variables (for NEXT_PUBLIC_ variables)
 ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_WS_BASE_URL
 ARG NEXT_PUBLIC_DEFAULT_LANGUAGE
 
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_WS_BASE_URL=$NEXT_PUBLIC_WS_BASE_URL
 ENV NEXT_PUBLIC_DEFAULT_LANGUAGE=$NEXT_PUBLIC_DEFAULT_LANGUAGE
 
 # Build the application
@@ -63,20 +65,3 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
-
-# Development image
-FROM base AS dev
-WORKDIR /app
-
-ENV NODE_ENV=development
-
-# Copy package files and install all dependencies (including dev)
-COPY package.json ./
-RUN npm install
-
-# Copy source code
-COPY . .
-
-EXPOSE 3000
-
-CMD ["npm", "run", "dev"]
