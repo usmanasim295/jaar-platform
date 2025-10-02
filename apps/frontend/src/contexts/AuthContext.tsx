@@ -1,8 +1,15 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
 import { useRouter } from 'next/navigation';
-import { useSignInMutation, useGetProfileQuery } from '@/store/api';
+import { useSignInMutation, api } from '@/store/api';
+import { useDispatch } from 'react-redux';
 import type { AuthState, ServiceProvider, Language } from '@/types/api';
 
 interface AuthContextType extends AuthState {
@@ -30,17 +37,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const router = useRouter();
+  const dispatch = useDispatch();
   const [signIn] = useSignInMutation();
-  const { data: profileData, error: profileError } = useGetProfileQuery(
-    authState.isAuthenticated && authState.user ? 
-      { serviceProviderId: authState.user.id, lang: 'en' as Language } : 
-      { serviceProviderId: '', lang: 'en' as Language },
-    { skip: !authState.isAuthenticated || !authState.user }
-  );
 
   // Initialize auth state from localStorage
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       if (typeof window === 'undefined') return;
 
       const token = localStorage.getItem('token');
@@ -49,6 +51,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (token && userData) {
         try {
           const user = JSON.parse(userData);
+
+          // Validate token is still valid by checking if user data matches
+          // Clear cache before setting new auth state
+          dispatch(api.util.resetApiState());
+
           setAuthState({
             isAuthenticated: true,
             user,
@@ -60,6 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Invalid data in localStorage, clear it
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          dispatch(api.util.resetApiState());
           setAuthState({
             isAuthenticated: false,
             user: null,
@@ -74,19 +82,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     initializeAuth();
-  }, []);
+  }, [dispatch]);
 
-  // Update user data when profile is fetched
-  useEffect(() => {
-    if (profileData && authState.isAuthenticated) {
-      setAuthState(prev => ({
-        ...prev,
-        user: profileData,
-      }));
-    }
-  }, [profileData, authState.isAuthenticated]);
-
-  const login = async (email: string, password: string, lang: Language = 'en') => {
+  const login = async (
+    email: string,
+    password: string,
+    lang: Language = 'en'
+  ) => {
     setIsLoggingIn(true);
     setAuthState(prev => ({ ...prev, error: null }));
 
@@ -110,10 +112,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error: null,
       });
 
+      // Reset all RTK Query cache to fetch fresh data for new user
+      dispatch(api.util.resetApiState());
+
       // Redirect to main page
       router.push('/');
     } catch (error: any) {
-      const errorMessage = error?.data?.message || error?.message || 'Login failed';
+      const errorMessage =
+        error?.data?.message || error?.message || 'Login failed';
       setAuthState(prev => ({
         ...prev,
         error: errorMessage,
@@ -132,6 +138,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('name');
     localStorage.removeItem('selectedServices');
     localStorage.removeItem('selectedServicesName');
+
+    // Reset all RTK Query cache
+    dispatch(api.util.resetApiState());
 
     setAuthState({
       isAuthenticated: false,

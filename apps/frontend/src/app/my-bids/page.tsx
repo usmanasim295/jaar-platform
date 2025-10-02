@@ -14,7 +14,7 @@ import { Clock, MapPin, File, Star } from '@/components/assets/icons';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function MyBids() {
@@ -31,7 +31,18 @@ export default function MyBids() {
     data: bidsData,
     isLoading: isBidsLoading,
     error: bidsError,
-  } = useGetMyBidsQuery(i18n.language as Language, { skip: !isAuthenticated });
+    refetch: refetchBids,
+  } = useGetMyBidsQuery(i18n.language as Language, {
+    skip: !isAuthenticated,
+    refetchOnMountOrArgChange: true,
+  });
+
+  // Refetch bids when user changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      refetchBids();
+    }
+  }, [isAuthenticated, refetchBids]);
 
   // Delete bid mutation
   const [deleteBid, { isLoading: isDeleting }] = useDeleteBidMutation();
@@ -202,9 +213,9 @@ export default function MyBids() {
 
           {!bidsData || bidsData.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              {/* <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <File className="w-12 h-12 text-gray-400" />
-              </div>
+              </div> */}
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 {t('No Bids Yet')}
               </h3>

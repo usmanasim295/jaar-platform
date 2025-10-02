@@ -4,7 +4,8 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import HttpBackend from 'i18next-http-backend';
 
-if (!i18n.isInitialized) {
+// Only initialize in browser environment
+if (typeof window !== 'undefined' && !i18n.isInitialized) {
   i18n
     .use(HttpBackend)
     .use(LanguageDetector)

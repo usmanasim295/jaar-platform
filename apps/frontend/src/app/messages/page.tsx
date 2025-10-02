@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Menu, Wifi, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +9,10 @@ import { ChatMessages } from '@/components/chat/ChatMessages';
 import { Chat } from '@/components/modals/type';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function ChatUI() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+function ChatUIContent() {
   const { t } = useTranslation();
   const { user, isAuthenticated, isLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -243,5 +246,21 @@ export default function ChatUI() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChatUI() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-8 font-jakarta mb-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          </div>
+        </div>
+      }
+    >
+      <ChatUIContent />
+    </Suspense>
   );
 }

@@ -121,7 +121,13 @@ export const api = createApi({
         body,
         headers: getHeaders(),
       }),
-      invalidatesTags: ['ServiceProvider'],
+      invalidatesTags: [
+        'ServiceProvider',
+        'Profile',
+        'Jobs',
+        'MyBids',
+        'CompletionRequests',
+      ],
     }),
 
     // Profile setup steps
@@ -223,7 +229,9 @@ export const api = createApi({
         lang = API_CONFIG.DEFAULT_LANGUAGE as Language,
       }) =>
         `${API_ENDPOINTS.PROFILE}/${serviceProviderId}${getLanguageParam(lang)}`,
-      providesTags: ['Profile'],
+      providesTags: (result, error, { serviceProviderId }) => [
+        { type: 'Profile', id: serviceProviderId },
+      ],
     }),
 
     // Jobs
