@@ -69,7 +69,7 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
   return (
     <div className="max-w-[648px] w-full">
-      <h1 className="font-urbanist typo-heading1 font-bold mb-8">
+      <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
         {t("Please upload a valid government-issued document")}
       </h1>
 
@@ -90,24 +90,25 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
         }}
         className="cursor-pointer [appearance:none]"
       >
-        <div className="relative flex items-center justify-between gap-4 bg-(--light-grey) rounded-2xl p-4 overflow-hidden w-[48%] cursor-pointer font-jakarta">
-          <div className="flex items-center gap-4">
+        <div className="relative flex items-center justify-between gap-3 sm:gap-4 bg-(--light-grey) rounded-xl sm:rounded-2xl p-3 sm:p-4 overflow-hidden w-full sm:w-[48%] cursor-pointer font-jakarta">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <Image
               src={"/assets/icons/FileGrey.svg"}
-              width={24}
-              height={24}
+              width={20}
+              height={20}
               alt="file"
+              className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
             />
-            <p className="text-(--black) typo-body ">
+            <p className="text-(--black) text-sm sm:text-base lg:typo-body truncate">
               {t(fileName ? fileName.slice(0, 20) : "Upload Document")}
             </p>
           </div>
-          <Plus2Icon />
+          <Plus2Icon className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
         </div>
       </FileUpload>
 
       {error && (
-        <p className="mt-4 text-red-500 font-medium">
+        <p className="mt-3 sm:mt-4 text-red-500 font-medium text-sm sm:text-base">
           {t("Failed to upload. Please try again.")}
         </p>
       )}

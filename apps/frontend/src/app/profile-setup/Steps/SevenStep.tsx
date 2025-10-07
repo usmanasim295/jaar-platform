@@ -120,25 +120,25 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
   return (
     <div className="">
-      <h1 className="font-urbanist typo-heading1 font-bold mb-8 max-w-[712px] w-full">
+      <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 max-w-[712px] w-full leading-tight">
         {t(
           "Add your card details to ensure you get paid quickly and securely.",
         )}
       </h1>
 
-      <div className="w-full shadow-dark p-4 rounded-xl max-w-[536px]">
-        <h3 className="typo-label font-bold mb-4 font-urbanist">
+      <div className="w-full shadow-dark p-3 sm:p-4 rounded-lg sm:rounded-xl max-w-[536px]">
+        <h3 className="text-sm sm:text-base lg:typo-label font-bold mb-3 sm:mb-4 font-urbanist">
           {t("Add Bank details")}
         </h3>
 
-        <div className="flex gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-3 sm:mb-4">
           <InputField
             name="firstName"
             control={control}
             type="text"
             className="w-full"
             placeholder={t("First Name")}
-            inputClassName="h-[60px]"
+            inputClassName="h-[50px] sm:h-[60px] text-sm sm:text-base"
             rules={{ required: "First name is required" }}
             onInput={(e) => {
               e.currentTarget.value = e.currentTarget.value.replace(
@@ -154,7 +154,7 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
             type="text"
             className="w-full"
             placeholder={t("Last Name")}
-            inputClassName="h-[60px]"
+            inputClassName="h-[50px] sm:h-[60px] text-sm sm:text-base"
             rules={{ required: "Last name is required" }}
             onInput={(e) => {
               e.currentTarget.value = e.currentTarget.value.replace(
@@ -172,7 +172,7 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
           type="text"
           className="w-full"
           placeholder={t("Bank Account Number")}
-          inputClassName="h-[60px] input"
+          inputClassName="h-[50px] sm:h-[60px] text-sm sm:text-base input"
           rules={{ required: "Bank account number is required" }}
           placeholderAnimate={true}
         />
@@ -184,21 +184,22 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
           onFileSelect={handleFileSelect}
           className="cursor-pointer [appearance:none]"
         >
-          <div className="flex items-center justify-between gap-4 p-4 overflow-hidden mt-4 cursor-pointer">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 overflow-hidden mt-3 sm:mt-4 cursor-pointer">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
               <Image
                 src={"/assets/icons/FileGrey.svg"}
-                width={24}
-                height={24}
+                width={20}
+                height={20}
                 alt="file"
+                className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
               />
-              <p className="text-(--black) typo-body font-jakarta">
+              <p className="text-(--black) text-sm sm:text-base lg:typo-body font-jakarta truncate">
                 {selectedFile
                   ? selectedFile.name.slice(0, 20)
                   : t("Upload Document")}
               </p>
             </div>
-            <Plus2Icon />
+            <Plus2Icon className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
           </div>
         </FileUpload>
       </div>

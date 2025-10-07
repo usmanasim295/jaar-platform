@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Controller,
   Control,
   FieldValues,
   Path,
   RegisterOptions,
-} from "react-hook-form";
-import { Currency, EyeOpenIcon } from "../assets/icons";
-import { EyeClosed } from "lucide-react";
+} from 'react-hook-form';
+import { Currency, EyeOpenIcon } from '../assets/icons';
+import { EyeClosed } from 'lucide-react';
 
 interface InputFieldProps<T extends FieldValues> {
   name: Path<T>;
   control: Control<T>;
-  type?: "text" | "email" | "password" | "number" | "checkbox" | "radio";
+  type?: 'text' | 'email' | 'password' | 'number' | 'checkbox' | 'radio';
   label?: string;
   placeholder?: string;
   rules?: RegisterOptions<T, Path<T>>;
@@ -32,11 +32,11 @@ const InputField = <T extends FieldValues>({
   name,
   control,
   label,
-  type = "text",
+  type = 'text',
   placeholder,
   rules,
-  className = "",
-  inputClassName = "",
+  className = '',
+  inputClassName = '',
   error,
   value,
   radioValue,
@@ -49,7 +49,7 @@ const InputField = <T extends FieldValues>({
 
   return (
     <div className={`${className}`}>
-      {label && type !== "checkbox" && (
+      {label && type !== 'checkbox' && (
         <label htmlFor={inputId} className="block text-sm font-medium mb-2">
           {label}
         </label>
@@ -59,14 +59,14 @@ const InputField = <T extends FieldValues>({
         control={control}
         rules={rules}
         render={({ field }) => {
-          if (type === "checkbox") {
+          if (type === 'checkbox') {
             return (
               <label className="flex items-center gap-2">
                 <input
                   id={inputId}
                   type="checkbox"
                   checked={!!field.value}
-                  onChange={(e) => {
+                  onChange={e => {
                     field.onChange(e.target.checked);
                     onChange?.(e.target.checked);
                   }}
@@ -77,7 +77,7 @@ const InputField = <T extends FieldValues>({
             );
           }
 
-          if (type === "radio") {
+          if (type === 'radio') {
             return (
               <label className="flex items-center gap-2">
                 <input
@@ -95,16 +95,16 @@ const InputField = <T extends FieldValues>({
               </label>
             );
           }
-          const isPassword = type === "password";
+          const isPassword = type === 'password';
           const inputType = isPassword
             ? showPassword
-              ? "text"
-              : "password"
+              ? 'text'
+              : 'password'
             : type;
           return (
             <div className="relative">
-              {type === "number" && (
-                <div className="absolute left-4 top-10 -translate-y-1/2 text-gray-500">
+              {type === 'number' && (
+                <div className="absolute left-4 top-9 lg:top-10 -translate-y-1/2 text-gray-500">
                   <Currency />
                 </div>
               )}
@@ -112,23 +112,23 @@ const InputField = <T extends FieldValues>({
               <input
                 id={inputId}
                 type={inputType}
-                placeholder={placeholderAnimate ? " " : placeholder}
-                value={field.value || ""}
-                min={type === "number" ? 0 : undefined}
-                onChange={(e) => {
+                placeholder={placeholderAnimate ? ' ' : placeholder}
+                value={field.value || ''}
+                min={type === 'number' ? 0 : undefined}
+                onChange={e => {
                   const value =
-                    type === "number" ? Number(e.target.value) : e.target.value;
+                    type === 'number' ? Number(e.target.value) : e.target.value;
                   field.onChange(value);
                   onChange?.(value);
                 }}
                 onInput={onInput}
                 onBlur={field.onBlur}
                 className={`peer relative z-1 w-full ${
-                  type === "number" ? "pl-8" : "px-4"
+                  type === 'number' ? 'pl-8' : 'px-4'
                 } py-2 pt-5 border-2 rounded-[10px] focus:outline-none text-(--primary-black) ${
                   error
-                    ? "border-red-500 ring-red-200"
-                    : "border-(--light-grey)"
+                    ? 'border-red-500 ring-red-200'
+                    : 'border-(--light-grey)'
                 } ${inputClassName}`}
               />
 
@@ -137,7 +137,7 @@ const InputField = <T extends FieldValues>({
                   type="button"
                   className="absolute z-[2] right-3 top-1/2 -translate-y-1/2 cursor-pointer"
                   tabIndex={-1}
-                  onClick={() => setShowPassword((prev) => !prev)}
+                  onClick={() => setShowPassword(prev => !prev)}
                 >
                   {showPassword ? <EyeClosed /> : <EyeOpenIcon />}
                 </button>
@@ -148,9 +148,9 @@ const InputField = <T extends FieldValues>({
                   htmlFor={inputId}
                   className={`absolute z-0 left-4 top-1 text-(--gray-2) text-sm transition-all
                   ${
-                    type === "number"
-                      ? "top-1 text-xs text-(--grey-text)" // always up for number
-                      : "peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--grey-text) peer-focus:top-1 peer-focus:text-xs peer-focus:text-(--grey-text)"
+                    type === 'number'
+                      ? 'top-1 text-xs text-(--grey-text)' // always up for number
+                      : 'peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--grey-text) peer-focus:top-1 peer-focus:text-xs peer-focus:text-(--grey-text)'
                   }`}
                 >
                   {placeholder}
@@ -164,7 +164,7 @@ const InputField = <T extends FieldValues>({
         <div className="relative text-[10px] text-red-500">
           <span className="absolute -bottom-3.5 right-3 ">{error}</span>
         </div>
-      )}{" "}
+      )}{' '}
     </div>
   );
 };

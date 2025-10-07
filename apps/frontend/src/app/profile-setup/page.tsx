@@ -143,10 +143,10 @@ const Page = () => {
     }
   }, [router]);
   return (
-    <div className="py-2.5 bg-(--white) w-full flex flex-col justify-between mt-12.5 h-[calc(100vh-140px)]">
+    <div className="py-2 sm:py-2.5 bg-(--white) w-full flex flex-col justify-between mt-8 sm:mt-12.5 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)]">
       <title>Profile Setup</title>
-      <div className="w-full flex justify-center px-10 ">
-        <div className="w-full max-w-[1300px] flex flex-col justify-between mb-40">
+      <div className="w-full flex justify-center px-4 sm:px-6 lg:px-10">
+        <div className="w-full max-w-[1300px] flex flex-col justify-between mb-20 sm:mb-32 lg:mb-40">
           <StepComponent
             ref={(el: any) => (stepRefs.current[currentStep] = el)}
             {...stepProps}
@@ -154,35 +154,38 @@ const Page = () => {
         </div>
       </div>
 
-      <div className="fixed bottom-4 w-screen inset-x-0 bg-white">
-        <div className="relative w-full h-2 bg-(--light-grey) mb-8">
+      <div className="fixed bottom-2 sm:bottom-4 w-screen inset-x-0 bg-white border-t border-gray-100">
+        <div className="relative w-full h-1.5 sm:h-2 bg-(--light-grey) mb-4 sm:mb-6 lg:mb-8">
           <div
-            className="absolute h-2 bg-(--primary) rounded-r-full transition-all duration-300"
+            className="absolute h-1.5 sm:h-2 bg-(--primary) rounded-r-full transition-all duration-300"
             style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
           />
         </div>
 
-        <div className="w-full flex justify-center px-10">
-          <div className="w-full flex max-w-[1300px] justify-between items-center">
+        <div className="w-full flex justify-center px-4 sm:px-6 lg:px-10">
+          <div className="w-full flex max-w-[1300px] justify-between items-center gap-2 sm:gap-4">
             <Button
               variant="secondary"
-              className="flex items-center gap-[5px] py-[19px] pl-2 pr-6 font-semibold font-anevir"
+              className="flex items-center justify-center gap-1 sm:gap-[5px] sm:py-[19px] font-semibold font-anevir text-sm sm:text-base"
               onClick={() => {
                 if (currentStep === 0) router.push('/signup');
                 else setCurrentStep(s => Math.max(s - 1, 0));
               }}
             >
-              <CaretLeft />
-              {t('Previous')}
+              <CaretLeft className="w-5 h-5 hidden lg:inline" />
+              <span className="text-center text-[#2d6a87]">
+                {t('Previous')}
+              </span>
+              {/* <span className="xs:hidden">{t('Prev')}</span> */}
             </Button>
 
             <Button
               variant="primary"
-              className="flex items-center gap-[5px] py-[19px] px-8 font-semibold font-anevir"
+              className="flex items-center gap-1 sm:gap-[5px] py-3 sm:py-[19px] px-4 sm:px-8 font-semibold font-anevir text-sm sm:text-base"
               onClick={handleNext}
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white" />
+                <div className="animate-spin rounded-full h-4 w-4 sm:h-6 sm:w-6 border-t-2 border-b-2 border-white" />
               ) : (
                 t('Next')
               )}

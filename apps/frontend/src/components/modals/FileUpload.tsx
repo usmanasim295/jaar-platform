@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface FileUploadProps {
   label?: string;
@@ -26,7 +26,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <label className={`relative block cursor-pointer ${className}`}>
-      {children ? children : <span>{label || "Upload File"}</span>}
+      {children ? children : <span>{label || 'Upload File'}</span>}
 
       <input
         type="file"

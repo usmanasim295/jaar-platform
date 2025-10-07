@@ -88,14 +88,14 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
   useImperativeHandle(ref, () => ({
     submit: handleSubmit,
   }));
-  if (isServicesLoading) return <p>{t('Loading services...')}</p>;
+  if (isServicesLoading) return <p className="text-sm sm:text-base">{t('Loading services...')}</p>;
   return (
     <div className="max-w-[648px] w-full">
-      <h1 className="font-urbanist typo-heading1 font-bold mb-8">
-        {t('We’d love to know—what services do you provide?')}
+      <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
+        {t('We\'d love to know—what services do you provide?')}
       </h1>
 
-      <div className="flex flex-wrap gap-6">
+      <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6">
         {(fetchedServices || []).map((service: any) => {
           const Icon = iconMap[service.name] || AirConditionIcon;
           const isSelected = selectedServices.includes(service.id);
@@ -119,7 +119,7 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
                     : 'brightness(0) invert(0)',
                 }}
               />
-              <p className="typo-body font-jakarta font-semibold">
+              <p className="text-xs sm:text-sm lg:typo-body font-jakarta font-semibold text-center leading-tight">
                 {t(service.name)}
               </p>
             </div>
@@ -128,7 +128,7 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
       </div>
 
       {error && (
-        <p className="text-red-500 mt-2">{t('Failed to submit services')}</p>
+        <p className="text-red-500 mt-2 text-sm sm:text-base">{t('Failed to submit services')}</p>
       )}
     </div>
   );

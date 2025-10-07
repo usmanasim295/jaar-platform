@@ -80,33 +80,33 @@ const JobCard: FC<JobCardProps> = ({
     bids?.filter(bid => bid.status === 'ACCEPTED').length || 0;
 
   return (
-    <div className="bg-[#FFFFFF] shadow-dark rounded-2xl p-6 mb-6 font-jakarta leading-[100%]">
-      <div className="flex justify-between items-start">
-        <h3 className="typo-heading3 font-semibold text-(--primary-black) ">
+    <div className="bg-[#FFFFFF] shadow-dark rounded-xl lg:rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 font-jakarta leading-[100%]">
+      <div className="flex flex-col sm:flex-row lg:justify-between lg:items-start gap-2 sm:gap-0">
+        <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black)">
           {title}
         </h3>
         {acceptedBidsCount > 0 && (
-          <div className="flex items-center gap-2 text-(--danger) typo-body font-normal">
-            <span className="h-3 w-3 bg-(--danger) rounded-full font-normal typo-body"></span>
+          <div className="flex items-center gap-2 text-(--danger) text-sm lg:typo-body font-normal">
+            <span className="h-2.5 sm:h-3 lg:h-3 w-2.5 sm:w-3 lg:w-3 bg-(--danger) rounded-full font-normal"></span>
             {acceptedBidsCount} {t('Bids')}
           </div>
         )}
       </div>
 
       {description && (
-        <p className="typo-body font-medium text-(--primary-black) my-4">
+        <p className="text-sm sm:text-base lg:typo-body font-medium text-(--primary-black) my-3 sm:my-4 lg:my-4">
           {description}
         </p>
       )}
 
-      <div className="flex justify-between items-end gap-x-2">
-        <div className="flex flex-wrap gap-2 ">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-3 lg:gap-x-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 lg:gap-2">
           {/* Services */}
           {services &&
             services.map((service, index) => (
               <span
                 key={index}
-                className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg font-medium"
+                className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium"
               >
                 {tagIcons[service.service] || tagIcons['Ac Service']}{' '}
                 {service.service}
@@ -115,34 +115,34 @@ const JobCard: FC<JobCardProps> = ({
 
           {/* Charges */}
           {charges && (
-            <span className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg font-medium">
+            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
               💰 {charges}
             </span>
           )}
 
           {/* Work Duration */}
           {workDuration && (
-            <span className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg font-medium">
+            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
               ⏱️ {workDuration}
             </span>
           )}
 
           {/* Date */}
           {date && (
-            <span className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg font-medium">
+            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
               <CalenderBlank size={16} /> {formatDate(date)}
             </span>
           )}
 
           {/* Time Slot */}
           {timeSlot && (
-            <span className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg">
+            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg">
               <Clock size={16} /> {timeSlot}
             </span>
           )}
 
           {/* Location */}
-          <span className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg font-medium">
+          <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
             <MapPin size={16} />{' '}
             {apartment?.name
               ? `${apartment.name}, ${apartment.city}`
@@ -151,15 +151,15 @@ const JobCard: FC<JobCardProps> = ({
 
           {/* Experience Level */}
           {experienceLevel && (
-            <span className="flex items-center gap-[6px] p-[10px] bg-(--light-grey) text-[#15120F] typo-small rounded-lg font-medium">
+            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
               🎯 {experienceLevel}
             </span>
           )}
         </div>
 
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 lg:gap-2 items-center">
           <span
-            className={` min-w-[127px] flex flex-col items-center justify-center h-9 typo-small font-medium rounded-lg text-(--white) ${getStatusColor(status)}`}
+            className={`min-w-[110px] px-2 sm:min-w-[120px] lg:min-w-[150px] flex flex-col items-center justify-center h-8 sm:h-9 lg:h-9 text-xs sm:text-sm lg:typo-small font-medium text-(--white) ${getStatusColor(status)}`}
           >
             {t('Status')}: {getStatusText(status)}
           </span>
@@ -168,7 +168,7 @@ const JobCard: FC<JobCardProps> = ({
           {status === 'IN_PROGRESS' && jobId && (
             <button
               onClick={() => setIsCompletionModalOpen(true)}
-              className=" h-9 min-w-[165px] bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors"
+              className="h-8 sm:h-9 lg:h-9 min-w-[140px] sm:min-w-[155px] lg:min-w-[165px] bg-green-500 text-white text-xs sm:text-sm lg:text-sm font-medium rounded-lg hover:bg-green-600 cursor-pointer transition-colors"
             >
               {t('Submit Completion')}
             </button>

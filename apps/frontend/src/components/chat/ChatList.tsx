@@ -231,14 +231,14 @@ export const ChatList: React.FC<ChatListProps> = ({
   // Don't show empty state - always show the tabs and search bar
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full gap-y-2">
       {/* Tabs */}
-      <div className="flex justify-center p-[6px] gap-2 rounded-lg border border-[#E5E5E5] m-6 flex-shrink-0">
+      <div className="flex justify-center p-1 sm:p-[6px] gap-1.5 sm:gap-2 rounded-lg border border-[#E5E5E5] m-3 sm:m-4 md:m-6 flex-shrink-0">
         {(['All', 'Unread'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1 rounded-[6px] typo-body font-medium transition-colors duration-200 ${
+            className={`flex-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-[6px] text-sm sm:typo-body font-medium transition-colors duration-200 ${
               tab === activeTab
                 ? 'bg-(--primary) text-white'
                 : 'text-[#333333] hover:bg-gray-100'
@@ -246,7 +246,7 @@ export const ChatList: React.FC<ChatListProps> = ({
           >
             {t(tab)}
             {tab === 'Unread' && unreadCount.totalUnread > 0 && (
-              <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+              <span className="ml-1 bg-red-500 text-white text-[10px] sm:text-xs rounded-full px-1 sm:px-1.5 py-0.5">
                 {unreadCount.totalUnread}
               </span>
             )}
@@ -255,12 +255,12 @@ export const ChatList: React.FC<ChatListProps> = ({
       </div>
 
       {/* Search */}
-      <div className="m-6 mt-0 p-2 rounded-[10px] border border-[#E5E5E5] text-sm flex gap-2 w-auto items-center flex-shrink-0">
-        <MagnifyingGlass />
+      <div className="mx-3 sm:mx-4 md:mx-6 mt-0 p-2 rounded-[10px] border border-[#E5E5E5] text-xs sm:text-sm flex gap-2 w-auto items-center flex-shrink-0">
+        <MagnifyingGlass className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
         <input
           type="text"
           placeholder={t('Search keywords')}
-          className="focus:outline-none flex-1"
+          className="focus:outline-none flex-1 text-xs sm:text-sm"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
@@ -275,23 +275,27 @@ export const ChatList: React.FC<ChatListProps> = ({
         }}
       >
         {filteredChats.length === 0 ? (
-          <div className="px-6 py-8 text-center">
+          <div className="px-4 sm:px-6 py-6 sm:py-8 text-center">
             <div className="text-gray-400 mb-2">
               {activeTab === 'Unread' ? (
-                <MessageCircle className="w-8 h-8 mx-auto" />
+                <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 mx-auto" />
               ) : (
-                <Users className="w-8 h-8 mx-auto" />
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 mx-auto" />
               )}
             </div>
-            <p className="text-sm font-medium text-gray-600 mb-1">
-              {activeTab === 'Unread' ? 'No Unread Messages' : 'No Chats Found'}
-            </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">
               {activeTab === 'Unread'
-                ? 'You have no unread messages at the moment.'
+                ? t('No Unread Messages')
+                : t('No Chats Found')}
+            </p>
+            <p className="text-[10px] sm:text-xs text-gray-500 px-2">
+              {activeTab === 'Unread'
+                ? t('You have no unread messages at the moment.')
                 : searchTerm
-                  ? 'No chats match your search criteria.'
-                  : 'Start a conversation by accepting a job or creating a new chat.'}
+                  ? t('No chats match your search criteria.')
+                  : t(
+                      'Start a conversation by accepting a job or creating a new chat.'
+                    )}
             </p>
           </div>
         ) : (
@@ -309,46 +313,44 @@ export const ChatList: React.FC<ChatListProps> = ({
                     onMarkAsRead(chat.id);
                   }
                 }}
-                className={`px-6 py-[14px] cursor-pointer gap-2 flex justify-between transition-colors duration-200 ${
+                className={`px-3 sm:px-4 md:px-6 py-3 sm:py-[14px] cursor-pointer gap-2 flex justify-between transition-colors duration-200 ${
                   isSelected
                     ? 'bg-[#F3F3F3]'
                     : 'bg-[#fcfafa] hover:bg-[#F3F3F3]'
                 }`}
               >
-                <div className="flex gap-2 flex-1 min-w-0">
-                  <div className="relative">
+                <div className="flex gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="relative flex-shrink-0">
                     <img
                       src={getChatAvatar(chat)}
                       alt="Chat"
-                      width={45}
-                      height={45}
-                      className="rounded-full shrink-0"
+                      className="w-10 h-10 sm:w-11 sm:h-11 md:w-[45px] md:h-[45px] rounded-full"
                     />
                     {unreadCountForChat > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-red-500 text-white text-[10px] sm:text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                         {unreadCountForChat > 9 ? '9+' : unreadCountForChat}
                       </span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="flex justify-between items-center mb-0.5 sm:mb-1">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium typo-label text-[#15120F] truncate">
+                        <p className="font-medium text-sm sm:typo-label text-[#15120F] truncate">
                           {getChatDisplayName(chat)}
                         </p>
                         {getChatSubtitle(chat) && (
-                          <p className="text-xs font-medium text-[#2d6a87] truncate mt-0.5 capitalize">
+                          <p className="text-[10px] sm:text-xs font-medium text-[#2d6a87] truncate mt-0.5 capitalize">
                             {getChatSubtitle(chat)}
                           </p>
                         )}
                       </div>
-                      <span className="text-xs text-gray-400 shrink-0 ml-2">
+                      <span className="text-[10px] sm:text-xs text-gray-400 shrink-0 ml-2">
                         {chat.messages && chat.messages[0]
                           ? formatTime(chat.messages[0].updatedAt)
                           : formatTime(chat.updatedAt)}
                       </span>
                     </div>
-                    <p className="typo-body font-normal text-[#808080] truncate max-w-[170px] mt-[-4px]">
+                    <p className="text-xs sm:typo-body font-normal text-[#808080] truncate max-w-[140px] sm:max-w-[170px] mt-[-2px] sm:mt-[-4px]">
                       {getLastMessage(chat)}
                     </p>
                   </div>

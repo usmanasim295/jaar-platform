@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { ReactNode } from "react";
+import Link from 'next/link';
+import { ReactNode } from 'react';
 
 interface NextLinkProps {
   href: string;
@@ -13,7 +13,7 @@ interface NextLinkProps {
 export default function NextLink({
   href,
   children,
-  className = "",
+  className = '',
 }: NextLinkProps) {
   return (
     <Link

@@ -93,9 +93,9 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
   return (
     <div>
-      <h1 className="font-urbanist typo-heading1 font-bold mb-8 max-w-178 w-full">
+      <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 max-w-178 w-full leading-tight">
         {t(
-          "Add a short bio and profile picture HOA’s can get to know you better.",
+          "Add a short bio and profile picture HOA's can get to know you better.",
         )}
       </h1>
       <div
@@ -103,7 +103,7 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
           if (!imagePreview) fileInputRef.current?.click();
         }}
         aria-label="upload-picture"
-        className="group relative w-full h-[168px] rounded-[10px] bg-(--light-grey) flex items-center justify-center mb-6 cursor-pointer overflow-hidden max-w-[610px]"
+        className="group relative w-full h-[140px] sm:h-[168px] rounded-lg sm:rounded-[10px] bg-(--light-grey) flex items-center justify-center mb-4 sm:mb-6 cursor-pointer overflow-hidden max-w-[610px]"
       >
         {imagePreview ? (
           <>
@@ -115,14 +115,14 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
             <Button
               type="button"
               onClick={handleRemoveImage}
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition cursor-pointer !h-10 !px-3"
+              className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 opacity-0 group-hover:opacity-100 transition cursor-pointer !h-8 sm:!h-10 !px-2 sm:!px-3 text-xs sm:text-sm"
               onMouseDown={(e) => e.stopPropagation()}
             >
               {t("Delete")}
             </Button>
           </>
         ) : (
-          <PlusIcon />
+          <PlusIcon className="" />
         )}
         <input
           type="file"
@@ -133,9 +133,9 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         />
       </div>
 
-      <div className="border-2 border-(--light-grey) rounded-[10px] p-4 max-w-[610px] w-full">
+      <div className="border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] p-3 sm:p-4 max-w-[610px] w-full">
         <textarea
-          className="focus:outline-none border-0 w-full min-h-[173px] resize-none text-(--primary-black) typo-label"
+          className="focus:outline-none border-0 w-full min-h-[120px] sm:min-h-[173px] resize-none text-(--primary-black) text-sm sm:text-base lg:typo-label"
           placeholder={t("Bio")}
           value={bio}
           onChange={(e) => setBio(e.target.value)}

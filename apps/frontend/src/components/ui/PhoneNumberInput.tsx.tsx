@@ -1,15 +1,15 @@
 // components/PhoneNumberInput.tsx
-"use client";
-import React from "react";
-import PhoneInput from "react-phone-number-input";
-import "react-phone-number-input/style.css";
+'use client';
+import React from 'react';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import {
   Control,
   Controller,
   FieldValues,
   Path,
   RegisterOptions,
-} from "react-hook-form";
+} from 'react-hook-form';
 
 interface PhoneNumberInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -27,7 +27,7 @@ const PhoneNumberInput = <T extends FieldValues>({
   control,
   label,
   error,
-  className = "",
+  className = '',
   inputClassName,
   placeholder,
   rules,
@@ -49,7 +49,7 @@ const PhoneNumberInput = <T extends FieldValues>({
               international
               countryCallingCodeEditable={true}
               className={`peer w-full px-4 pt-3 border-2 rounded-[10px] focus:outline-none text-(--primary-black) ${
-                error ? "border-red-500 ring-red-200" : "border-(--light-grey)"
+                error ? 'border-red-500 ring-red-200' : 'border-(--light-grey)'
               } ${inputClassName}`}
             />
             <label
@@ -65,7 +65,7 @@ const PhoneNumberInput = <T extends FieldValues>({
         <div className="relative text-[10px] text-red-500">
           <span className="absolute -bottom-3.5 right-3 ">{error}</span>
         </div>
-      )}{" "}
+      )}{' '}
     </div>
   );
 };
