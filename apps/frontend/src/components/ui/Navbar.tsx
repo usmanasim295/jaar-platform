@@ -48,7 +48,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <div className="sticky top-0 left-0 z-[90] py-2.5 px-[60px] bg-white w-full flex justify-center shadow-light font-jakarta">
+    <div className="sticky top-0 left-0 z-[90] py-2.5 px-4 sm:px-6 lg:px-10 bg-white w-full flex justify-center shadow-light font-jakarta">
       <div className="w-full max-w-[1300px] flex items-center justify-between">
         <Link href="/">
           <Image
@@ -142,18 +142,19 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4">
-              <Link href="/signin">
-                <Button variant="secondary" className="px-4 py-2">
-                  {t('Sign In')}
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button variant="primary" className="px-4 py-2">
-                  {t('Sign Up')}
-                </Button>
-              </Link>
-            </div>
+            null
+            // <div className="flex gap-4">
+            //   <Link href="/signin">
+            //     <Button variant="secondary" className="px-4 py-2">
+            //       {t('Sign In')}
+            //     </Button>
+            //   </Link>
+            //   <Link href="/signup">
+            //     <Button variant="primary" className="px-4 py-2">
+            //       {t('Sign Up')}
+            //     </Button>
+            //   </Link>
+            // </div>
           )}
           <button
             className="lg:hidden text-gray-700"

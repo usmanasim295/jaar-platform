@@ -81,27 +81,27 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
   return (
     <div className="max-w-[648px] w-full">
-      <h1 className="font-urbanist typo-heading1 font-bold mb-8">
+      <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
         {t(
-          "Let us know your standard service rates. It will help HOA’s to offer you job",
+          "Let us know your standard service rates. It will help HOA's to offer you job",
         )}
       </h1>
 
-      <div className="flex flex-wrap gap-y-4 gap-x-6">
+      <div className="flex flex-wrap gap-y-3 sm:gap-y-4 gap-x-3 sm:gap-x-6">
         {rates.map((rateObj, idx) => (
           <div
             key={rateObj.serviceId}
-            className="bg-(--white) border-2 border-(--light-grey) rounded-[10px] px-4 py-3 overflow-hidden max-w-[312px] w-full typo-body leading-[100%] text-(--black)"
+            className="bg-(--white) border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] px-3 sm:px-4 py-2.5 sm:py-3 overflow-hidden w-full sm:max-w-[312px] text-sm sm:text-base lg:typo-body leading-[100%] text-(--black)"
           >
-            <p className="text-(--grey-text) typo-small font-jakarta font-regular mb-0.5">
+            <p className="text-(--grey-text) text-xs sm:typo-small font-jakarta font-regular mb-1 sm:mb-0.5">
               {t(`How much do you charge for ${rateObj.serviceName}?`)}
             </p>
 
             <div className="flex items-center gap-2">
-              <Currency />
+              <Currency className="w-4 h-4 sm:w-5 sm:h-5" />
               <input
                 type="number"
-                className="w-full bg-transparent border-none outline-none text-(--black) typo-body font-jakarta font-medium input"
+                className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium input"
                 value={rateObj.rate}
                 onChange={(e) =>
                   handleRateChange(rateObj.serviceName, e.target.value)
@@ -112,7 +112,7 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         ))}
       </div>
       {error && (
-        <p className="text-red-500 mt-2">{t("Failed to submit Rates")}</p>
+        <p className="text-red-500 mt-2 text-sm sm:text-base">{t("Failed to submit Rates")}</p>
       )}
     </div>
   );

@@ -59,11 +59,13 @@ function ChatUIContent() {
   // Show loading state while auth is loading
   if (isLoading) {
     return (
-      <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-8 font-jakarta mb-4">
-        <div className="flex items-center justify-center h-64">
+      <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-4 sm:mt-6 md:mt-8 font-jakarta mb-4">
+        <div className="flex items-center justify-center h-48 sm:h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
+            <p className="text-sm sm:text-base text-gray-600">
+              {t('Loading...')}
+            </p>
           </div>
         </div>
       </div>
@@ -73,17 +75,17 @@ function ChatUIContent() {
   // Redirect to login if not authenticated
   if (!isAuthenticated || !user) {
     return (
-      <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-8 font-jakarta mb-4">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">
-              Please log in to access messages
+      <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-4 sm:mt-6 md:mt-8 font-jakarta mb-4">
+        <div className="flex items-center justify-center h-48 sm:h-64">
+          <div className="text-center px-4">
+            <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
+              {t('Please log in to access messages')}
             </p>
             <a
               href="/signin"
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600"
+              className="bg-orange-500 text-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg hover:bg-orange-600 inline-block"
             >
-              Go to Login
+              {t('Go to Login')}
             </a>
           </div>
         </div>
@@ -140,12 +142,23 @@ function ChatUIContent() {
   };
 
   return (
-    <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-8 font-jakarta mb-4 relative">
+    <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-4 sm:mt-6 md:mt-8 font-jakarta relative">
       <title>Messages</title>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="font-semibold typo-heading3">{t('Messages')}</h2>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile menu button - always visible on mobile */}
+          <button
+            className="lg:hidden p-2 rounded hover:bg-gray-100"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <Menu size={24} />
+          </button>
+          <h2 className="font-semibold text-xl sm:text-2xl md:typo-heading3">
+            {t('Messages')}
+          </h2>
+        </div>
 
         {/* Connection Status */}
         {/* <div className="flex items-center gap-2">
@@ -163,18 +176,18 @@ function ChatUIContent() {
         </div> */}
       </div>
 
-      <div className="shadow-dark rounded-xl flex flex-col lg:flex-row mt-6 sm:h-[75vh] overflow-hidden">
+      <div className="shadow-dark rounded-xl flex flex-col lg:flex-row mt-4 sm:mt-6 h-[calc(100vh-200px)] sm:h-[calc(100vh-180px)] lg:h-[75vh] overflow-hidden">
         {/* Mobile overlay */}
         {sidebarOpen && (
           <div
-            className="absolute inset-0 bg-black bg-opacity-40 z-40 lg:hidden"
+            className="absolute inset-0 bg-white/10 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         <div
-          className={`absolute top-0 left-0 h-full w-3/4 sm:w-[300px] bg-white border-x border-[#F3F3F3] transform transition-transform duration-300 lg:relative lg:translate-x-0 lg:w-[360px] ${
+          className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
         >
@@ -190,46 +203,32 @@ function ChatUIContent() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="w-full lg:w-[75%] flex flex-col bg-white">
-          {/* Chat Header */}
+        <div className="w-full lg:w-[75%] flex flex-col bg-white h-full">
+          {/* Chat Header - Fixed on mobile */}
           {selectedChat && (
-            <div className="flex items-center justify-between gap-3 border-b border-[#E6E6E6]">
-              <div className="flex items-center gap-3 pt-4 pb-5 pl-6">
-                <button
-                  className="lg:hidden p-1 rounded hover:bg-gray-100"
-                  onClick={() => setSidebarOpen(true)}
-                >
-                  <Menu size={24} />
-                </button>
-
-                <img
-                  src={getChatAvatar(selectedChat)}
-                  alt="Chat"
-                  width={56}
-                  height={56}
-                  className="rounded-full"
-                />
-                {/* <div className="relative">
-                  <span className="absolute -left-8 -bottom-7 ml-1 h-3.5 w-3.5 bg-green-500 rounded-full"></span>
-                </div> */}
-                <div>
-                  <p className="font-medium typo-heading3 text-[#333333]">
-                    {getChatDisplayName(selectedChat)}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {selectedChat.type === 'SERVICE_CHAT'
-                      ? 'Service Chat'
-                      : selectedChat.type === 'COMMUNITY_GROUP'
-                        ? 'Community Chat'
-                        : 'Direct Message'}
-                  </p>
-                </div>
+            <div className="flex items-center gap-2 sm:gap-3 border-b border-[#E6E6E6] px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex-shrink-0">
+              <img
+                src={getChatAvatar(selectedChat)}
+                alt="Chat"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex-shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-base sm:text-lg md:typo-heading3 text-[#333333] truncate">
+                  {getChatDisplayName(selectedChat)}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">
+                  {selectedChat.type === 'SERVICE_CHAT'
+                    ? t('Service Chat')
+                    : selectedChat.type === 'COMMUNITY_GROUP'
+                      ? t('Community Chat')
+                      : t('Direct Message')}
+                </p>
               </div>
             </div>
           )}
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             <ChatMessages
               chat={selectedChat}
               messages={messages}
@@ -253,9 +252,9 @@ export default function ChatUI() {
   return (
     <Suspense
       fallback={
-        <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-8 font-jakarta mb-4">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="max-w-[1400px] sm:px-[60px] px-3 mx-auto mt-4 sm:mt-6 md:mt-8 font-jakarta mb-4">
+          <div className="flex items-center justify-center h-48 sm:h-64">
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-orange-500"></div>
           </div>
         </div>
       }

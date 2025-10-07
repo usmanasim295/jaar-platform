@@ -60,57 +60,57 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
   return (
     <div>
-      <h1 className="font-urbanist typo-heading1 font-bold mb-8 max-w-[667px] w-full">
-        {t("Add the locations you cover to help us connect you with HOA’s")}
+      <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 max-w-[667px] w-full leading-tight">
+        {t("Add the locations you cover to help us connect you with HOA's")}
       </h1>
 
-      <div className="w-full shadow-dark p-4 rounded-xl max-w-[648px]">
+      <div className="w-full shadow-dark p-3 sm:p-4 rounded-lg sm:rounded-xl max-w-[648px] mb-8">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3629265.841639736!2d39.7831443!3d24.1307375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15e7b33fe7952a41%3A0x5960504bc21ab69b!2sSaudi%20Arabia!5e0!3m2!1sen!2ssa!4v1690196107614"
-          height="145"
-          className="mt-6 border-none rounded-2xl w-full"
+          height="120"
+          className="mt-4 sm:mt-6 border-none rounded-xl sm:rounded-2xl w-full"
         />
-        <p className="mt-4 typo-body font-normal font-jakarta">
+        <p className="mt-3 sm:mt-4 text-sm sm:text-base lg:typo-body font-normal font-jakarta">
           Muheel Facilities Managment
         </p>
-        <h3 className="mt-2 typo-body font-semibold mb-4 font-jakarta">
+        <h3 className="mt-1 sm:mt-2 text-sm sm:text-base lg:typo-body font-semibold mb-3 sm:mb-4 font-jakarta">
           Saudi Arabia
         </h3>
 
-        <Button variant="inline" className="mb-6 font-jakarta">
+        <Button variant="inline" className="mb-4 sm:mb-6 font-jakarta text-sm sm:text-base">
           {t("Use my Current Location")}
         </Button>
 
-        <h2 className="typo-label font-semibold mb-4 font-jakarta">
+        <h2 className="text-sm sm:text-base lg:typo-label font-semibold mb-3 sm:mb-4 font-jakarta">
           {t("Add Manually")}
         </h2>
 
         <form>
-          <div className="flex gap-4 font-jakarta">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 font-jakarta">
             {/* Location Input */}
-            <div className="bg-(--white) border-2 border-(--light-grey) rounded-[10px] px-4 py-3 overflow-hidden max-w-[300px] w-full">
-              <p className="text-(--grey-text) typo-small font-jakarta font-regular mb-1">
+            <div className="bg-(--white) border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] px-3 sm:px-4 py-2.5 sm:py-3 overflow-hidden w-full sm:max-w-[300px]">
+              <p className="text-(--grey-text) text-xs sm:typo-small font-jakarta font-regular mb-1">
                 {t("Location")}
               </p>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-(--black) typo-body font-jakarta font-medium placeholder:text-(--black)"
+                className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-(--black)"
                 placeholder={t("Muheel Facilities Managment")}
               />
             </div>
 
             {/* Landmark Input */}
-            <div className="bg-(--white) border-2 border-(--light-grey) rounded-[10px] px-4 py-3 overflow-hidden max-w-[300px] w-full">
-              <p className="text-(--grey-text) typo-small font-jakarta font-regular mb-1">
+            <div className="bg-(--white) border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] px-3 sm:px-4 py-2.5 sm:py-3 overflow-hidden w-full sm:max-w-[300px]">
+              <p className="text-(--grey-text) text-xs sm:typo-small font-jakarta font-regular mb-1">
                 {t("Landmark")}
               </p>
               <input
                 type="text"
                 value={landmark}
                 onChange={(e) => setLandmark(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-(--black) typo-body font-jakarta font-medium placeholder:text-(--black)"
+                className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-(--black)"
                 placeholder={t("Tea House")}
               />
             </div>
@@ -119,7 +119,7 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
       </div>
 
       {error && (
-        <p className="text-red-500 mt-2">{t("Failed to submit location")}</p>
+        <p className="text-red-500 mt-2 text-sm sm:text-base">{t("Failed to submit location")}</p>
       )}
     </div>
   );

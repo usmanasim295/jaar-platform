@@ -112,7 +112,7 @@ export class ChatController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
-          new FileTypeValidator({ fileType: '.*' }), // Allow all file types
+          // Remove FileTypeValidator to allow all file types
         ],
         fileIsRequired: true,
       }),
