@@ -7,15 +7,15 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # -------------------------------
-# 2. Dependencies (install only needed)
+# 2. Dependencies (install only when needed)
 # -------------------------------
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy only the package files to install deps efficiently
+# Copy only package files
 COPY package*.json ./
-RUN npm install --only=production && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 # -------------------------------
 # 3. Builder (build Next.js app)
@@ -23,14 +23,14 @@ RUN npm install --only=production && npm cache clean --force
 FROM base AS builder
 WORKDIR /app
 
-# Copy dependency files and install full dependencies (for build)
+# Copy package files and install ALL dependencies (dev + prod)
 COPY package*.json ./
 RUN npm install
 
-# Copy the full source code
+# Copy project files
 COPY . .
 
-# Build-time environment variables for NEXT_PUBLIC_* values
+# Build-time environment variables
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_WS_BASE_URL
 ARG NEXT_PUBLIC_DEFAULT_LANGUAGE
@@ -53,16 +53,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Create non-root user for security
+# Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy necessary build artifacts
+# Copy built artifacts only
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copy public assets only if the folder exists
-RUN mkdir -p ./public
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public || true
 
 USER nextjs
@@ -70,6 +67,7 @@ USER nextjs
 EXPOSE 3000
 
 CMD ["node", "server.js"]
+
 
 
 # # Use Node 20 for better compatibility with Next.js 15 and React 19
