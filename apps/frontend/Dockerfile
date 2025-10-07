@@ -1,39 +1,36 @@
-# -------------------------------------------------------
-#  Base image
-# -------------------------------------------------------
+# -------------------------------
+# 1. Base image
+# -------------------------------
 FROM node:20-alpine AS base
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Set working directory
+# -------------------------------
+# 2. Dependencies (install only needed)
+# -------------------------------
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies required for builds
-RUN apk add --no-cache libc6-compat
-
-# -------------------------------------------------------
-#  Dependencies stage
-# -------------------------------------------------------
-FROM base AS deps
-
-# Copy package files
+# Copy only the package files to install deps efficiently
 COPY package*.json ./
+RUN npm install --only=production && npm cache clean --force
 
-# Install dependencies (use production flag for smaller image)
-RUN npm ci --only=production && npm cache clean --force
-
-# -------------------------------------------------------
-#  Builder stage
-# -------------------------------------------------------
+# -------------------------------
+# 3. Builder (build Next.js app)
+# -------------------------------
 FROM base AS builder
 WORKDIR /app
 
-# Copy package files and install all dependencies (for build)
+# Copy dependency files and install full dependencies (for build)
 COPY package*.json ./
 RUN npm install
 
-# Copy all project files into the image
+# Copy the full source code
 COPY . .
 
-# Build-time environment variables
+# Build-time environment variables for NEXT_PUBLIC_* values
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_WS_BASE_URL
 ARG NEXT_PUBLIC_DEFAULT_LANGUAGE
@@ -45,41 +42,35 @@ ENV NEXT_PUBLIC_DEFAULT_LANGUAGE=$NEXT_PUBLIC_DEFAULT_LANGUAGE
 # Build the Next.js app
 RUN npm run build
 
-# -------------------------------------------------------
-#  Runner (Production) stage
-# -------------------------------------------------------
+# -------------------------------
+# 4. Runner (production container)
+# -------------------------------
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nextjs
-
-# Set up directories and permissions
-RUN mkdir -p .next && chown nextjs:nodejs .next
-
-# Copy only the necessary build output for production
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Copy public folder if it exists (safe fallback)
-RUN mkdir -p ./public
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public || true
-RUN chmod -R 755 ./public || true
-
-# Use non-root user
-USER nextjs
-
-# Expose app port
-EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the Next.js standalone server
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy necessary build artifacts
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy public assets only if the folder exists
+RUN mkdir -p ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public || true
+
+USER nextjs
+
+EXPOSE 3000
+
 CMD ["node", "server.js"]
+
 
 # # Use Node 20 for better compatibility with Next.js 15 and React 19
 # FROM node:20-alpine AS base
