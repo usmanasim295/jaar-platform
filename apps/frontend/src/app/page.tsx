@@ -557,14 +557,22 @@ export default function Home() {
                           ))}
                         </div>
 
-                        <div className="flex justify-between items-center flex-wrap gap-2 mt-3 sm:mt-4">
+                        <div className="flex justify-between items-center  gap-2 mt-3 sm:mt-4">
                           {job.apartment && (
-                            <div className="flex items-center font-medium gap-1 sm:gap-[6px] text-xs leading-[100%] text-(--grey-text)">
-                              <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="truncate">
-                                {job.apartment.name}, {job.apartment.city}
-                              </span>
-                            </div>
+<div className="flex items-center font-medium cursor-pointer gap-1 sm:gap-[6px] text-xs leading-[100%] text-[var(--grey-text)] max-w-[70%] overflow-visible relative group">
+  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+
+  <span className="truncate whitespace-nowrap overflow-hidden text-ellipsis block">
+    {job.apartment.name}, {job.apartment.city}
+  </span>
+
+  {/* Tooltip always shows on hover */}
+  <span className="absolute left-4 -top-7 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap z-50">
+    {job.apartment.name}, {job.apartment.city}
+  </span>
+  
+</div>
+
                           )}
                           <Button
                             onClick={() => {

@@ -112,7 +112,7 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
               }`}
             >
               <Icon
-                className="mb-4"
+                className="mb-4 h-8 w-8"
                 style={{
                   filter: isSelected
                     ? 'brightness(0) invert(1)'

@@ -149,8 +149,8 @@ const InputField = <T extends FieldValues>({
                   className={`absolute z-0 left-4 top-1 text-(--gray-2) text-sm transition-all
                   ${
                     type === 'number'
-                      ? 'top-1 text-xs text-(--grey-text)' // always up for number
-                      : 'peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--grey-text) peer-focus:top-1 peer-focus:text-xs peer-focus:text-(--grey-text)'
+                      ? 'top-1 text-xs text-(--grey-text)'
+                      : 'peer-placeholder-shown:top-4.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--grey-text) peer-focus:top-1.5 sm:peer-focus:text-xs peer-focus:text-[10px] peer-focus:text-(--grey-text)'
                   }`}
                 >
                   {placeholder}
