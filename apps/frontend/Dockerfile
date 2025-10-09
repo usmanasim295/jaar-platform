@@ -15,7 +15,7 @@ WORKDIR /app
 
 # Copy only package files
 COPY package*.json ./
-RUN npm install && npm cache clean --force
+RUN npm install --legacy-peer-deps && npm cache clean --force
 
 # -------------------------------
 # 3. Builder (build Next.js app)
@@ -23,12 +23,18 @@ RUN npm install && npm cache clean --force
 FROM base AS builder
 WORKDIR /app
 
+# Override NODE_ENV for build to ensure devDependencies are installed
+ENV NODE_ENV=development
+
 # Copy package files and install ALL dependencies (dev + prod)
-COPY package*.json ./
-RUN npm install
+COPY package*.json package-lock.json* ./
+RUN npm install --legacy-peer-deps
 
 # Copy project files
 COPY . .
+
+# Set NODE_ENV back to production for the build
+ENV NODE_ENV=production
 
 # Build-time environment variables
 ARG NEXT_PUBLIC_API_BASE_URL
@@ -60,7 +66,7 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy built artifacts only
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public || true
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 

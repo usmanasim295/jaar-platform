@@ -209,23 +209,15 @@ export default function JobDetails({ params }: JobDetailsProps) {
 
             {/* Job details */}
             <div className="mt-3 sm:mt-4 flex items-center flex-wrap gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-gray-600">
-              {jobData.workDuration && (
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm">
-                  {jobData.workDuration}
-                  </span>
-                </span>
-              )}
               {jobData.timeSlot && (
                 <span className="flex items-center gap-1">
                   <Star className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="text-xs sm:text-sm">{jobData.timeSlot}</span>
                 </span>
               )}
-              {jobData.charges && (
-                <span className="font-semibold text-green-600 text-xs sm:text-sm">
-                  {jobData.charges}
+              {jobData.experienceLevel && (
+                <span className="flex items-center gap-1">
+                  <span className="text-xs sm:text-sm">🎯 {jobData.experienceLevel}</span>
                 </span>
               )}
               {jobData.jobType && (
@@ -296,12 +288,14 @@ export default function JobDetails({ params }: JobDetailsProps) {
                   </span>
                 </div>
               )}
-              <div className="flex items-center gap-1.5 bg-(--light-grey) p-2 sm:p-2.5 rounded-lg text-xs sm:typo-small font-medium text-[#15120F]">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm break-words">
-                {jobData.location}
-                </span>
-              </div>
+              {jobData.apartment && (
+                <div className="flex items-center gap-1.5 bg-(--light-grey) p-2 sm:p-2.5 rounded-lg text-xs sm:typo-small font-medium text-[#15120F]">
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm break-words">
+                    {jobData.apartment.name}, {jobData.apartment.city}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <hr className="border-(--light-grey) w-[100%] " />
@@ -497,18 +491,6 @@ ${user?.name || t('Service Provider')}`}
               </div>
 
               {/* Job pricing */}
-              {jobData.charges && (
-                <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs sm:text-sm font-medium text-gray-700">
-                      {t('Budget')}
-                    </span>
-                    <span className="text-base sm:text-lg font-bold text-green-600">
-                      {jobData.charges}
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Dropdown Button - Mobile Only */}

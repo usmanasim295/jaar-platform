@@ -101,20 +101,6 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                 </Link>
               )}
             </div>
-
-            {/* Job pricing and details */}
-            {selectedJob?.charges && (
-              <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    {t('Budget')}
-                  </span>
-                  <span className="text-lg font-bold text-green-600">
-                    {selectedJob.charges}
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -150,15 +136,6 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
               {t('Job Details')}
             </h4>
             <div className="space-y-2 sm:space-y-3">
-              {selectedJob?.workDuration && (
-                <div className="flex items-center gap-2 text-sm flex-wrap">
-                  <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  <span className="font-medium">{t('Duration')}:</span>
-                  <span className="break-words">
-                    {selectedJob.workDuration}
-                  </span>
-                </div>
-              )}
               {selectedJob?.timeSlot && (
                 <div className="flex items-center gap-2 text-sm flex-wrap">
                   <Star className="w-4 h-4 text-gray-500 flex-shrink-0" />
@@ -196,7 +173,7 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
 
           <div>
             <h4 className="text-(--primary-black) font-semibold typo-heading3 mb-3 sm:mb-4">
-              {t('Work Duration & Location')}
+              {t('Work Schedule')}
             </h4>
             <div className="flex flex-wrap gap-2 items-center">
               {selectedJob?.startDate && selectedJob?.endDate && (
@@ -208,10 +185,6 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                   </span>
                 </div>
               )}
-              <div className="bg-[#f3f3f3] px-2 sm:px-3 py-[6px] rounded-lg typo-small text-[#15120F] font-medium flex items-center gap-2">
-                <MapPin className="w-4 h-4 flex-shrink-0" />
-                <span className="break-words">{selectedJob?.location}</span>
-              </div>
             </div>
           </div>
 

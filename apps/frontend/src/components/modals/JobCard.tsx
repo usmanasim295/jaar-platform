@@ -10,11 +10,8 @@ const JobCard: FC<JobCardProps> = ({
   tags,
   date,
   time,
-  location,
   tickets,
   status,
-  charges,
-  workDuration,
   timeSlot,
   experienceLevel,
   apartment,
@@ -113,20 +110,6 @@ const JobCard: FC<JobCardProps> = ({
               </span>
             ))}
 
-          {/* Charges */}
-          {charges && (
-            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
-              💰 {charges}
-            </span>
-          )}
-
-          {/* Work Duration */}
-          {workDuration && (
-            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
-              ⏱️ {workDuration}
-            </span>
-          )}
-
           {/* Date */}
           {date && (
             <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
@@ -141,13 +124,12 @@ const JobCard: FC<JobCardProps> = ({
             </span>
           )}
 
-          {/* Location */}
-          <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
-            <MapPin size={16} />{' '}
-            {apartment?.name
-              ? `${apartment.name}, ${apartment.city}`
-              : location}
-          </span>
+          {/* Apartment Location */}
+          {apartment && (
+            <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
+              <MapPin size={16} /> {apartment.name}, {apartment.city}
+            </span>
+          )}
 
           {/* Experience Level */}
           {experienceLevel && (

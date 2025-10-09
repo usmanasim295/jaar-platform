@@ -62,7 +62,8 @@ export default function MyBids() {
 
   // Get status badge styling
   const getStatusBadge = (status: string) => {
-    const baseClasses = 'px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium';
+    const baseClasses =
+      'px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium';
     switch (status) {
       case 'PENDING':
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
@@ -225,7 +226,10 @@ export default function MyBids() {
                 )}
               </p>
               <Link href="/">
-                <Button variant="primary" className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base">
+                <Button
+                  variant="primary"
+                  className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base"
+                >
                   {t('Find Jobs')}
                 </Button>
               </Link>
@@ -264,25 +268,29 @@ export default function MyBids() {
                   </p>
 
                   <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                    {bid.job.workDuration && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                        <span className="truncate">{getLocalizedText(bid.job.workDuration)}</span>
-                      </span>
-                    )}
                     {bid.job.timeSlot && (
                       <span className="flex items-center gap-1">
                         <Star className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                        <span className="truncate">{getLocalizedText(bid.job.timeSlot)}</span>
+                        <span className="truncate">
+                          {getLocalizedText(bid.job.timeSlot)}
+                        </span>
                       </span>
                     )}
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                      <span className="truncate">{getLocalizedText(bid.job.location)}</span>
-                    </span>
-                    {bid.job.charges && (
-                      <span className="font-semibold text-green-600">
-                        {getLocalizedText(bid.job.charges)}
+                    {bid.job.apartment && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="truncate">
+                          {getLocalizedText(bid.job.apartment.name)},{' '}
+                          {getLocalizedText(bid.job.apartment.city)}
+                        </span>
+                      </span>
+                    )}
+                    {bid.job.experienceLevel && (
+                      <span className="flex items-center gap-1">
+                        🎯{' '}
+                        <span className="truncate">
+                          {getLocalizedText(bid.job.experienceLevel)}
+                        </span>
                       </span>
                     )}
                   </div>
@@ -300,7 +308,9 @@ export default function MyBids() {
                           className="flex items-center justify-center gap-1 sm:gap-2 text-[10px] sm:!text-sm text-blue-600 hover:text-blue-800 px-2 sm:!px-0 py-1.5 sm:!py-0 h-7 sm:!h-auto"
                         >
                           <File className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                          <span className="hidden sm:inline">{t('View Document')}</span>
+                          <span className="hidden sm:inline">
+                            {t('View Document')}
+                          </span>
                           <span className="sm:hidden">{t('Doc')}</span>
                         </a>
                       )}

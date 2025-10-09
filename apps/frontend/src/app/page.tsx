@@ -131,10 +131,7 @@ export default function Home() {
       title: apiJob.title,
       desc: apiJob.description,
       tags: apiJob.services.map(service => service.service.name),
-      location: apiJob.location,
       posted: getTimeAgo(apiJob.createdAt),
-      charges: apiJob.charges,
-      workDuration: apiJob.workDuration,
       startDate: apiJob.startDate,
       endDate: apiJob.endDate,
       timeSlot: apiJob.timeSlot,
@@ -485,11 +482,6 @@ export default function Home() {
                             <span className="text-xs sm:typo-small font-medium text-(--grey-text) whitespace-nowrap">
                               {t('Posted')} {job.posted}
                             </span>
-                            {job.charges && (
-                              <span className="text-xs sm:typo-small font-semibold text-green-600">
-                                {job.charges}
-                              </span>
-                            )}
                             {hasBidded && userBidStatus && (
                               <span className="text-xs sm:typo-small font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded whitespace-nowrap">
                                 {t('Already Bidded')} -{' '}
@@ -504,19 +496,18 @@ export default function Home() {
 
                         {/* Additional job details */}
                         <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-600">
-                          {job.workDuration && (
-                            <span className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-gray-500" />
-                              <span className="font-medium">
-                                {job.workDuration}
-                              </span>
-                            </span>
-                          )}
                           {job.timeSlot && (
                             <span className="flex items-center gap-2">
                               <Star className="w-4 h-4 text-gray-500" />
                               <span className="font-medium">
                                 {job.timeSlot}
+                              </span>
+                            </span>
+                          )}
+                          {job.experienceLevel && (
+                            <span className="flex items-center gap-2">
+                              <span className="font-medium">
+                                🎯 {job.experienceLevel}
                               </span>
                             </span>
                           )}
@@ -567,10 +558,14 @@ export default function Home() {
                         </div>
 
                         <div className="flex justify-between items-center flex-wrap gap-2 mt-3 sm:mt-4">
-                          <div className="flex items-center font-medium gap-1 sm:gap-[6px] text-xs leading-[100%] text-(--grey-text)">
-                            <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="truncate">{job.location}</span>
-                          </div>
+                          {job.apartment && (
+                            <div className="flex items-center font-medium gap-1 sm:gap-[6px] text-xs leading-[100%] text-(--grey-text)">
+                              <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <span className="truncate">
+                                {job.apartment.name}, {job.apartment.city}
+                              </span>
+                            </div>
+                          )}
                           <Button
                             onClick={() => {
                               setSelectedJob(job);

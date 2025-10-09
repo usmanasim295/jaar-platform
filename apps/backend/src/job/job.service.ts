@@ -147,20 +147,12 @@ export class JobService {
     const [
       titleTranslations,
       descriptionTranslations,
-      chargesTranslations,
-      workDurationTranslations,
       timeSlotTranslations,
-      locationTranslations,
       experienceLevelTranslations,
     ] = await Promise.all([
       this.translationService.createTranslationObject(createJobDto.title),
       this.translationService.createTranslationObject(createJobDto.description),
-      this.translationService.createTranslationObject(createJobDto.charges),
-      this.translationService.createTranslationObject(
-        createJobDto.workDuration,
-      ),
       this.translationService.createTranslationObject(createJobDto.timeSlot),
-      this.translationService.createTranslationObject(createJobDto.location),
       createJobDto.experienceLevel
         ? this.translationService.createTranslationObject(
             createJobDto.experienceLevel,
@@ -175,12 +167,9 @@ export class JobService {
         data: {
           title: titleTranslations,
           description: descriptionTranslations,
-          charges: chargesTranslations,
-          workDuration: workDurationTranslations,
           startDate: new Date(createJobDto.startDate),
           endDate: new Date(createJobDto.endDate),
           timeSlot: timeSlotTranslations,
-          location: locationTranslations,
           experienceLevel: createJobDto.experienceLevel
             ? experienceLevelTranslations
             : undefined,
@@ -506,11 +495,19 @@ export class JobService {
   //   });
   // }
 
-  async findByCreator(userId: string, userRole: string, status?: JobStatus) {
+  async findByCreator(
+    userId: string,
+    userRole: string,
+    status?: JobStatus,
+    jobType?: string,
+  ) {
     let jobs: any[] = [];
 
-    // Build status filter if provided
+    // Build filters if provided
     const statusFilter = status ? { status } : {};
+    const jobTypeFilter = jobType
+      ? { jobType: jobType as 'HOME_SERVICE' | 'COMMUNITY_SERVICE' }
+      : {};
 
     if (userRole === 'LEADER') {
       // Get apartments managed by this leader
@@ -525,6 +522,7 @@ export class JobService {
         where: {
           createdBy: userId,
           ...statusFilter,
+          ...jobTypeFilter,
         },
         include: {
           services: { include: { service: true } },
@@ -552,36 +550,41 @@ export class JobService {
       });
 
       // Fetch community service jobs created by home owners for leader's apartments
-      const communityJobs = await this.prisma.job.findMany({
-        where: {
-          apartmentId: { in: apartmentIds },
-          jobType: 'COMMUNITY_SERVICE',
-          ...statusFilter,
-        },
-        include: {
-          services: { include: { service: true } },
-          apartment: {
-            select: { id: true, name: true, hoaNumber: true, city: true },
-          },
-          leader: { select: { id: true, nationalId: true, role: true } },
-          creator: { select: { id: true, nationalId: true, role: true } },
-          bids: {
+      // Only fetch if no jobType filter or if filter is COMMUNITY_SERVICE
+      const shouldFetchCommunityJobs =
+        !jobType || jobType === 'COMMUNITY_SERVICE';
+      const communityJobs = shouldFetchCommunityJobs
+        ? await this.prisma.job.findMany({
+            where: {
+              apartmentId: { in: apartmentIds },
+              jobType: 'COMMUNITY_SERVICE',
+              ...statusFilter,
+            },
             include: {
-              serviceProvider: {
-                select: {
-                  id: true,
-                  name: true,
-                  rating: true,
-                  totalJobs: true,
-                  totalEarnings: true,
+              services: { include: { service: true } },
+              apartment: {
+                select: { id: true, name: true, hoaNumber: true, city: true },
+              },
+              leader: { select: { id: true, nationalId: true, role: true } },
+              creator: { select: { id: true, nationalId: true, role: true } },
+              bids: {
+                include: {
+                  serviceProvider: {
+                    select: {
+                      id: true,
+                      name: true,
+                      rating: true,
+                      totalJobs: true,
+                      totalEarnings: true,
+                    },
+                  },
                 },
+                orderBy: { totalPrice: 'asc' },
               },
             },
-            orderBy: { totalPrice: 'asc' },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+            orderBy: { createdAt: 'desc' },
+          })
+        : [];
 
       jobs = [...leaderJobs, ...communityJobs];
       // Optionally, sort all jobs by createdAt descending
@@ -592,6 +595,7 @@ export class JobService {
         where: {
           createdBy: userId,
           ...statusFilter,
+          ...jobTypeFilter,
         },
         include: {
           services: { include: { service: true } },
@@ -713,8 +717,6 @@ export class JobService {
         data: {
           title: updateJobDto.title,
           description: updateJobDto.description,
-          charges: updateJobDto.charges,
-          workDuration: updateJobDto.workDuration,
           startDate: updateJobDto.startDate
             ? new Date(updateJobDto.startDate)
             : undefined,
@@ -722,7 +724,6 @@ export class JobService {
             ? new Date(updateJobDto.endDate)
             : undefined,
           timeSlot: updateJobDto.timeSlot,
-          location: updateJobDto.location,
           experienceLevel: updateJobDto.experienceLevel,
         },
       });

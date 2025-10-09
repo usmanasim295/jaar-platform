@@ -160,12 +160,9 @@ model Job {
   id                 String                 @id @default(uuid())
   title              Json // Job title with translations {en: string, ar: string}
   description        Json // Job description with translations {en: string, ar: string}
-  charges            Json // Charges with translations {en: string, ar: string}
-  workDuration       Json // Work duration with translations {en: string, ar: string}
   startDate          DateTime
   endDate            DateTime
   timeSlot           Json // Time slot with translations {en: string, ar: string}
-  location           Json // Specific location within apartment with translations {en: string, ar: string}
   experienceLevel    Json? // Optional experience requirement with translations {en: string, ar: string}
   apartmentId        String // Which apartment this job is for
   apartment          Apartment              @relation(fields: [apartmentId], references: [id])

@@ -1,5 +1,5 @@
-import { Job } from "@/types/api";
-import { JobCardProps } from "@/components/modals/type";
+import { Job } from '@/types/api';
+import { JobCardProps } from '@/components/modals/type';
 
 // Transform API Job to JobCardProps
 export const transformJobToJobCard = (job: Job): JobCardProps => {
@@ -9,25 +9,24 @@ export const transformJobToJobCard = (job: Job): JobCardProps => {
     tags: job.services?.map(service => service.service.name) || [],
     date: job.startDate,
     time: job.timeSlot,
-    location: job.location,
-    tickets: job.bids?.filter(bid => bid.status === "ACCEPTED").length || 0,
+    tickets: job.bids?.filter(bid => bid.status === 'ACCEPTED').length || 0,
     status: job.status,
-    charges: job.charges,
-    workDuration: job.workDuration,
     timeSlot: job.timeSlot,
     experienceLevel: job.experienceLevel || undefined,
-    apartment: job.apartment ? {
-      name: job.apartment.name,
-      city: job.apartment.city
-    } : undefined,
+    apartment: job.apartment
+      ? {
+          name: job.apartment.name,
+          city: job.apartment.city,
+        }
+      : undefined,
     services: job.services?.map(service => ({
-      service: service.service.name
+      service: service.service.name,
     })),
     bids: job.bids?.map(bid => ({
       status: bid.status,
-      totalPrice: bid.totalPrice
+      totalPrice: bid.totalPrice,
     })),
-    jobId: job.id
+    jobId: job.id,
   };
 };
 
@@ -51,48 +50,48 @@ export const getTabConfig = () => [
     label: 'All Ongoing Jobs',
     jobType: undefined,
     status: undefined,
-    description: 'All jobs regardless of type or status'
+    description: 'All jobs regardless of type or status',
   },
   {
     id: 'community',
     label: 'Community Service Jobs',
     jobType: 'COMMUNITY_SERVICE' as const,
     status: undefined,
-    description: 'Community service related jobs'
+    description: 'Community service related jobs',
   },
   {
     id: 'home',
     label: 'Home Service Jobs',
     jobType: 'HOME_SERVICE' as const,
     status: undefined,
-    description: 'Home service related jobs'
+    description: 'Home service related jobs',
   },
   {
     id: 'in-progress',
     label: 'In Progress Jobs',
     jobType: undefined,
     status: 'IN_PROGRESS' as const,
-    description: 'Jobs currently in progress'
+    description: 'Jobs currently in progress',
   },
   {
     id: 'completed',
     label: 'Completed Jobs',
     jobType: undefined,
     status: 'COMPLETED' as const,
-    description: 'Successfully completed jobs'
+    description: 'Successfully completed jobs',
   },
   {
     id: 'cancelled',
     label: 'Cancelled Jobs',
     jobType: undefined,
     status: 'CANCELLED' as const,
-    description: 'Cancelled jobs'
+    description: 'Cancelled jobs',
   },
   {
     id: 'completion-requests',
     label: 'Completion Requests',
     jobType: undefined,
     status: undefined,
-    description: 'Your submitted completion requests'
-  }
+    description: 'Your submitted completion requests',
+  },
 ];
