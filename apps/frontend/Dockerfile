@@ -19,6 +19,9 @@ RUN npm install
 
 COPY . .
 
+# Ensure public directory exists (create if missing in build context)
+RUN mkdir -p /app/public
+
 # Build-time environment variables (for NEXT_PUBLIC_ variables)
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_WS_BASE_URL
