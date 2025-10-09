@@ -3,11 +3,8 @@ export type Job = {
   title: string;
   desc: string;
   tags: string[];
-  location: string;
   posted: string;
   highlighted?: boolean;
-  charges?: string;
-  workDuration?: string;
   startDate?: string;
   endDate?: string;
   timeSlot?: string;
@@ -73,11 +70,8 @@ export interface JobCardProps {
   tags?: string[];
   date?: string;
   time?: string;
-  location?: string;
   tickets?: number;
   status?: string;
-  charges?: string;
-  workDuration?: string;
   timeSlot?: string;
   experienceLevel?: string;
   apartment?: {

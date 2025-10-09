@@ -17,12 +17,16 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
   const job = completionRequest.job;
   const jobTitle = job.title[currentLang] || job.title.en;
   const jobDescription = job.description[currentLang] || job.description.en;
-  const jobCharges = job.charges[currentLang] || job.charges.en;
-  const jobWorkDuration = job.workDuration[currentLang] || job.workDuration.en;
   const jobTimeSlot = job.timeSlot[currentLang] || job.timeSlot.en;
-  const jobLocation = job.location[currentLang] || job.location.en;
-  const jobExperienceLevel =
-    job.experienceLevel[currentLang] || job.experienceLevel.en;
+  const jobExperienceLevel = job.experienceLevel
+    ? job.experienceLevel[currentLang] || job.experienceLevel.en
+    : null;
+  const apartmentName = job.apartment?.name
+    ? job.apartment.name[currentLang] || job.apartment.name.en
+    : null;
+  const apartmentCity = job.apartment?.city
+    ? job.apartment.city[currentLang] || job.apartment.city.en
+    : null;
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -85,16 +89,6 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
 
       {/* Job Details */}
       <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
-        {/* Charges */}
-        <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
-          💰 {jobCharges}
-        </span>
-
-        {/* Work Duration */}
-        <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
-          ⏱️ {jobWorkDuration}
-        </span>
-
         {/* Date */}
         <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
           <CalenderBlank size={14} className="sm:w-4 sm:h-4" />{' '}
@@ -106,15 +100,20 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
           <Clock size={14} className="sm:w-4 sm:h-4" /> {jobTimeSlot}
         </span>
 
-        {/* Location */}
-        <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
-          <MapPin size={14} className="sm:w-4 sm:h-4" /> {jobLocation}
-        </span>
+        {/* Apartment Location */}
+        {apartmentName && apartmentCity && (
+          <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
+            <MapPin size={14} className="sm:w-4 sm:h-4" /> {apartmentName},{' '}
+            {apartmentCity}
+          </span>
+        )}
 
         {/* Experience Level */}
-        <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
-          🎯 {jobExperienceLevel}
-        </span>
+        {jobExperienceLevel && (
+          <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
+            🎯 {jobExperienceLevel}
+          </span>
+        )}
       </div>
 
       {/* Completion Images */}

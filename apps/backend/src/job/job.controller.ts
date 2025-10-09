@@ -33,15 +33,7 @@ export class JobController {
       const transformedJob = this.languageService.transformObjectForLanguage(
         job,
         language,
-        [
-          'title',
-          'description',
-          'charges',
-          'workDuration',
-          'timeSlot',
-          'location',
-          'experienceLevel',
-        ],
+        ['title', 'description', 'timeSlot', 'experienceLevel'],
       );
 
       // Transform apartment data
@@ -158,6 +150,7 @@ export class JobController {
   async findMyJobs(
     @Req() req: any,
     @Query('lang') lang?: string,
+    @Query('jobType') jobType?: string,
     @Query('status') status?: JobStatus,
   ) {
     const user = req['user'];
@@ -166,6 +159,7 @@ export class JobController {
       user.id,
       user.role,
       status,
+      jobType,
     );
 
     return this.transformJobData(jobs, language);

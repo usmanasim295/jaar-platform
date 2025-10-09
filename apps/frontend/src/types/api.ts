@@ -125,23 +125,25 @@ export interface JobBid {
   serviceProvider: string;
 }
 
-
 export interface Job {
   id: string;
   title: string;
   description: string;
-  charges: string;
-  workDuration: string;
   startDate: string;
   endDate: string;
   timeSlot: string;
-  location: string;
   experienceLevel: string | null;
   apartmentId: string;
   leaderId: string | null;
   createdBy: string;
   jobType: 'COMMUNITY_SERVICE' | 'HOME_SERVICE';
-  status: 'SENT_TO_LEADER' | 'POSTED_BY_LEADER' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status:
+    | 'SENT_TO_LEADER'
+    | 'POSTED_BY_LEADER'
+    | 'OPEN'
+    | 'IN_PROGRESS'
+    | 'COMPLETED'
+    | 'CANCELLED';
   createdAt: string;
   updatedAt: string;
   services: JobService[];
@@ -180,39 +182,68 @@ export interface JobCompletionRequest {
       ar: string;
       en: string;
     };
-    charges: {
-      ar: string;
-      en: string;
-    };
-    workDuration: {
-      ar: string;
-      en: string;
-    };
     startDate: string;
     endDate: string;
     timeSlot: {
       ar: string;
       en: string;
     };
-    location: {
+    experienceLevel?: {
       ar: string;
       en: string;
-    };
-    experienceLevel: {
-      ar: string;
-      en: string;
-    };
+    } | null;
     apartmentId: string;
     leaderId: string | null;
     createdBy: string;
     jobType: 'HOME_SERVICE' | 'COMMUNITY_SERVICE';
-    status: 'SENT_TO_LEADER' | 'POSTED_BY_LEADER' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+    status:
+      | 'SENT_TO_LEADER'
+      | 'POSTED_BY_LEADER'
+      | 'OPEN'
+      | 'IN_PROGRESS'
+      | 'COMPLETED'
+      | 'CANCELLED';
     createdAt: string;
     updatedAt: string;
-    services: string;
-    apartment: string;
-    leader: string | null;
-    creator: string;
+    services: Array<{
+      id: string;
+      jobId: string;
+      serviceId: string;
+      service: {
+        id: string;
+        name: {
+          ar: string;
+          en: string;
+        };
+        description: {
+          ar: string;
+          en: string;
+        };
+        image: string | null;
+      };
+    }>;
+    apartment?: {
+      id: string;
+      name: {
+        ar: string;
+        en: string;
+      };
+      city: {
+        ar: string;
+        en: string;
+      };
+      hoaNumber: string;
+    };
+    leader: {
+      id: string;
+      nationalId: string;
+      role: 'LEADER' | 'HOME_OWNER' | 'ADMIN';
+    } | null;
+    creator: {
+      id: string;
+      nationalId: string;
+      role: 'LEADER' | 'HOME_OWNER' | 'ADMIN';
+    };
   };
   serviceProvider: {
     id: string;
@@ -267,37 +298,57 @@ export interface BidResponse {
         ar: string;
         en: string;
       };
-      charges: {
-        ar: string;
-        en: string;
-      };
-      workDuration: {
-        ar: string;
-        en: string;
-      };
       startDate: string;
       endDate: string;
       timeSlot: {
         ar: string;
         en: string;
       };
-      location: {
+      experienceLevel?: {
         ar: string;
         en: string;
-      };
-      experienceLevel: {
-        ar: string;
-        en: string;
-      };
+      } | null;
       apartmentId: string;
       leaderId: string;
       createdBy: string;
       jobType: 'COMMUNITY_SERVICE' | 'HOME_SERVICE';
-      status: 'SENT_TO_LEADER' | 'POSTED_BY_LEADER' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+      status:
+        | 'SENT_TO_LEADER'
+        | 'POSTED_BY_LEADER'
+        | 'OPEN'
+        | 'IN_PROGRESS'
+        | 'COMPLETED'
+        | 'CANCELLED';
       createdAt: string;
       updatedAt: string;
-      services: string;
-      apartment: string;
+      services: Array<{
+        id: string;
+        jobId: string;
+        serviceId: string;
+        service: {
+          id: string;
+          name: {
+            ar: string;
+            en: string;
+          };
+          description: {
+            ar: string;
+            en: string;
+          };
+          image: string | null;
+        };
+      }>;
+      apartment?: {
+        id: string;
+        name: {
+          ar: string;
+          en: string;
+        };
+        city: {
+          ar: string;
+          en: string;
+        };
+      };
     };
     serviceProvider: {
       id: string;
@@ -335,37 +386,57 @@ export interface MyBid {
       ar: string;
       en: string;
     };
-    charges: {
-      ar: string;
-      en: string;
-    };
-    workDuration: {
-      ar: string;
-      en: string;
-    };
     startDate: string;
     endDate: string;
     timeSlot: {
       ar: string;
       en: string;
     };
-    location: {
+    experienceLevel?: {
       ar: string;
       en: string;
-    };
-    experienceLevel: {
-      ar: string;
-      en: string;
-    };
+    } | null;
     apartmentId: string;
     leaderId: string | null;
     createdBy: string;
     jobType: 'COMMUNITY_SERVICE' | 'HOME_SERVICE';
-    status: 'SENT_TO_LEADER' | 'POSTED_BY_LEADER' | 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+    status:
+      | 'SENT_TO_LEADER'
+      | 'POSTED_BY_LEADER'
+      | 'OPEN'
+      | 'IN_PROGRESS'
+      | 'COMPLETED'
+      | 'CANCELLED';
     createdAt: string;
     updatedAt: string;
-    services: string;
-    apartment: string;
+    services: Array<{
+      id: string;
+      jobId: string;
+      serviceId: string;
+      service: {
+        id: string;
+        name: {
+          ar: string;
+          en: string;
+        };
+        description: {
+          ar: string;
+          en: string;
+        };
+        image: string | null;
+      };
+    }>;
+    apartment: {
+      id: string;
+      name: {
+        ar: string;
+        en: string;
+      };
+      city: {
+        ar: string;
+        en: string;
+      };
+    };
   };
 }
 
