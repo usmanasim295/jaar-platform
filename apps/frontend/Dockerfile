@@ -33,6 +33,9 @@ RUN npm install --legacy-peer-deps
 # Copy project files
 COPY . .
 
+# Ensure public directory exists (create if missing)
+RUN mkdir -p /app/public
+
 # Set NODE_ENV back to production for the build
 ENV NODE_ENV=production
 
