@@ -66,7 +66,7 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="relative group  min-w-0 cursor-pointer">
-                    <p className="font-semibold typo-heading3 text-[var(--primary)] text-[15px] truncate">
+                    <p className="font-semibold typo-heading3 text-[var(--primary)] sm:max-w-[300px] text-[15px] truncate">
                       {selectedJob?.apartment?.name || t('Job')}
                     </p>
 
@@ -76,7 +76,7 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                   </div>
 
                   <div className="relative group">
-                    <p className="text-sm text-gray-600 truncate cursor-default">
+                    <p className="text-sm text-gray-600 truncate cursor-default sm:max-w-[300px] ">
                       {selectedJob?.apartment?.city}
                     </p>
                     <span className="absolute left-0 -top-7 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap z-50">

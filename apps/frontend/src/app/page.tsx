@@ -567,7 +567,7 @@ export default function Home() {
                               </span>
 
                               {/* Tooltip always shows on hover */}
-                              <span className="absolute left-32 -translate-x-1/2 -top-10 hidden group-hover:flex bg-gray-800 text-white text-xs py-2 rounded shadow-md min-w-[250px] sm:min-w-full z-50 text-start whitespace-normal break-words">
+                              <span className="absolute left-3/4 -translate-x-1/2 -top-10 hidden group-hover:flex bg-gray-800 text-white text-xs py-2 rounded shadow-md min-w-[250px] sm:min-w-full z-50 text-start whitespace-normal break-words">
                                 {job.apartment.name}, {job.apartment.city}
                               </span>
                             </div>
