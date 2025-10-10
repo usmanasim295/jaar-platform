@@ -128,7 +128,12 @@ export default function Navbar() {
                       <p className="text-sm font-medium text-gray-900">
                         {user?.name}
                       </p>
-                      <p className="text-xs text-gray-500">{user?.email}</p>
+<div className="relative group max-w-[150px]">
+  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+  <span className="absolute left-0 -top-8 hidden group-hover:block bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-md whitespace-nowrap z-10">
+    {user?.email}
+  </span>
+</div>
                     </div>
                     <button
                       onClick={handleLogout}

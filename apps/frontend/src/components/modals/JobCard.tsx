@@ -127,7 +127,7 @@ const JobCard: FC<JobCardProps> = ({
           {/* Apartment Location */}
           {apartment && (
             <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
-              <MapPin size={16} /> {apartment.name}, {apartment.city}
+              <MapPin size={16} className='h-4 w-4' /> {apartment.name}, {apartment.city}
             </span>
           )}
 
