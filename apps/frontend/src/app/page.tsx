@@ -559,20 +559,18 @@ export default function Home() {
 
                         <div className="flex justify-between items-center  gap-2 mt-3 sm:mt-4">
                           {job.apartment && (
-<div className="flex items-center font-medium cursor-pointer gap-1 sm:gap-[6px] text-xs leading-[100%] text-[var(--grey-text)] max-w-[70%] overflow-visible relative group">
-  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                            <div className="flex items-center font-medium cursor-pointer gap-1 sm:gap-[6px] text-xs leading-[100%] text-[var(--grey-text)] max-w-[70%] overflow-visible relative group">
+                              <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
 
-  <span className="truncate whitespace-nowrap overflow-hidden text-ellipsis block">
-    {job.apartment.name}, {job.apartment.city}
-  </span>
+                              <span className="truncate whitespace-nowrap overflow-hidden text-ellipsis block">
+                                {job.apartment.name}, {job.apartment.city}
+                              </span>
 
-  {/* Tooltip always shows on hover */}
-  <span className="absolute left-4 -top-7 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap z-50">
-    {job.apartment.name}, {job.apartment.city}
-  </span>
-  
-</div>
-
+                              {/* Tooltip always shows on hover */}
+                              <span className="absolute left-32 -translate-x-1/2 -top-10 hidden group-hover:flex bg-gray-800 text-white text-xs py-2 rounded shadow-md min-w-[250px] sm:min-w-full z-50 text-start whitespace-normal break-words">
+                                {job.apartment.name}, {job.apartment.city}
+                              </span>
+                            </div>
                           )}
                           <Button
                             onClick={() => {
