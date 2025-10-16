@@ -65,24 +65,19 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="relative group  min-w-0 cursor-pointer">
-                    <p className="font-semibold typo-heading3 text-[var(--primary)] text-[15px] truncate">
-                      {selectedJob?.apartment?.name || t('Job')}
-                    </p>
+                  <p
+                    className="font-semibold typo-heading3 text-[var(--primary)]  sm:max-w-[300px] text-[15px] truncate"
+                    title={selectedJob?.apartment?.name || t('Job')}
+                  >
+                    {selectedJob?.apartment?.name || t('Job')}
+                  </p>
 
-                    <span className="absolute left-0 -top-8 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap z-50">
-                      {selectedJob?.apartment?.name || t('Job')}
-                    </span>
-                  </div>
-
-                  <div className="relative group">
-                    <p className="text-sm text-gray-600 truncate cursor-default">
-                      {selectedJob?.apartment?.city}
-                    </p>
-                    <span className="absolute left-0 -top-7 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap z-50">
-                      {selectedJob?.apartment?.city}
-                    </span>
-                  </div>
+                  <p
+                    className="text-sm text-gray-600 truncate"
+                    title={selectedJob?.apartment?.city}
+                  >
+                    {selectedJob?.apartment?.city}
+                  </p>
                 </div>
               </div>
               {hasUserBidded ? (

@@ -128,12 +128,14 @@ export default function Navbar() {
                       <p className="text-sm font-medium text-gray-900">
                         {user?.name}
                       </p>
-<div className="relative group max-w-[150px]">
-  <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-  <span className="absolute left-0 -top-8 hidden group-hover:block bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-md whitespace-nowrap z-10">
-    {user?.email}
-  </span>
-</div>
+                      <div className="max-w-[150px]">
+                        <p
+                          className="text-xs text-gray-500 truncate"
+                          title={user?.email}
+                        >
+                          {user?.email}
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={handleLogout}
@@ -146,21 +148,20 @@ export default function Navbar() {
                 )}
               </div>
             </div>
-          ) : (
-            null
-            // <div className="flex gap-4">
-            //   <Link href="/signin">
-            //     <Button variant="secondary" className="px-4 py-2">
-            //       {t('Sign In')}
-            //     </Button>
-            //   </Link>
-            //   <Link href="/signup">
-            //     <Button variant="primary" className="px-4 py-2">
-            //       {t('Sign Up')}
-            //     </Button>
-            //   </Link>
-            // </div>
-          )}
+          ) : null
+          // <div className="flex gap-4">
+          //   <Link href="/signin">
+          //     <Button variant="secondary" className="px-4 py-2">
+          //       {t('Sign In')}
+          //     </Button>
+          //   </Link>
+          //   <Link href="/signup">
+          //     <Button variant="primary" className="px-4 py-2">
+          //       {t('Sign Up')}
+          //     </Button>
+          //   </Link>
+          // </div>
+          }
           <button
             className="lg:hidden text-gray-700"
             onClick={() => setIsOpen(!isOpen)}
