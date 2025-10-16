@@ -12,7 +12,7 @@ import { LanguageService } from '../common/services/language.service';
     PrismaModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_TIME ?? '1d' },
+      signOptions: { expiresIn: (process.env.JWT_TIME as any) || '1d' },
     }),
   ],
   controllers: [ServiceController],
