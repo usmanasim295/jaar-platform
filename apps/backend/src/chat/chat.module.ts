@@ -15,7 +15,7 @@ import { JwtModule } from '@nestjs/jwt';
     PrismaModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_TIME },
+      signOptions: { expiresIn: process.env.JWT_TIME || '1d' },
     }),
   ],
   controllers: [ChatController],
