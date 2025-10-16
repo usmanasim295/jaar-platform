@@ -19,7 +19,7 @@ import { ChatModule } from 'src/chat/chat.module';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: (process.env.JWT_TIME || '1d') as string | number },
+      signOptions: { expiresIn: process.env.JWT_TIME ?? '1d' },
     }),
   ],
   providers: [
