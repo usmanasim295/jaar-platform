@@ -46,3 +46,5 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
 
 
+
+
