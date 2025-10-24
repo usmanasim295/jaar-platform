@@ -32,7 +32,7 @@ export default function SigninForm() {
     try {
       await login(data.email, data.password, i18n.language as 'en' | 'ar');
     } catch (err: any) {
-      console.error('Sign In Error:', err);
+      // console.error('Sign In Error:', err);
       setCustomError(err?.message || t('Invalid credentials'));
     }
   };

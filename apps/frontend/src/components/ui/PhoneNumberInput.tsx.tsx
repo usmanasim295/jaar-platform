@@ -1,6 +1,6 @@
 // components/PhoneNumberInput.tsx
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 import {
@@ -10,6 +10,8 @@ import {
   Path,
   RegisterOptions,
 } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 interface PhoneNumberInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -32,6 +34,22 @@ const PhoneNumberInput = <T extends FieldValues>({
   placeholder,
   rules,
 }: PhoneNumberInputProps<T>) => {
+  const { i18n } = useTranslation();
+  const [isRTL, setIsRTL] = useState(false);
+
+  useEffect(() => {
+    setIsRTL(i18n.language === 'ar');
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setIsRTL(i18n.language === 'ar');
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, [i18n]);
+
   return (
     <div className={` ${className}`}>
       {label && (
@@ -48,13 +66,16 @@ const PhoneNumberInput = <T extends FieldValues>({
               defaultCountry="SA"
               international
               countryCallingCodeEditable={true}
+              dir={isRTL ? 'rtl' : 'ltr'}
               className={`peer w-full px-4 pt-3 border-2 rounded-[10px] focus:outline-none text-(--primary-black) ${
                 error ? 'border-red-500 ring-red-200' : 'border-(--light-grey)'
               } ${inputClassName}`}
             />
             <label
               htmlFor={name}
-              className="absolute -z-1 left-4 top-1 text-(--gray-2) text-sm transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-xs peer-placeholder-shown:text-(--grey-text) peer-focus:text-(--grey-text)"
+              className={`absolute -z-1 top-1 text-(--gray-2) text-sm transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-xs peer-placeholder-shown:text-(--grey-text) peer-focus:text-(--grey-text) ${
+                isRTL ? 'right-4' : 'left-4'
+              }`}
             >
               {placeholder}
             </label>
@@ -63,7 +84,9 @@ const PhoneNumberInput = <T extends FieldValues>({
       />
       {error && (
         <div className="relative text-[10px] text-red-500">
-          <span className="absolute -bottom-3.5 right-3 ">{error}</span>
+          <span className={`absolute -bottom-3.5 ${
+            isRTL ? 'left-3' : 'right-3'
+          }`}>{error}</span>
         </div>
       )}{' '}
     </div>

@@ -70,6 +70,7 @@ model ServiceProvider {
   id                    String                    @id @default(uuid())
   name                  Json // Service provider name with translations {en: string, ar: string}
   email                 String                    @unique
+  password              String
   phoneNumber           String
   signupStep            Int                       @default(1)
   governmentDocumentUrl String?

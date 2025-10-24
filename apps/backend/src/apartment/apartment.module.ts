@@ -4,11 +4,17 @@ import { ApartmentController } from './apartment.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { TranslationService } from '../common/services/translation.service';
 import { LanguageService } from '../common/services/language.service';
+import { MessageService } from '../common/services/message.service';
 
 @Module({
   imports: [PrismaModule],
   controllers: [ApartmentController],
-  providers: [ApartmentService, TranslationService, LanguageService],
+  providers: [
+    ApartmentService,
+    TranslationService,
+    LanguageService,
+    MessageService,
+  ],
   exports: [ApartmentService],
 })
 export class ApartmentModule {}

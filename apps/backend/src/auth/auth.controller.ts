@@ -46,7 +46,7 @@ export class AuthController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.authService.signup(signupDto, document);
+    const result = await this.authService.signup(signupDto, document, language);
 
     return {
       ...result,
@@ -64,7 +64,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.authService.login(loginDto);
+    const result = await this.authService.login(loginDto, language);
 
     // Transform the user object with proper handling of apartment field
     const transformedUser =
@@ -95,8 +95,13 @@ export class AuthController {
   }
 
   @Patch('change-password')
-  async changePassword(@Req() req: Request, @Body() dto: ChangePasswordDto) {
+  async changePassword(
+    @Req() req: Request,
+    @Body() dto: ChangePasswordDto,
+    @Query('lang') lang?: string,
+  ) {
     const user = req['user'];
-    return this.authService.changePassword(user.id, dto);
+    const language = this.languageService.validateLanguage(lang);
+    return this.authService.changePassword(user.id, dto, language);
   }
 }

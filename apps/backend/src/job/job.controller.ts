@@ -18,6 +18,7 @@ import { JobStatus } from '@prisma/client';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
+import { MessageService } from '../common/services/message.service';
 
 @Controller('job')
 @UseGuards(AuthGuard)
@@ -25,6 +26,7 @@ export class JobController {
   constructor(
     private readonly jobService: JobService,
     private readonly languageService: LanguageService,
+    private readonly messageService: MessageService,
   ) {}
 
   private transformJobData(jobs: any[], language: 'en' | 'ar') {
@@ -97,6 +99,7 @@ export class JobController {
       createJobDto,
       user.id,
       user.role,
+      language,
     );
 
     return {
@@ -197,15 +200,17 @@ export class JobController {
     @Query('status') status?: string,
   ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Check if this is a service provider
     if (user.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can view their jobs',
+        this.messageService.getErrorMessage(
+          'job.only_service_providers_can_view_jobs',
+          language,
+        ),
       );
     }
-
-    const language = this.languageService.validateLanguage(lang);
     const jobs = await this.jobService.findServiceProviderJobs(
       user.id,
       jobType,
@@ -218,7 +223,7 @@ export class JobController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const job = await this.jobService.findOne(id);
+    const job = await this.jobService.findOne(id, language);
 
     return this.transformJobData([job], language)[0];
   }
@@ -232,7 +237,11 @@ export class JobController {
   ) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.jobService.approveCommunityJob(id, user.id);
+    const result = await this.jobService.approveCommunityJob(
+      id,
+      user.id,
+      language,
+    );
 
     return {
       ...result,
@@ -258,7 +267,11 @@ export class JobController {
   ) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.jobService.rejectCommunityJob(id, user.id);
+    const result = await this.jobService.rejectCommunityJob(
+      id,
+      user.id,
+      language,
+    );
 
     return {
       ...result,
@@ -285,7 +298,12 @@ export class JobController {
   ) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.jobService.update(id, updateJobDto, user.id);
+    const result = await this.jobService.update(
+      id,
+      updateJobDto,
+      user.id,
+      language,
+    );
 
     return {
       ...result,
@@ -313,7 +331,12 @@ export class JobController {
   ) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.jobService.updateStatus(id, status, user.id);
+    const result = await this.jobService.updateStatus(
+      id,
+      status,
+      user.id,
+      language,
+    );
 
     return {
       ...result,
@@ -331,8 +354,13 @@ export class JobController {
 
   @Delete(':id')
   @Roles('LEADER')
-  async remove(@Param('id') id: string, @Req() req: any) {
+  async remove(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
     const user = req['user'];
-    return this.jobService.remove(id, user.id);
+    const language = this.languageService.validateLanguage(lang);
+    return this.jobService.remove(id, user.id, language);
   }
 }

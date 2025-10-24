@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { S3Service } from 'src/common/services/s3.service';
 import { JwtService } from '@nestjs/jwt';
 import { TranslationService } from 'src/common/services/translation.service';
+import { MessageService } from 'src/common/services/message.service';
+import * as bcrypt from 'bcryptjs';
 import {
   ServiceProviderSignupDto,
   ServiceProviderStep1Dto,
@@ -27,10 +29,11 @@ export class ServiceProviderService {
     private s3Service: S3Service,
     private jwtService: JwtService,
     private translationService: TranslationService,
+    private messageService: MessageService,
   ) {}
 
   // Initial signup
-  async signup(dto: ServiceProviderSignupDto) {
+  async signup(dto: ServiceProviderSignupDto, language: 'en' | 'ar' = 'en') {
     // Check if email already exists
     const existingServiceProvider =
       await this.prisma.serviceProvider.findUnique({
@@ -39,7 +42,10 @@ export class ServiceProviderService {
 
     if (existingServiceProvider) {
       throw new ConflictException(
-        'Service provider with this email already exists',
+        this.messageService.getErrorMessage(
+          'service_provider.email_exists',
+          language,
+        ),
       );
     }
 
@@ -47,32 +53,47 @@ export class ServiceProviderService {
     const nameTranslations =
       await this.translationService.createTranslationObject(dto.name);
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
     // Create service provider directly (no user record needed)
     const serviceProvider = await this.prisma.serviceProvider.create({
       data: {
         name: nameTranslations,
         email: dto.email,
+        password: hashedPassword,
         phoneNumber: dto.phoneNumber,
         signupStep: 1,
       },
     });
 
     return {
-      message:
-        'Service provider registered successfully. Please proceed to step 1 to upload government document.',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.signup_success',
+        language,
+      ),
       serviceProvider,
       nextStep: 'step1',
     };
   }
 
   // Step 1: Upload government document
-  async step1(dto: ServiceProviderStep1Dto, document: Express.Multer.File) {
+  async step1(
+    dto: ServiceProviderStep1Dto,
+    document: Express.Multer.File,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: dto.serviceProviderId },
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     // Upload document to S3
@@ -93,20 +114,27 @@ export class ServiceProviderService {
     });
 
     return {
-      message:
-        'Government document uploaded successfully. Please proceed to step 2 to select services.',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.document_uploaded',
+        language,
+      ),
       nextStep: 'step2',
     };
   }
 
   // Step 2: Select services
-  async step2(dto: ServiceProviderStep2Dto) {
+  async step2(dto: ServiceProviderStep2Dto, language: 'en' | 'ar' = 'en') {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: dto.serviceProviderId },
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     // Validate services exist
@@ -115,7 +143,12 @@ export class ServiceProviderService {
     });
 
     if (services.length !== dto.serviceIds.length) {
-      throw new BadRequestException('Some services do not exist');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'service_provider.some_services_not_exist',
+          language,
+        ),
+      );
     }
 
     // Clear existing services first, then create new ones
@@ -138,21 +171,28 @@ export class ServiceProviderService {
     });
 
     return {
-      message:
-        'Services selected successfully. Please proceed to step 3 to set service rates.',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.services_selected_success',
+        language,
+      ),
       nextStep: 'step3',
     };
   }
 
   // Step 3: Set service rates
-  async step3(dto: ServiceProviderStep3Dto) {
+  async step3(dto: ServiceProviderStep3Dto, language: 'en' | 'ar' = 'en') {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: dto.serviceProviderId },
       include: { services: true },
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     // Validate that rates are provided for all selected services
@@ -202,20 +242,27 @@ export class ServiceProviderService {
     });
 
     return {
-      message:
-        'Service rates set successfully. Please proceed to step 4 to add locations.',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.rates_set_success',
+        language,
+      ),
       nextStep: 'step4',
     };
   }
 
   // Step 4: Add locations
-  async step4(dto: ServiceProviderStep4Dto) {
+  async step4(dto: ServiceProviderStep4Dto, language: 'en' | 'ar' = 'en') {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: dto.serviceProviderId },
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     // Clear existing locations first, then create new ones
@@ -240,8 +287,10 @@ export class ServiceProviderService {
     });
 
     return {
-      message:
-        'Locations added successfully. Please proceed to step 5 to add bio and profile picture.',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.locations_added_success',
+        language,
+      ),
       nextStep: 'step5',
     };
   }
@@ -250,13 +299,19 @@ export class ServiceProviderService {
   async step5(
     dto: ServiceProviderStep5Dto,
     profilePicture?: Express.Multer.File,
+    language: 'en' | 'ar' = 'en',
   ) {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: dto.serviceProviderId },
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     let profilePictureUrl = serviceProvider.profilePictureUrl;
@@ -289,8 +344,10 @@ export class ServiceProviderService {
     });
 
     return {
-      message:
-        'Bio and profile picture added successfully. Please proceed to step 6 to add bank details.',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.profile_completed_success',
+        language,
+      ),
       nextStep: 'step6',
     };
   }
@@ -299,13 +356,19 @@ export class ServiceProviderService {
   async step6(
     dto: ServiceProviderStep6Dto,
     bankDocument?: Express.Multer.File,
+    language: 'en' | 'ar' = 'en',
   ) {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: dto.serviceProviderId },
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     let bankDocumentUrl = serviceProvider.bankDocumentUrl;
@@ -343,29 +406,51 @@ export class ServiceProviderService {
     });
 
     return {
-      message: 'Bank details added successfully. Your account is now active!',
+      message: this.messageService.getSuccessMessage(
+        'service_provider.bank_details_added',
+        language,
+      ),
       signupComplete: true,
     };
   }
 
   // Login
-  async login(dto: ServiceProviderLoginDto) {
+  async login(dto: ServiceProviderLoginDto, language: 'en' | 'ar' = 'en') {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { email: dto.email },
     });
 
     if (!serviceProvider) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        this.messageService.getErrorMessage(
+          'service_provider.invalid_credentials',
+          language,
+        ),
+      );
+    }
+
+    // Validate password
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      serviceProvider.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        this.messageService.getErrorMessage(
+          'service_provider.invalid_credentials',
+          language,
+        ),
+      );
     }
 
     if (!serviceProvider.isActive) {
       throw new UnauthorizedException(
-        'Account is not active. Please complete your registration.',
+        this.messageService.getErrorMessage(
+          'service_provider.account_not_active',
+          language,
+        ),
       );
     }
-
-    // For service providers, we'll use a simple token generation since no password is stored
-    // In a real implementation, you might want to add password field to ServiceProvider model
     const payload = {
       id: serviceProvider.id,
       serviceProviderId: serviceProvider.id,
@@ -389,7 +474,7 @@ export class ServiceProviderService {
   }
 
   // Get service provider profile
-  async getProfile(serviceProviderId: string) {
+  async getProfile(serviceProviderId: string, language: 'en' | 'ar' = 'en') {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: serviceProviderId },
       include: {
@@ -422,14 +507,19 @@ export class ServiceProviderService {
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     return serviceProvider;
   }
 
   // Get current step status and progress
-  async getStepStatus(serviceProviderId: string) {
+  async getStepStatus(serviceProviderId: string, language: 'en' | 'ar' = 'en') {
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
       where: { id: serviceProviderId },
       include: {
@@ -440,7 +530,12 @@ export class ServiceProviderService {
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     const steps = [

@@ -20,6 +20,7 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
   const { t, i18n } = useTranslation();
   const [submitCompletionRequest, { isLoading }] =
     useSubmitJobCompletionRequestMutation();
+  const [isRTL, setIsRTL] = React.useState(false);
 
   const [completionNotes, setCompletionNotes] = useState('');
   const [completionImages, setCompletionImages] = useState<File[]>([]);
@@ -30,14 +31,60 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
 
+  // Handle RTL detection
+  React.useEffect(() => {
+    setIsRTL(i18n.language === 'ar');
+  }, [i18n.language]);
+
+  // Debug effect to monitor image state changes
+  React.useEffect(() => {
+    console.log('completionImages state changed:', completionImages.length, 'images');
+  }, [completionImages]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setCompletionImages(prev => [...prev, ...files]);
+    
+    console.log('handleImageChange called with files:', files.length);
+    
+    // Early return if no files selected
+    if (files.length === 0) {
+      console.log('No files selected');
+      return;
+    }
+    
+    // Check total image count limit (max 10 images)
+    const totalImages = completionImages.length + files.length;
+    if (totalImages > 10) {
+      console.log('Too many images:', totalImages);
+      toast.error(t('Maximum 10 images allowed'));
+      e.target.value = ''; // Clear input on error
+      return;
+    }
+    
+    console.log('Adding files to state:', files.length, 'files');
+    
+    // Add files to state using functional update
+    setCompletionImages(prev => {
+      const newImages = [...prev, ...files];
+      console.log('State updated - Previous:', prev.length, 'New:', files.length, 'Total:', newImages.length);
+      return newImages;
+    });
+    
+    // Reset input to allow reselection of same files
+    // Use requestAnimationFrame to ensure state update happens first
+    requestAnimationFrame(() => {
+      if (e.target) {
+        e.target.value = '';
+        console.log('Input cleared');
+      }
+    });
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setAdditionalDocument(file);
+    // Reset input to allow reselection of same files
+    e.target.value = '';
   };
 
   const removeImage = (index: number) => {
@@ -124,13 +171,13 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
           {/* Completion Notes */}
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-              {t('Completion Notes')} *
+              {t('Completion Notes')} <span className="text-red-500">*</span>
             </label>
             <textarea
               value={completionNotes}
               onChange={e => setCompletionNotes(e.target.value)}
               placeholder={t('Describe the work completed...')}
-              className="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+              className="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 resize-none transition-all duration-200"
               rows={4}
               required
             />
@@ -141,16 +188,27 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               {t('Completion Images')} ({t('Optional')})
             </label>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="w-full p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                onClick={(e) => {
+                  // Ensure the input is properly focused and ready
+                  console.log('File input clicked');
+                }}
+                className="w-full p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 cursor-pointer transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {t('Upload images showing the completed work')}
+              {t('Upload images showing the completed work')} ({t('Max 10 images')})
+              {completionImages.length > 0 && (
+                <span className="ml-2 text-blue-600 font-medium">
+                  ({completionImages.length}/10 {t('images selected')})
+                </span>
+              )}
             </p>
 
             {/* Display selected images */}
@@ -166,9 +224,17 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      style={{ 
+                        padding: '0',
+                        paddingTop: '1.5px',
+                        border: 'none',
+                        outline: 'none',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}
                     >
-                      ×
+                      x
                     </button>
                   </div>
                 ))}
@@ -181,15 +247,17 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               {t('Additional Document')} ({t('Optional')})
             </label>
-            <input
-              ref={documentInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={handleDocumentChange}
-              className="w-full p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <input
+                ref={documentInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleDocumentChange}
+                className="w-full p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 cursor-pointer transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {t('Upload any additional documentation (PDF, DOC, DOCX)')}
+              {t('Upload any additional documentation (PDF, DOC, DOCX)')} ({t('Max 5MB')})
             </p>
 
             {/* Display selected document */}
@@ -221,7 +289,7 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
             <button
               type="submit"
               disabled={isLoading || !completionNotes.trim()}
-              className="flex-1 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-[#2d6a87] text-white rounded-lg hover:bg-[#25586f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? t('Submitting...') : t('Submit Request')}
             </button>

@@ -10,6 +10,7 @@ import { useSignUpMutation } from "@/store/api";
 import type { Language } from "@/types/api";
 import i18n from "@/i18n";
 import { useEffect } from "react";
+import Link from "next/link";
 
 type SignupFormDataa = {
   name: string;
@@ -123,7 +124,7 @@ const SignupForm = () => {
           rules={{
             required: t("Phone number is required"),
             validate: (value) =>
-              value && value.length > 8 ? true : "Enter a valid phone number",
+              value && value.length > 8 ? true : t("Enter a valid phone number"),
           }}
           error={errors.phoneNumber?.message}
         />
@@ -141,7 +142,7 @@ const SignupForm = () => {
               value:
                 /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{6,}$/,
               message: t(
-                "Password must be 6+ chars, with 1 uppercase, 1 number & 1 special character",
+                t("Use 6+ characters with uppercase, number, and special symbol"),
               ),
             },
           }}
@@ -156,7 +157,7 @@ const SignupForm = () => {
           inputClassName="h-[60px]"
           placeholderAnimate
           rules={{
-            required: "Confirm your password",
+            required: t("Confirm your password"),
             validate: (value) =>
               value === password || t("Password does not match"),
           }}
@@ -183,6 +184,27 @@ const SignupForm = () => {
              t("Something went wrong please try again")}
           </p>
         )}
+
+        {/* <div className="text-center mt-1">
+          <p className="text-sm text-gray-600 font-jakarta">
+            {t("Already have an account?")}{" "}
+            <button
+              type="button"
+              onClick={() => router.push("/signin")}
+              className="text-[#2d6a87] font-medium"
+            >
+              {t("Sign in")}
+            </button>
+          </p>
+        </div> */}
+        <div className=" text-center">
+          <p className="text-sm text-gray-600 font-jakarta">
+            {t("Already have an account?")}{' '}
+            <Link href="/signin" className="text-[#2d6a87] font-medium">
+              {t('Sign in')}
+            </Link>
+          </p>
+        </div>
       </form>
     </>
   );

@@ -100,7 +100,10 @@ export default function MyBids() {
   // Handle delete bid
   const handleDeleteBid = async (bidId: string) => {
     try {
-      const result = await deleteBid({ bidId }).unwrap();
+      const result = await deleteBid({
+        bidId,
+        lang: i18n.language as Language,
+      }).unwrap();
       toast.success(result.message || t('Bid deleted successfully'));
       setDeleteConfirmId(null);
     } catch (error: any) {
@@ -120,7 +123,10 @@ export default function MyBids() {
   const handleInitiateChat = async (jobId: string) => {
     setInitiatingChatForJob(jobId);
     try {
-      const result = await initiateChat({ jobId }).unwrap();
+      const result = await initiateChat({
+        jobId,
+        lang: i18n.language as Language,
+      }).unwrap();
 
       // Check if chat already existed or was newly created
       const wasExisting =
@@ -307,7 +313,7 @@ export default function MyBids() {
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1 sm:gap-2 text-[10px] sm:!text-sm text-blue-600 hover:text-blue-800 px-2 sm:!px-0 py-1.5 sm:!py-0 h-7 sm:!h-auto"
                         >
-                          <File className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <File className=" flex-shrink-0" />
                           <span className="hidden sm:inline">
                             {t('View Document')}
                           </span>

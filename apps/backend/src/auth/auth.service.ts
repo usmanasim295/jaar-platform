@@ -16,6 +16,7 @@ import { ChangePasswordDto } from './dtos/change-password.dto';
 import { S3Service } from 'src/common/services/s3.service';
 import { ApartmentService } from 'src/apartment/apartment.service';
 import { TranslationService } from 'src/common/services/translation.service';
+import { MessageService } from 'src/common/services/message.service';
 import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
@@ -26,14 +27,24 @@ export class AuthService {
     private s3Service: S3Service,
     private apartmentService: ApartmentService,
     private translationService: TranslationService,
+    private messageService: MessageService,
     private chatService: ChatService,
   ) {}
 
   // Single signup method for all user types
-  async signup(dto: SignupDto, document: Express.Multer.File) {
+  async signup(
+    dto: SignupDto,
+    document: Express.Multer.File,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Only allow HOME_OWNER and LEADER roles for signup
     if (dto.role === Role.ADMIN) {
-      throw new ForbiddenException('Cannot register as ADMIN');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'auth.cannot_register_admin',
+          language,
+        ),
+      );
     }
 
     // Check if national ID already exists
@@ -43,7 +54,12 @@ export class AuthService {
     });
 
     if (existingUserByNationalId) {
-      throw new ConflictException('User with this National ID already exists');
+      throw new ConflictException(
+        this.messageService.getErrorMessage(
+          'auth.national_id_exists',
+          language,
+        ),
+      );
     }
 
     // Check HOA number logic based on role
@@ -62,7 +78,7 @@ export class AuthService {
 
       if (existingApartmentWithLeader) {
         throw new ConflictException(
-          'HOA number already has a leader. Only one leader per HOA number is allowed.',
+          this.messageService.getErrorMessage('auth.hoa_has_leader', language),
         );
       }
     }
@@ -205,7 +221,10 @@ export class AuthService {
 
     const { password, ...userWithoutPassword } = user;
     return {
-      message: 'User registered successfully',
+      message: this.messageService.getSuccessMessage(
+        'auth.signup_success',
+        language,
+      ),
       user: userWithoutPassword,
       documentUrl: s3Url,
       apartment: apartment || apartmentRecord,
@@ -213,7 +232,7 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, language: 'en' | 'ar' = 'en') {
     const user = await this.prisma.user.findUnique({
       where: { nationalId: loginDto.nationalId },
       include: {
@@ -347,12 +366,17 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        this.messageService.getErrorMessage(
+          'auth.invalid_credentials',
+          language,
+        ),
+      );
     }
 
     if (!user.password) {
       throw new UnauthorizedException(
-        'Password not set. Please complete your registration.',
+        this.messageService.getErrorMessage('auth.password_not_set', language),
       );
     }
 
@@ -362,7 +386,12 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(
+        this.messageService.getErrorMessage(
+          'auth.invalid_credentials',
+          language,
+        ),
+      );
     }
 
     const payload = {
@@ -381,18 +410,24 @@ export class AuthService {
     };
   }
 
-  async changePassword(userId: string, dto: ChangePasswordDto) {
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('auth.user_not_found', language),
+      );
     }
 
     if (!user.password) {
       throw new UnauthorizedException(
-        'Password not set. Please complete your registration.',
+        this.messageService.getErrorMessage('auth.password_not_set', language),
       );
     }
 
@@ -402,7 +437,12 @@ export class AuthService {
     );
 
     if (!passwordMatch) {
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new UnauthorizedException(
+        this.messageService.getErrorMessage(
+          'auth.current_password_incorrect',
+          language,
+        ),
+      );
     }
 
     const hashedNewPassword = await bcrypt.hash(dto.newPassword, 10);
@@ -413,7 +453,10 @@ export class AuthService {
     });
 
     return {
-      message: 'Password changed successfully',
+      message: this.messageService.getSuccessMessage(
+        'auth.password_changed',
+        language,
+      ),
     };
   }
 }

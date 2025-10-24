@@ -13,6 +13,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { QueryMessagesDto } from './dto/query-messages.dto';
 import { TranslationService } from 'src/common/services/translation.service';
 import { S3Service } from 'src/common/services/s3.service';
+import { MessageService } from 'src/common/services/message.service';
 import { Role, ChatType, MessageType, CommunityRole } from '@prisma/client';
 import { RealtimeService } from './realtime.service';
 
@@ -22,6 +23,7 @@ export class ChatService {
     private prisma: PrismaService,
     private translationService: TranslationService,
     private s3Service: S3Service,
+    private messageService: MessageService,
     private realtimeService: RealtimeService,
   ) {}
 
@@ -78,13 +80,22 @@ export class ChatService {
     return community;
   }
 
-  async addUserToCommunity(userId: string, hoaNumber: string) {
+  async addUserToCommunity(
+    userId: string,
+    hoaNumber: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const community = await this.prisma.community.findUnique({
       where: { hoaNumber },
     });
 
     if (!community) {
-      throw new NotFoundException('Community not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.community_not_found',
+          language,
+        ),
+      );
     }
 
     // Check if user is already a member
@@ -108,7 +119,9 @@ export class ChatService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('auth.user_not_found', language),
+      );
     }
 
     const communityRole =
@@ -129,14 +142,22 @@ export class ChatService {
   }
 
   // Chat Management
-  async createCommunityGroupChat(communityId: string) {
+  async createCommunityGroupChat(
+    communityId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const community = await this.prisma.community.findUnique({
       where: { id: communityId },
       include: { members: true },
     });
 
     if (!community) {
-      throw new NotFoundException('Community not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.community_not_found',
+          language,
+        ),
+      );
     }
 
     // Check if group chat already exists
@@ -223,7 +244,11 @@ export class ChatService {
     return groupChats;
   }
 
-  async createOneToOneChat(participant1Id: string, participant2Id: string) {
+  async createOneToOneChat(
+    participant1Id: string,
+    participant2Id: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Check if chat already exists between these two users
     const existingChat = await this.prisma.chat.findFirst({
       where: {
@@ -271,7 +296,12 @@ export class ChatService {
     });
 
     if (!otherUser) {
-      throw new NotFoundException('Other user not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.other_user_not_found',
+          language,
+        ),
+      );
     }
 
     // Create chat name with the other user's details
@@ -317,6 +347,7 @@ export class ChatService {
     jobId: string,
     serviceProviderId: string,
     requestingUserId: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
@@ -329,7 +360,9 @@ export class ChatService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.job_not_found', language),
+      );
     }
 
     // Validate that the requesting user has permission to create this chat
@@ -339,7 +372,12 @@ export class ChatService {
     });
 
     if (!requestingUser) {
-      throw new NotFoundException('Requesting user not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.requesting_user_not_found',
+          language,
+        ),
+      );
     }
 
     // Check permissions based on job type and user role
@@ -347,13 +385,19 @@ export class ChatService {
       // Only leaders can create chats for community services
       if (requestingUser.role !== 'LEADER') {
         throw new ForbiddenException(
-          'Only leaders can create chats for community services',
+          this.messageService.getErrorMessage(
+            'chat.only_leaders_can_create_community_chats',
+            language,
+          ),
         );
       }
       // Verify the leader is the apartment leader
       if (job.apartment.leaderId !== requestingUserId) {
         throw new ForbiddenException(
-          'Only the apartment leader can create chats for community services',
+          this.messageService.getErrorMessage(
+            'chat.only_apartment_leader_can_create_community_chats',
+            language,
+          ),
         );
       }
     } else if (job.jobType === 'HOME_SERVICE') {
@@ -363,7 +407,10 @@ export class ChatService {
         job.createdBy !== requestingUserId
       ) {
         throw new ForbiddenException(
-          'Only the job creator can create chats for home services',
+          this.messageService.getErrorMessage(
+            'chat.only_job_creator_can_create_home_chats',
+            language,
+          ),
         );
       }
       // Leaders can also create chats for home services in their apartment
@@ -372,7 +419,10 @@ export class ChatService {
         job.apartment.leaderId !== requestingUserId
       ) {
         throw new ForbiddenException(
-          'Only the apartment leader can create chats for home services',
+          this.messageService.getErrorMessage(
+            'chat.only_apartment_leader_can_create_home_chats',
+            language,
+          ),
         );
       }
     }
@@ -401,7 +451,12 @@ export class ChatService {
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.service_provider_not_found',
+          language,
+        ),
+      );
     }
 
     // Create chat name with service provider name
@@ -442,7 +497,11 @@ export class ChatService {
   }
 
   // Service provider initiates chat (from their bids)
-  async initiateServiceProviderChat(jobId: string, serviceProviderId: string) {
+  async initiateServiceProviderChat(
+    jobId: string,
+    serviceProviderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
@@ -458,7 +517,9 @@ export class ChatService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.job_not_found', language),
+      );
     }
 
     // Verify the service provider has a bid for this job
@@ -519,7 +580,12 @@ export class ChatService {
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.service_provider_not_found',
+          language,
+        ),
+      );
     }
 
     // Create chat name with service provider name
@@ -610,6 +676,7 @@ export class ChatService {
       fileSize?: number;
       mimeType?: string;
     },
+    language: 'en' | 'ar' = 'en',
   ) {
     const chat = await this.prisma.chat.findUnique({
       where: { id: dto.chatId },
@@ -622,7 +689,9 @@ export class ChatService {
     });
 
     if (!chat) {
-      throw new NotFoundException('Chat not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.chat_not_found', language),
+      );
     }
 
     // Check if sender is authorized to send messages in this chat
@@ -630,7 +699,7 @@ export class ChatService {
     const isAuthorized = await this.checkChatPermission(senderId, chat);
     if (!isAuthorized) {
       throw new ForbiddenException(
-        'Not authorized to send messages in this chat',
+        this.messageService.getErrorMessage('chat.not_authorized', language),
       );
     }
 
@@ -742,13 +811,19 @@ export class ChatService {
     return message;
   }
 
-  async getMessages(chatId: string, dto: QueryMessagesDto) {
+  async getMessages(
+    chatId: string,
+    dto: QueryMessagesDto,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const chat = await this.prisma.chat.findUnique({
       where: { id: chatId },
     });
 
     if (!chat) {
-      throw new NotFoundException('Chat not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.chat_not_found', language),
+      );
     }
 
     const where: any = {
@@ -891,22 +966,32 @@ export class ChatService {
     };
   }
 
-  async votePoll(voterId: string, dto: VotePollDto) {
+  async votePoll(
+    voterId: string,
+    dto: VotePollDto,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const poll = await this.prisma.poll.findUnique({
       where: { id: dto.pollId },
       include: { options: true },
     });
 
     if (!poll) {
-      throw new NotFoundException('Poll not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.poll_not_found', language),
+      );
     }
 
     if (!poll.isActive) {
-      throw new BadRequestException('Poll is not active');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('chat.poll_not_active', language),
+      );
     }
 
     if (poll.expiresAt && new Date() > poll.expiresAt) {
-      throw new BadRequestException('Poll has expired');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('chat.poll_expired', language),
+      );
     }
 
     if (!poll.isMultipleChoice && dto.optionIds.length > 1) {
@@ -924,7 +1009,9 @@ export class ChatService {
     });
 
     if (existingVote) {
-      throw new ConflictException('You have already voted on this poll');
+      throw new ConflictException(
+        this.messageService.getErrorMessage('chat.already_voted', language),
+      );
     }
 
     // Validate option IDs
@@ -933,7 +1020,12 @@ export class ChatService {
       (id) => !validOptionIds.includes(id),
     );
     if (invalidOptions.length > 0) {
-      throw new BadRequestException('Invalid poll options');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'chat.invalid_poll_options',
+          language,
+        ),
+      );
     }
 
     // Create votes
@@ -960,7 +1052,7 @@ export class ChatService {
     return votes;
   }
 
-  async getPollResults(pollId: string) {
+  async getPollResults(pollId: string, language: 'en' | 'ar' = 'en') {
     const poll = await this.prisma.poll.findUnique({
       where: { id: pollId },
       include: {
@@ -990,7 +1082,9 @@ export class ChatService {
     });
 
     if (!poll) {
-      throw new NotFoundException('Poll not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.poll_not_found', language),
+      );
     }
 
     return poll;
@@ -1173,7 +1267,11 @@ export class ChatService {
   }
 
   // Get community members for leader
-  async getCommunityMembers(communityId: string, requestingUserId: string) {
+  async getCommunityMembers(
+    communityId: string,
+    requestingUserId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Get the requesting user's role
     const requestingUser = await this.prisma.user.findUnique({
       where: { id: requestingUserId },
@@ -1181,7 +1279,9 @@ export class ChatService {
     });
 
     if (!requestingUser) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('auth.user_not_found', language),
+      );
     }
 
     const community = await this.prisma.community.findUnique({
@@ -1202,7 +1302,12 @@ export class ChatService {
     });
 
     if (!community) {
-      throw new NotFoundException('Community not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.community_not_found',
+          language,
+        ),
+      );
     }
 
     // Role-based filtering
@@ -1217,13 +1322,19 @@ export class ChatService {
     } else {
       // Service providers or other roles cannot access this endpoint
       throw new ForbiddenException(
-        'Access denied. Only leaders and homeowners can view community members.',
+        this.messageService.getErrorMessage(
+          'chat.access_denied_community_members',
+          language,
+        ),
       );
     }
   }
 
   // Get apartment home owners for leader
-  async getApartmentHomeOwners(apartmentId: string) {
+  async getApartmentHomeOwners(
+    apartmentId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     const apartment = await this.prisma.apartment.findUnique({
       where: { id: apartmentId },
       include: {
@@ -1238,14 +1349,16 @@ export class ChatService {
     });
 
     if (!apartment) {
-      throw new NotFoundException('Apartment not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('apartment.not_found', language),
+      );
     }
 
     return apartment.owners;
   }
 
   // Get apartment leader for home owner
-  async getApartmentLeader(apartmentId: string) {
+  async getApartmentLeader(apartmentId: string, language: 'en' | 'ar' = 'en') {
     const apartment = await this.prisma.apartment.findUnique({
       where: { id: apartmentId },
       include: {
@@ -1260,18 +1373,25 @@ export class ChatService {
     });
 
     if (!apartment) {
-      throw new NotFoundException('Apartment not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('apartment.not_found', language),
+      );
     }
 
     if (!apartment.leader) {
-      throw new NotFoundException('No leader assigned to this apartment');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'apartment.no_leader_assigned',
+          language,
+        ),
+      );
     }
 
     return apartment.leader;
   }
 
   // Get user's community
-  async getUserCommunity(userId: string) {
+  async getUserCommunity(userId: string, language: 'en' | 'ar' = 'en') {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -1298,14 +1418,23 @@ export class ChatService {
     });
 
     if (!user || !user.apartment || !user.apartment.community) {
-      throw new NotFoundException('User community not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.user_community_not_found',
+          language,
+        ),
+      );
     }
 
     return user.apartment.community;
   }
 
   // Mark messages as read
-  async markMessagesAsRead(userId: string, chatId: string) {
+  async markMessagesAsRead(
+    userId: string,
+    chatId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // First, try to find the participant as a regular user
     let participant = await this.prisma.chatParticipant.findUnique({
       where: {
@@ -1329,7 +1458,9 @@ export class ChatService {
     }
 
     if (!participant) {
-      throw new NotFoundException('User not found in this chat');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('chat.user_not_in_chat', language),
+      );
     }
 
     // Update the participant's lastReadAt
@@ -1361,11 +1492,13 @@ export class ChatService {
       });
     }
 
-    throw new NotFoundException('Invalid participant record');
+    throw new NotFoundException(
+      this.messageService.getErrorMessage('chat.invalid_participant', language),
+    );
   }
 
   // Get unread message count
-  async getUnreadCount(userId: string) {
+  async getUnreadCount(userId: string, language: 'en' | 'ar' = 'en') {
     // Get chats where user is a participant (either as regular user or service provider)
     const userChats = await this.prisma.chatParticipant.findMany({
       where: {

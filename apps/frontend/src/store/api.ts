@@ -304,9 +304,12 @@ export const api = createApi({
       keepUnusedDataFor: 300, // Cache for 5 minutes
     }),
 
-    deleteBid: builder.mutation<DeleteBidResponse, { bidId: string }>({
-      query: ({ bidId }) => ({
-        url: `${API_ENDPOINTS.BID}/${bidId}`,
+    deleteBid: builder.mutation<
+      DeleteBidResponse,
+      { bidId: string; lang: Language }
+    >({
+      query: ({ bidId, lang = API_CONFIG.DEFAULT_LANGUAGE as Language }) => ({
+        url: `${API_ENDPOINTS.BID}/${bidId}${getLanguageParam(lang)}`,
         method: 'DELETE',
         headers: getHeaders(),
       }),
@@ -314,9 +317,9 @@ export const api = createApi({
     }),
 
     // Initiate chat from bid
-    initiateChat: builder.mutation<any, { jobId: string }>({
-      query: ({ jobId }) => ({
-        url: `${API_ENDPOINTS.INITIATE_CHAT}`,
+    initiateChat: builder.mutation<any, { jobId: string; lang: Language }>({
+      query: ({ jobId, lang = API_CONFIG.DEFAULT_LANGUAGE as Language }) => ({
+        url: `${API_ENDPOINTS.INITIATE_CHAT}${getLanguageParam(lang)}`,
         method: 'POST',
         body: { jobId },
         headers: getHeaders(),

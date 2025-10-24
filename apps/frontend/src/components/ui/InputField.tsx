@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Controller,
   Control,
@@ -10,6 +10,8 @@ import {
 } from 'react-hook-form';
 import { Currency, EyeOpenIcon } from '../assets/icons';
 import { EyeClosed } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 interface InputFieldProps<T extends FieldValues> {
   name: Path<T>;
@@ -44,8 +46,23 @@ const InputField = <T extends FieldValues>({
   placeholderAnimate = false,
   onInput,
 }: InputFieldProps<T>) => {
+  const { i18n } = useTranslation();
   const inputId = `${name}-${type}`;
   const [showPassword, setShowPassword] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
+
+  useEffect(() => {
+    setIsRTL(i18n.language === 'ar');
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setIsRTL(i18n.language === 'ar');
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, [i18n]);
 
   return (
     <div className={`${className}`}>
@@ -104,7 +121,9 @@ const InputField = <T extends FieldValues>({
           return (
             <div className="relative">
               {type === 'number' && (
-                <div className="absolute left-4 top-9 lg:top-10 -translate-y-1/2 text-gray-500">
+                <div className={`absolute top-9 lg:top-10 -translate-y-1/2 text-gray-500 ${
+                  isRTL ? 'right-4' : 'left-4'
+                }`}>
                   <Currency />
                 </div>
               )}
@@ -123,8 +142,9 @@ const InputField = <T extends FieldValues>({
                 }}
                 onInput={onInput}
                 onBlur={field.onBlur}
+                dir={isRTL ? 'rtl' : 'ltr'}
                 className={`peer relative z-1 w-full ${
-                  type === 'number' ? 'pl-8' : 'px-4'
+                  type === 'number' ? (isRTL ? 'pr-8' : 'pl-8') : 'px-4'
                 } py-2 pt-5 border-2 rounded-[10px] focus:outline-none text-(--primary-black) ${
                   error
                     ? 'border-red-500 ring-red-200'
@@ -135,7 +155,9 @@ const InputField = <T extends FieldValues>({
               {isPassword && (
                 <button
                   type="button"
-                  className="absolute z-[2] right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                  className={`absolute z-[2] top-1/2 -translate-y-1/2 cursor-pointer ${
+                    isRTL ? 'left-3' : 'right-3'
+                  }`}
                   tabIndex={-1}
                   onClick={() => setShowPassword(prev => !prev)}
                 >
@@ -146,8 +168,9 @@ const InputField = <T extends FieldValues>({
               {placeholderAnimate && (
                 <label
                   htmlFor={inputId}
-                  className={`absolute z-0 left-4 top-1 text-(--gray-2) text-sm transition-all
-                  ${
+                  className={`absolute z-0 top-1 text-(--gray-2) text-sm transition-all ${
+                    isRTL ? 'right-4' : 'left-4'
+                  } ${
                     type === 'number'
                       ? 'top-1 text-xs text-(--grey-text)'
                       : 'peer-placeholder-shown:top-4.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-(--grey-text) peer-focus:top-1.5 sm:peer-focus:text-xs peer-focus:text-[10px] peer-focus:text-(--grey-text)'
@@ -162,7 +185,9 @@ const InputField = <T extends FieldValues>({
       />
       {error && (
         <div className="relative text-[10px] text-red-500">
-          <span className="absolute -bottom-3.5 right-3 ">{error}</span>
+          <span className={`absolute -bottom-3.5 ${
+            isRTL ? 'left-3' : 'right-3'
+          }`}>{error}</span>
         </div>
       )}{' '}
     </div>

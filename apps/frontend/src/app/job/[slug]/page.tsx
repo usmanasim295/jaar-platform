@@ -45,11 +45,13 @@ export default function JobDetails({ params }: JobDetailsProps) {
     formState: { errors },
   } = useForm();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [selectedFileName, setSelectedFileName] =
-    useState<string>('Upload Document');
+  const [selectedFileName, setSelectedFileName] = useState<string>(
+    t('Upload Document')
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
 
   // Unwrap params Promise
   const resolvedParams = use(params);
@@ -70,6 +72,21 @@ export default function JobDetails({ params }: JobDetailsProps) {
   // Watch form values
   const totalPrice = watch('totalPrice');
   const coverLetter = watch('coverLetter');
+
+  // Handle RTL state
+  useEffect(() => {
+    setIsRTL(i18n.language === 'ar');
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setIsRTL(i18n.language === 'ar');
+      setSelectedFileName(t('Upload Document'));
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, [t]);
 
   // Check if current service provider has already bid on this job
   const hasUserBidded =
@@ -217,7 +234,9 @@ export default function JobDetails({ params }: JobDetailsProps) {
               )}
               {jobData.experienceLevel && (
                 <span className="flex items-center gap-1">
-                  <span className="text-xs sm:text-sm">🎯 {jobData.experienceLevel}</span>
+                  <span className="text-xs sm:text-sm">
+                    🎯 {jobData.experienceLevel}
+                  </span>
                 </span>
               )}
               {jobData.jobType && (
@@ -283,8 +302,8 @@ export default function JobDetails({ params }: JobDetailsProps) {
                 <div className="flex items-center gap-1.5 bg-(--light-grey) p-2 sm:p-2.5 rounded-lg text-xs sm:typo-small font-medium text-[#15120F]">
                   <CalenderBlank className="w-4 h-4 flex-shrink-0" />
                   <span className="text-xs sm:text-sm break-words">
-                  {new Date(jobData.startDate).toLocaleDateString()} -{' '}
-                  {new Date(jobData.endDate).toLocaleDateString()}
+                    {new Date(jobData.startDate).toLocaleDateString()} -{' '}
+                    {new Date(jobData.endDate).toLocaleDateString()}
                   </span>
                 </div>
               )}
@@ -345,7 +364,8 @@ export default function JobDetails({ params }: JobDetailsProps) {
             >
               <div>
                 <h3 className="font-semibold text-lg sm:text-xl md:typo-heading3 text-(--primary-black) mb-3 sm:mb-4">
-                  {t('Add Total Prices')} *
+                  {t('Add Total Prices')}{' '}
+                  <span className="text-red-500">*</span>
                 </h3>
                 <InputField
                   name="totalPrice"
@@ -374,7 +394,8 @@ export default function JobDetails({ params }: JobDetailsProps) {
               {/* Cover Letter */}
               <div>
                 <h2 className="text-lg sm:text-xl md:typo-heading3 font-semibold mb-3 sm:mb-4 text-(--primary-black)">
-                  {t('Add Cover Letter')} *
+                  {t('Add Cover Letter')}{' '}
+                  <span className="text-red-500">*</span>
                 </h2>
 
                 <div className="relative w-full">
@@ -389,7 +410,18 @@ export default function JobDetails({ params }: JobDetailsProps) {
                       },
                     })}
                     rows={10}
-                    placeholder={`Dear ${jobData.apartment?.name || t('Client')},
+                    placeholder={
+                      isRTL
+                        ? `عزيزي ${jobData.apartment?.name || t('Client')}،
+
+نود أن نقدم خدماتنا لهذا المشروع. فريقنا ذو خبرة وموثوق ومتعهد بتقديم عمل عالي الجودة في الوقت المحدد.
+
+سنكون سعداء لمناقشة احتياجاتك بالتفصيل وتقديم عرض مخصص.
+نتطلع للعمل معك.
+
+مع أطيب التحيات،
+${user?.name || t('Service Provider')}`
+                        : `Dear ${jobData.apartment?.name || t('Client')},
 
 We would like to offer our services for this project. Our team is experienced, reliable, and committed to delivering high-quality work on time.
 
@@ -397,13 +429,17 @@ We'd be happy to discuss your needs in more detail and provide a tailored quote.
 Looking forward to working with you.
 
 Best regards,
-${user?.name || t('Service Provider')}`}
+${user?.name || t('Service Provider')}`
+                    }
                     className={`w-full px-3 sm:px-4 pb-3 sm:pb-3.5 pt-7 sm:pt-7.5 font-normal text-sm sm:typo-body text-(--primary-black) rounded-[10px] border-2 resize-none ${errors.coverLetter ? 'border-red-500' : 'border-(--light-grey)'}`}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   />
 
                   <label
                     htmlFor="coverLetter"
-                    className="absolute left-3 sm:left-4 top-2 sm:top-3 text-(--grey-text) text-xs sm:typo-small font-normal"
+                    className={`absolute top-2 sm:top-3 text-(--grey-text) text-xs sm:typo-small font-normal ${
+                      isRTL ? 'right-3 sm:right-4' : 'left-3 sm:left-4'
+                    }`}
                   >
                     {t('Cover Letter')}
                   </label>
@@ -430,12 +466,21 @@ ${user?.name || t('Service Provider')}`}
                   />
 
                   <div
-                    className="bg-(--light-grey) rounded-xl p-3 flex items-center justify-between h-[50px] sm:h-[60px] w-full lg:w-[424px] cursor-pointer"
+                    className={`bg-(--light-grey) rounded-xl p-3 flex items-center justify-between w-full lg:w-[424px] cursor-pointer ${
+                      isRTL ? 'h-[55px] sm:h-[65px]' : 'h-[50px] sm:h-[60px]'
+                    }`}
                     onClick={handleUploadClick}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    <div className="flex gap-3 sm:gap-4 items-center overflow-hidden">
-                      <File className="w-5 h-5 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm truncate">
+                    <div
+                      className={`flex gap-3 sm:gap-4 items-center overflow-hidden `}
+                    >
+                      <File className="w-5" />
+                      <span
+                        className={`text-xs sm:text-sm truncate ${
+                          isRTL ? 'leading-loose py-1' : 'leading-tight'
+                        }`}
+                      >
                         {selectedFileName.length > 25
                           ? `${selectedFileName.slice(0, 25)}...`
                           : selectedFileName}

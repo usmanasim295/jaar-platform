@@ -24,6 +24,7 @@ import { VotePollDto } from './dto/vote-poll.dto';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { QueryMessagesDto } from './dto/query-messages.dto';
 import { LanguageService } from 'src/common/services/language.service';
+import { MessageService } from 'src/common/services/message.service';
 import { S3Service } from 'src/common/services/s3.service';
 import { FileManagementService } from './file-management.service';
 import { AuthGuard, Roles } from 'src/auth/auth.guard';
@@ -34,6 +35,7 @@ export class ChatController {
   constructor(
     private readonly chatService: ChatService,
     private readonly languageService: LanguageService,
+    private readonly messageService: MessageService,
     private readonly s3Service: S3Service,
     private readonly fileManagementService: FileManagementService,
   ) {}
@@ -46,9 +48,15 @@ export class ChatController {
   async createOneToOneChat(
     @Req() req: Request,
     @Body() body: { otherUserId: string },
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
-    return this.chatService.createOneToOneChat(user.id, body.otherUserId);
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.createOneToOneChat(
+      user.id,
+      body.otherUserId,
+      language,
+    );
   }
 
   // Service Provider Chat (created by Leader or Home Owner)
@@ -57,12 +65,15 @@ export class ChatController {
   async createServiceProviderChat(
     @Req() req: Request,
     @Body() body: { jobId: string; serviceProviderId: string },
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
     return this.chatService.createServiceProviderChat(
       body.jobId,
       body.serviceProviderId,
       user.id,
+      language,
     );
   }
 
@@ -72,10 +83,17 @@ export class ChatController {
   async initiateServiceProviderChat(
     @Req() req: Request,
     @Body() body: { jobId: string },
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
     if (!user.serviceProviderId) {
-      throw new BadRequestException('Service provider ID not found');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'chat.service_provider_id_not_found',
+          language,
+        ),
+      );
     }
     return this.chatService.initiateServiceProviderChat(
       body.jobId,
@@ -92,7 +110,7 @@ export class ChatController {
   ) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const message = await this.chatService.sendMessage(user, dto);
+    const message = await this.chatService.sendMessage(user, dto, language);
 
     return {
       message: this.languageService.transformObjectForLanguage(
@@ -129,15 +147,21 @@ export class ChatController {
     const replyToId = (req as any).body?.replyToId;
 
     if (!chatId) {
-      throw new BadRequestException('chatId is required');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('chat.chat_id_required', language),
+      );
     }
 
     if (!content) {
-      throw new BadRequestException('content is required');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('chat.content_required', language),
+      );
     }
 
     if (!files || files.length === 0) {
-      throw new BadRequestException('At least one file is required');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('chat.file_required', language),
+      );
     }
 
     // Upload all files and collect file data
@@ -207,7 +231,7 @@ export class ChatController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.chatService.getMessages(chatId, dto);
+    const result = await this.chatService.getMessages(chatId, dto, language);
 
     return {
       ...result,
@@ -276,9 +300,14 @@ export class ChatController {
   }
 
   @Post('poll/vote')
-  async votePoll(@Req() req: Request, @Body() dto: VotePollDto) {
+  async votePoll(
+    @Req() req: Request,
+    @Body() dto: VotePollDto,
+    @Query('lang') lang?: string,
+  ) {
     const user = req['user'];
-    return this.chatService.votePoll(user.id, dto);
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.votePoll(user.id, dto, language);
   }
 
   @Get('poll/:pollId/results')
@@ -287,7 +316,7 @@ export class ChatController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const poll = await this.chatService.getPollResults(pollId);
+    const poll = await this.chatService.getPollResults(pollId, language);
 
     // Transform the poll object with proper handling of nested options array
     const transformedPoll = this.languageService.transformObjectForLanguage(
@@ -402,15 +431,17 @@ export class ChatController {
     @Query('lang') lang?: string,
   ) {
     const serviceProvider = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Ensure this is a service provider request
     if (serviceProvider.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can access this endpoint',
+        this.messageService.getErrorMessage(
+          'chat.only_service_providers_can_access',
+          language,
+        ),
       );
     }
-
-    const language = this.languageService.validateLanguage(lang);
     const chats = await this.chatService.getServiceProviderChats(
       serviceProvider.id,
     );
@@ -498,27 +529,41 @@ export class ChatController {
   async getCommunityMembers(
     @Req() req: Request,
     @Param('communityId') communityId: string,
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
-    return this.chatService.getCommunityMembers(communityId, user.id);
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.getCommunityMembers(communityId, user.id, language);
   }
 
   // Apartment Home Owners
   @Get('apartment/:apartmentId/home-owners')
-  async getApartmentHomeOwners(@Param('apartmentId') apartmentId: string) {
-    return this.chatService.getApartmentHomeOwners(apartmentId);
+  async getApartmentHomeOwners(
+    @Param('apartmentId') apartmentId: string,
+    @Query('lang') lang?: string,
+  ) {
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.getApartmentHomeOwners(apartmentId, language);
   }
 
   // Get leader for home owner
   @Get('apartment/:apartmentId/leader')
-  async getApartmentLeader(@Param('apartmentId') apartmentId: string) {
-    return this.chatService.getApartmentLeader(apartmentId);
+  async getApartmentLeader(
+    @Param('apartmentId') apartmentId: string,
+    @Query('lang') lang?: string,
+  ) {
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.getApartmentLeader(apartmentId, language);
   }
 
   // Get user's community
   @Get('user/:userId/community')
-  async getUserCommunity(@Param('userId') userId: string) {
-    return this.chatService.getUserCommunity(userId);
+  async getUserCommunity(
+    @Param('userId') userId: string,
+    @Query('lang') lang?: string,
+  ) {
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.getUserCommunity(userId, language);
   }
 
   // Mark messages as read
@@ -526,15 +571,18 @@ export class ChatController {
   async markMessagesAsRead(
     @Req() req: Request,
     @Param('chatId') chatId: string,
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
-    return this.chatService.markMessagesAsRead(user.id, chatId);
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.markMessagesAsRead(user.id, chatId, language);
   }
 
   // Get unread message count
   @Get('unread-count')
-  async getUnreadCount(@Req() req: Request) {
+  async getUnreadCount(@Req() req: Request, @Query('lang') lang?: string) {
     const user = req['user'];
-    return this.chatService.getUnreadCount(user.id);
+    const language = this.languageService.validateLanguage(lang);
+    return this.chatService.getUnreadCount(user.id, language);
   }
 }

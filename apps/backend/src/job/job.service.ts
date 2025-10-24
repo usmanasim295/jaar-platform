@@ -9,22 +9,31 @@ import { CreateJobDto, JobType } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { JobStatus } from '@prisma/client';
 import { TranslationService } from '../common/services/translation.service';
+import { MessageService } from '../common/services/message.service';
 
 @Injectable()
 export class JobService {
   constructor(
     private prisma: PrismaService,
     private translationService: TranslationService,
+    private messageService: MessageService,
   ) {}
 
-  async create(createJobDto: CreateJobDto, userId: string, userRole: string) {
+  async create(
+    createJobDto: CreateJobDto,
+    userId: string,
+    userRole: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the user exists
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.user_not_found', language),
+      );
     }
 
     // Verify all services exist
@@ -35,7 +44,9 @@ export class JobService {
     });
 
     if (services.length !== createJobDto.serviceIds.length) {
-      throw new NotFoundException('One or more services not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.services_not_found', language),
+      );
     }
 
     let apartmentId: string;
@@ -47,7 +58,10 @@ export class JobService {
         // Home service: use the home owner's assigned apartment
         if (!user.apartmentId) {
           throw new BadRequestException(
-            'Your account is not linked to any apartment',
+            this.messageService.getErrorMessage(
+              'job.apartment_not_linked',
+              language,
+            ),
           );
         }
 
@@ -57,7 +71,10 @@ export class JobService {
           createJobDto.apartmentId !== user.apartmentId
         ) {
           throw new ForbiddenException(
-            'You can only create home service jobs for your own apartment',
+            this.messageService.getErrorMessage(
+              'job.home_service_apartment_mismatch',
+              language,
+            ),
           );
         }
 
@@ -68,7 +85,10 @@ export class JobService {
         // Leader posting a home service job (allowed): require apartment they lead
         if (!createJobDto.apartmentId) {
           throw new BadRequestException(
-            'Apartment ID is required for leader-created home service jobs',
+            this.messageService.getErrorMessage(
+              'job.apartment_id_required_leader',
+              language,
+            ),
           );
         }
 
@@ -77,7 +97,10 @@ export class JobService {
         });
         if (!apartment) {
           throw new ForbiddenException(
-            'You are not authorized to post jobs for this apartment',
+            this.messageService.getErrorMessage(
+              'job.not_authorized_apartment',
+              language,
+            ),
           );
         }
 
@@ -86,14 +109,20 @@ export class JobService {
         initialStatus = JobStatus.OPEN;
       } else {
         throw new ForbiddenException(
-          'Invalid role for creating home service job',
+          this.messageService.getErrorMessage(
+            'job.invalid_role_home_service',
+            language,
+          ),
         );
       }
     } else if (createJobDto.jobType === JobType.COMMUNITY_SERVICE) {
       // For community service, apartmentId is required
       if (!createJobDto.apartmentId) {
         throw new BadRequestException(
-          'Apartment ID is required for community service jobs',
+          this.messageService.getErrorMessage(
+            'job.apartment_id_required_community',
+            language,
+          ),
         );
       }
 
@@ -103,12 +132,17 @@ export class JobService {
       });
 
       if (!apartment) {
-        throw new NotFoundException('Apartment not found');
+        throw new NotFoundException(
+          this.messageService.getErrorMessage(
+            'job.apartment_not_found',
+            language,
+          ),
+        );
       }
 
       if (!apartment.leaderId) {
         throw new BadRequestException(
-          'This apartment does not have a leader assigned',
+          this.messageService.getErrorMessage('apartment.no_leader', language),
         );
       }
 
@@ -116,7 +150,10 @@ export class JobService {
         // Home owner can only target their own apartment
         if (!user.apartmentId || user.apartmentId !== apartment.id) {
           throw new ForbiddenException(
-            'You can only create community service jobs for your own apartment',
+            this.messageService.getErrorMessage(
+              'job.not_authorized_community',
+              language,
+            ),
           );
         }
 
@@ -127,7 +164,10 @@ export class JobService {
         // Leader must be the leader of this apartment
         if (apartment.leaderId !== userId) {
           throw new ForbiddenException(
-            'You are not authorized to post jobs for this apartment',
+            this.messageService.getErrorMessage(
+              'job.not_authorized_apartment',
+              language,
+            ),
           );
         }
 
@@ -136,11 +176,16 @@ export class JobService {
         initialStatus = JobStatus.OPEN; // Directly open when leader posts community job
       } else {
         throw new ForbiddenException(
-          'Invalid role for creating community service job',
+          this.messageService.getErrorMessage(
+            'job.invalid_role_community_service',
+            language,
+          ),
         );
       }
     } else {
-      throw new BadRequestException('Invalid job type');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('job.invalid_job_type', language),
+      );
     }
 
     // Translate fields BEFORE starting the transaction
@@ -232,10 +277,19 @@ export class JobService {
 
     const message =
       createJobDto.jobType === JobType.HOME_SERVICE
-        ? 'Home service job created successfully and is now visible to service providers'
+        ? this.messageService.getSuccessMessage(
+            'job.home_service_created',
+            language,
+          )
         : userRole === 'HOME_OWNER'
-          ? 'Community service job request sent to leader for approval'
-          : 'Community service job created successfully and is now visible to service providers';
+          ? this.messageService.getSuccessMessage(
+              'job.community_service_sent_to_leader',
+              language,
+            )
+          : this.messageService.getSuccessMessage(
+              'job.community_service_created',
+              language,
+            );
 
     return {
       message,
@@ -298,7 +352,7 @@ export class JobService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, language: 'en' | 'ar' = 'en') {
     const job = await this.prisma.job.findUnique({
       where: { id },
       include: {
@@ -343,7 +397,9 @@ export class JobService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
     }
 
     return job;
@@ -392,14 +448,19 @@ export class JobService {
     });
   }
 
-  async findByLeader(leaderId: string) {
+  async findByLeader(leaderId: string, language: 'en' | 'ar' = 'en') {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
     });
 
     if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException('Only leaders can view their posted jobs');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'job.only_leaders_can_view_jobs',
+          language,
+        ),
+      );
     }
 
     return this.prisma.job.findMany({
@@ -626,7 +687,10 @@ export class JobService {
     return jobs;
   }
 
-  async findPendingCommunityJobs(leaderId: string) {
+  async findPendingCommunityJobs(
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
@@ -634,7 +698,10 @@ export class JobService {
 
     if (!leader || leader.role !== 'LEADER') {
       throw new ForbiddenException(
-        'Only leaders can view pending community service jobs',
+        this.messageService.getErrorMessage(
+          'job.only_leaders_can_view_pending_community',
+          language,
+        ),
       );
     }
 
@@ -674,7 +741,12 @@ export class JobService {
     });
   }
 
-  async update(id: string, updateJobDto: UpdateJobDto, leaderId: string) {
+  async update(
+    id: string,
+    updateJobDto: UpdateJobDto,
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the job exists and belongs to this leader
     const existingJob = await this.prisma.job.findFirst({
       where: {
@@ -685,14 +757,20 @@ export class JobService {
 
     if (!existingJob) {
       throw new NotFoundException(
-        'Job not found or you are not authorized to update it',
+        this.messageService.getErrorMessage(
+          'job.not_found_or_unauthorized_update',
+          language,
+        ),
       );
     }
 
     // Only allow updates if job is still open
     if (existingJob.status !== JobStatus.OPEN) {
       throw new BadRequestException(
-        'Cannot update job that is not in OPEN status',
+        this.messageService.getErrorMessage(
+          'job.cannot_update_not_open',
+          language,
+        ),
       );
     }
 
@@ -705,7 +783,12 @@ export class JobService {
       });
 
       if (services.length !== updateJobDto.serviceIds.length) {
-        throw new NotFoundException('One or more services not found');
+        throw new NotFoundException(
+          this.messageService.getErrorMessage(
+            'job.services_not_found',
+            language,
+          ),
+        );
       }
     }
 
@@ -779,12 +862,15 @@ export class JobService {
     });
 
     return {
-      message: 'Job updated successfully',
+      message: this.messageService.getSuccessMessage(
+        'job.updated_success',
+        language,
+      ),
       job: jobWithServices,
     };
   }
 
-  async remove(id: string, leaderId: string) {
+  async remove(id: string, leaderId: string, language: 'en' | 'ar' = 'en') {
     // Verify the job exists and belongs to this leader
     const existingJob = await this.prisma.job.findFirst({
       where: {
@@ -795,14 +881,20 @@ export class JobService {
 
     if (!existingJob) {
       throw new NotFoundException(
-        'Job not found or you are not authorized to delete it',
+        this.messageService.getErrorMessage(
+          'job.not_found_or_unauthorized_delete',
+          language,
+        ),
       );
     }
 
     // Only allow deletion if job is still open
     if (existingJob.status !== JobStatus.OPEN) {
       throw new BadRequestException(
-        'Cannot delete job that is not in OPEN status',
+        this.messageService.getErrorMessage(
+          'job.cannot_delete_not_open',
+          language,
+        ),
       );
     }
 
@@ -825,11 +917,19 @@ export class JobService {
     });
 
     return {
-      message: 'Job deleted successfully',
+      message: this.messageService.getSuccessMessage(
+        'job.deleted_success',
+        language,
+      ),
     };
   }
 
-  async updateStatus(id: string, status: JobStatus, leaderId: string) {
+  async updateStatus(
+    id: string,
+    status: JobStatus,
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the job exists and belongs to this leader
     const existingJob = await this.prisma.job.findFirst({
       where: {
@@ -840,7 +940,10 @@ export class JobService {
 
     if (!existingJob) {
       throw new NotFoundException(
-        'Job not found or you are not authorized to update it',
+        this.messageService.getErrorMessage(
+          'job.not_found_or_unauthorized_update',
+          language,
+        ),
       );
     }
 
@@ -872,12 +975,19 @@ export class JobService {
     });
 
     return {
-      message: 'Job status updated successfully',
+      message: this.messageService.getSuccessMessage(
+        'job.status_updated_success',
+        language,
+      ),
       job: updatedJob,
     };
   }
 
-  async approveCommunityJob(jobId: string, leaderId: string) {
+  async approveCommunityJob(
+    jobId: string,
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
@@ -885,7 +995,10 @@ export class JobService {
 
     if (!leader || leader.role !== 'LEADER') {
       throw new ForbiddenException(
-        'Only leaders can approve community service jobs',
+        this.messageService.getErrorMessage(
+          'job.only_leaders_can_approve_community',
+          language,
+        ),
       );
     }
 
@@ -900,17 +1013,27 @@ export class JobService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
     }
 
     if (job.jobType !== 'COMMUNITY_SERVICE') {
       throw new BadRequestException(
-        'Only community service jobs can be approved',
+        this.messageService.getErrorMessage(
+          'job.only_community_jobs_can_be_approved',
+          language,
+        ),
       );
     }
 
     if (job.status !== 'SENT_TO_LEADER') {
-      throw new BadRequestException('Job is not in SENT_TO_LEADER status');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.not_sent_to_leader_status',
+          language,
+        ),
+      );
     }
 
     // Verify the leader is authorized to approve this job
@@ -959,12 +1082,20 @@ export class JobService {
     });
 
     return {
-      message: 'Community service job approved and posted successfully',
+      message: this.messageService.getSuccessMessage(
+        'job.community_approved',
+        language,
+      ),
       job: updatedJob,
     };
   }
 
-  async rejectCommunityJob(jobId: string, leaderId: string, reason?: string) {
+  async rejectCommunityJob(
+    jobId: string,
+    leaderId: string,
+    reason?: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
@@ -972,7 +1103,10 @@ export class JobService {
 
     if (!leader || leader.role !== 'LEADER') {
       throw new ForbiddenException(
-        'Only leaders can reject community service jobs',
+        this.messageService.getErrorMessage(
+          'job.only_leaders_can_reject_community',
+          language,
+        ),
       );
     }
 
@@ -987,23 +1121,36 @@ export class JobService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
     }
 
     if (job.jobType !== 'COMMUNITY_SERVICE') {
       throw new BadRequestException(
-        'Only community service jobs can be rejected',
+        this.messageService.getErrorMessage(
+          'job.only_community_jobs_can_be_rejected',
+          language,
+        ),
       );
     }
 
     if (job.status !== 'SENT_TO_LEADER') {
-      throw new BadRequestException('Job is not in SENT_TO_LEADER status');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.not_sent_to_leader_status',
+          language,
+        ),
+      );
     }
 
     // Verify the leader is authorized to reject this job
     if (job.apartment.leaderId !== leaderId) {
       throw new ForbiddenException(
-        'You are not authorized to reject jobs for this apartment',
+        this.messageService.getErrorMessage(
+          'job.not_authorized_reject_apartment',
+          language,
+        ),
       );
     }
 
@@ -1045,7 +1192,10 @@ export class JobService {
     });
 
     return {
-      message: 'Community service job rejected successfully',
+      message: this.messageService.getSuccessMessage(
+        'job.community_rejected',
+        language,
+      ),
       job: updatedJob,
     };
   }

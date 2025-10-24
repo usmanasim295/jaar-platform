@@ -8,6 +8,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { TranslationService } from 'src/common/services/translation.service';
 import { S3Service } from 'src/common/services/s3.service';
 import { LanguageService } from 'src/common/services/language.service';
+import { MessageService } from 'src/common/services/message.service';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -27,6 +28,7 @@ import { JwtModule } from '@nestjs/jwt';
     TranslationService,
     S3Service,
     LanguageService,
+    MessageService,
   ],
   exports: [ChatService, RealtimeService],
 })

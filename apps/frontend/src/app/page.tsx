@@ -121,7 +121,10 @@ export default function Home() {
       if (diffInHours < 24) return `${diffInHours} ${t('hours ago')}`;
       const diffInDays = Math.floor(diffInHours / 24);
       if (diffInDays < 7) return `${diffInDays} ${t('days ago')}`;
-      return date.toLocaleDateString();
+
+      // Format date based on current language
+      const locale = i18n.language === 'ar' ? 'ar-SA' : 'en-US';
+      return date.toLocaleDateString(locale);
     };
 
     // Map service IDs to service names (you might want to fetch this from services API)
@@ -176,7 +179,7 @@ export default function Home() {
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold text-sm">
-                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        {user?.name?.charAt(0)?.toUpperCase() || t('U')}
                       </div>
                     )}
                   </div>
@@ -185,7 +188,7 @@ export default function Home() {
                       {isProfileLoading ? (
                         <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
                       ) : (
-                        profileData?.name || user?.name || 'User'
+                        profileData?.name || user?.name || t('User')
                       )}
                     </div>
                     <p className="text-xs text-gray-500">{t('View Profile')}</p>
@@ -264,7 +267,7 @@ export default function Home() {
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
-                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        {user?.name?.charAt(0)?.toUpperCase() || t('U')}
                       </div>
                     )}
                   </div>
@@ -273,7 +276,7 @@ export default function Home() {
                       {isProfileLoading ? (
                         <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
                       ) : (
-                        profileData?.name || user?.name || 'User'
+                        profileData?.name || user?.name || t('User')
                       )}
                     </div>
                     {profileData?.bio && (
@@ -304,7 +307,7 @@ export default function Home() {
                       {isProfileLoading ? (
                         <div className="h-6 w-16 bg-gray-200 animate-pulse rounded" />
                       ) : (
-                        `$${profileData?.totalEarnings || 0}`
+                        `﷼${profileData?.totalEarnings || 0}`
                       )}
                     </h2>
                     <p className="font-normal text-xs text-gray-600">
@@ -357,7 +360,7 @@ export default function Home() {
                         i: number
                       ) => {
                         const serviceName =
-                          serviceProviderService.service?.name || 'Service';
+                          serviceProviderService.service?.name || t('Service');
                         const IconComponent =
                           serviceIconMap[serviceName] || CleaningIcon;
 
@@ -377,7 +380,7 @@ export default function Home() {
                                   serviceProviderService.serviceId
                               ) && (
                                 <p className="text-xs text-gray-600">
-                                  $
+                                  ﷼
                                   {
                                     profileData.serviceRates.find(
                                       (rate: ServiceProviderRate) =>
@@ -385,7 +388,7 @@ export default function Home() {
                                         serviceProviderService.serviceId
                                     )?.rate
                                   }
-                                  /hour
+                                  /{t('hour')}
                                 </p>
                               )}
                             </div>
@@ -559,17 +562,16 @@ export default function Home() {
 
                         <div className="flex justify-between items-center  gap-2 mt-3 sm:mt-4">
                           {job.apartment && (
-<div className="flex items-center font-medium gap-1 sm:gap-[6px] text-xs leading-[100%] text-[var(--grey-text)] max-w-[70%]">
-  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-  
-  <span
-    className="truncate whitespace-nowrap overflow-hidden text-ellipsis block"
-    title={`${job.apartment.name}, ${job.apartment.city}`}
-  >
-    {job.apartment.name}, {job.apartment.city}
-  </span>
-</div>
+                            <div className="flex items-center font-medium gap-1 sm:gap-[6px] text-xs leading-[100%] text-[var(--grey-text)] max-w-[70%]">
+                              <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
 
+                              <span
+                                className="truncate whitespace-nowrap overflow-hidden text-ellipsis block"
+                                title={`${job.apartment.name}, ${job.apartment.city}`}
+                              >
+                                {job.apartment.name}, {job.apartment.city}
+                              </span>
+                            </div>
                           )}
                           <Button
                             onClick={() => {
@@ -606,7 +608,7 @@ export default function Home() {
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
-                          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                          {user?.name?.charAt(0)?.toUpperCase() || t('U')}
                         </div>
                       )}
                     </div>
@@ -615,7 +617,7 @@ export default function Home() {
                         {isProfileLoading ? (
                           <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
                         ) : (
-                          profileData?.name || user?.name || 'User'
+                          profileData?.name || user?.name || t('User')
                         )}
                       </div>
                       {profileData?.bio && (
@@ -646,7 +648,7 @@ export default function Home() {
                         {isProfileLoading ? (
                           <div className="h-6 w-16 bg-gray-200 animate-pulse rounded" />
                         ) : (
-                          `$${profileData?.totalEarnings || 0}`
+                          `﷼${profileData?.totalEarnings || 0}`
                         )}
                       </h2>
                       <p className="font-normal typo-small">
@@ -696,7 +698,8 @@ export default function Home() {
                           i: number
                         ) => {
                           const serviceName =
-                            serviceProviderService.service?.name || 'Service';
+                            serviceProviderService.service?.name ||
+                            t('Service');
                           const IconComponent =
                             serviceIconMap[serviceName] || CleaningIcon;
 
@@ -716,7 +719,7 @@ export default function Home() {
                                     serviceProviderService.serviceId
                                 ) && (
                                   <p className="text-sm text-gray-600">
-                                    $
+                                    ﷼
                                     {
                                       profileData.serviceRates.find(
                                         (rate: ServiceProviderRate) =>
@@ -724,7 +727,7 @@ export default function Home() {
                                           serviceProviderService.serviceId
                                       )?.rate
                                     }
-                                    /hour
+                                    /{t('hour')}
                                   </p>
                                 )}
                               </div>
