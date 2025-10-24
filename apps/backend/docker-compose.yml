@@ -16,6 +16,9 @@ services:
       AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
       GOOGLE_TRANSLATE_API_KEY: ${GOOGLE_TRANSLATE_API_KEY}
       NODE_ENV: production
+      NAFATH_BASE_URL: ${NAFATH_BASE_URL}
+      NAFATH_APP_ID: ${NAFATH_APP_ID}
+      NAFATH_APP_KEY: ${NAFATH_APP_KEY}
     ports:
       - '3000:3000'
     depends_on:
