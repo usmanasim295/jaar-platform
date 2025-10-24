@@ -43,7 +43,7 @@ export class ServiceProviderController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.serviceProviderService.signup(dto);
+    const result = await this.serviceProviderService.signup(dto, language);
 
     return {
       ...result,
@@ -70,26 +70,40 @@ export class ServiceProviderController {
       }),
     )
     document: Express.Multer.File,
+    @Query('lang') lang?: string,
   ) {
-    return this.serviceProviderService.step1(dto, document);
+    const language = this.languageService.validateLanguage(lang);
+    return this.serviceProviderService.step1(dto, document, language);
   }
 
   @Public()
   @Post('step2')
-  async step2(@Body() dto: ServiceProviderStep2Dto) {
-    return this.serviceProviderService.step2(dto);
+  async step2(
+    @Body() dto: ServiceProviderStep2Dto,
+    @Query('lang') lang?: string,
+  ) {
+    const language = this.languageService.validateLanguage(lang);
+    return this.serviceProviderService.step2(dto, language);
   }
 
   @Public()
   @Post('step3')
-  async step3(@Body() dto: ServiceProviderStep3Dto) {
-    return this.serviceProviderService.step3(dto);
+  async step3(
+    @Body() dto: ServiceProviderStep3Dto,
+    @Query('lang') lang?: string,
+  ) {
+    const language = this.languageService.validateLanguage(lang);
+    return this.serviceProviderService.step3(dto, language);
   }
 
   @Public()
   @Post('step4')
-  async step4(@Body() dto: ServiceProviderStep4Dto) {
-    return this.serviceProviderService.step4(dto);
+  async step4(
+    @Body() dto: ServiceProviderStep4Dto,
+    @Query('lang') lang?: string,
+  ) {
+    const language = this.languageService.validateLanguage(lang);
+    return this.serviceProviderService.step4(dto, language);
   }
 
   @Public()
@@ -110,7 +124,11 @@ export class ServiceProviderController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.serviceProviderService.step5(dto, profilePicture);
+    const result = await this.serviceProviderService.step5(
+      dto,
+      profilePicture,
+      language,
+    );
 
     // Get updated service provider data for response
     const updatedServiceProvider = await this.serviceProviderService.getProfile(
@@ -149,7 +167,11 @@ export class ServiceProviderController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.serviceProviderService.step6(dto, bankDocument);
+    const result = await this.serviceProviderService.step6(
+      dto,
+      bankDocument,
+      language,
+    );
 
     // Get updated service provider data for response
     const updatedServiceProvider = await this.serviceProviderService.getProfile(
@@ -177,7 +199,7 @@ export class ServiceProviderController {
     @Query('lang') lang?: string,
   ) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.serviceProviderService.login(dto);
+    const result = await this.serviceProviderService.login(dto, language);
 
     return {
       ...result,
@@ -193,7 +215,7 @@ export class ServiceProviderController {
   @UseGuards(AuthGuard)
   async getProfile(@Param('id') id: string, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const profile = await this.serviceProviderService.getProfile(id);
+    const profile = await this.serviceProviderService.getProfile(id, language);
 
     // Transform the main profile object
     const transformedProfile = this.languageService.transformObjectForLanguage(
@@ -241,7 +263,10 @@ export class ServiceProviderController {
   @Get('step-status/:id')
   async getStepStatus(@Param('id') id: string, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const result = await this.serviceProviderService.getStepStatus(id);
+    const result = await this.serviceProviderService.getStepStatus(
+      id,
+      language,
+    );
 
     // The step status doesn't contain translatable data, but we return it for consistency
     return result;

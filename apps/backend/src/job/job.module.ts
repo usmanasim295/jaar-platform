@@ -9,6 +9,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { S3Service } from '../common/services/s3.service';
 import { TranslationService } from '../common/services/translation.service';
 import { LanguageService } from '../common/services/language.service';
+import { MessageService } from '../common/services/message.service';
 import { ChatModule } from '../chat/chat.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { ChatModule } from '../chat/chat.module';
     S3Service,
     TranslationService,
     LanguageService,
+    MessageService,
   ],
   exports: [JobService, BidService, JobCompletionRequestService],
 })

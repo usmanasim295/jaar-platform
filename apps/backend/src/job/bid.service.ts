@@ -12,6 +12,7 @@ import { S3Service } from '../common/services/s3.service';
 import { CreateBidDto } from './dto/create-bid.dto';
 import { BidStatus } from '@prisma/client';
 import { TranslationService } from '../common/services/translation.service';
+import { MessageService } from '../common/services/message.service';
 import { ChatService } from '../chat/chat.service';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class BidService {
     private prisma: PrismaService,
     private s3Service: S3Service,
     private translationService: TranslationService,
+    private messageService: MessageService,
     @Inject(forwardRef(() => ChatService))
     private chatService: ChatService,
   ) {}
@@ -28,12 +30,16 @@ export class BidService {
     createBidDto: CreateBidDto,
     serviceProviderId: string,
     document?: Express.Multer.File,
+    language: 'en' | 'ar' = 'en',
   ) {
     // Validate and convert totalPrice to number
     const totalPrice = parseFloat(createBidDto.totalPrice);
     if (isNaN(totalPrice) || totalPrice <= 0) {
       throw new BadRequestException(
-        'Total price must be a valid positive number',
+        this.messageService.getErrorMessage(
+          'bid.total_price_invalid',
+          language,
+        ),
       );
     }
 
@@ -43,11 +49,21 @@ export class BidService {
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'service_provider.not_found',
+          language,
+        ),
+      );
     }
 
     if (!serviceProvider.isActive) {
-      throw new ForbiddenException('Service provider account is not active');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'service_provider.account_not_active',
+          language,
+        ),
+      );
     }
 
     // Verify the job exists and is open
@@ -64,12 +80,17 @@ export class BidService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
     }
 
     if (job.status !== 'OPEN' && job.status !== 'POSTED_BY_LEADER') {
       throw new BadRequestException(
-        'Cannot bid on job that is not open or posted by leader',
+        this.messageService.getErrorMessage(
+          'bid.cannot_bid_job_not_open',
+          language,
+        ),
       );
     }
 
@@ -84,7 +105,9 @@ export class BidService {
     });
 
     if (existingBid) {
-      throw new ConflictException('You have already bid on this job');
+      throw new ConflictException(
+        this.messageService.getErrorMessage('bid.already_bid_on_job', language),
+      );
     }
 
     // Verify the service provider offers the service required by the job
@@ -94,7 +117,9 @@ export class BidService {
     });
 
     if (jobServices.length === 0) {
-      throw new BadRequestException('Job has no services defined');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('bid.job_no_services', language),
+      );
     }
 
     // Check if service provider offers any of the required services
@@ -167,7 +192,7 @@ export class BidService {
     });
 
     return {
-      message: 'Bid submitted successfully',
+      message: this.messageService.getSuccessMessage('bid.submitted', language),
       bid,
     };
   }
@@ -254,7 +279,7 @@ export class BidService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, language: 'en' | 'ar' = 'en') {
     const bid = await this.prisma.bid.findUnique({
       where: { id },
       include: {
@@ -287,7 +312,9 @@ export class BidService {
     });
 
     if (!bid) {
-      throw new NotFoundException('Bid not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.bid_not_found', language),
+      );
     }
 
     return bid;
@@ -298,6 +325,7 @@ export class BidService {
     status: BidStatus,
     userId: string,
     userRole: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     // Verify the bid exists
     const bid = await this.prisma.bid.findUnique({
@@ -314,7 +342,9 @@ export class BidService {
     });
 
     if (!bid) {
-      throw new NotFoundException('Bid not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.bid_not_found', language),
+      );
     }
 
     // Check authorization based on job type and user role
@@ -334,7 +364,10 @@ export class BidService {
 
     if (!isAuthorized) {
       throw new ForbiddenException(
-        'You are not authorized to update this bid status',
+        this.messageService.getErrorMessage(
+          'bid.not_authorized_update_status',
+          language,
+        ),
       );
     }
 
@@ -391,12 +424,19 @@ export class BidService {
     }
 
     return {
-      message: 'Bid status updated successfully',
+      message: this.messageService.getSuccessMessage(
+        'bid.status_updated',
+        language,
+      ),
       bid: updatedBid,
     };
   }
 
-  async remove(id: string, serviceProviderId: string) {
+  async remove(
+    id: string,
+    serviceProviderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the bid exists and belongs to this service provider
     const existingBid = await this.prisma.bid.findFirst({
       where: {
@@ -407,14 +447,20 @@ export class BidService {
 
     if (!existingBid) {
       throw new NotFoundException(
-        'Bid not found or you are not authorized to delete it',
+        this.messageService.getErrorMessage(
+          'bid.not_found_or_unauthorized_delete',
+          language,
+        ),
       );
     }
 
     // Only allow deletion if bid is still pending
     if (existingBid.status !== BidStatus.PENDING) {
       throw new BadRequestException(
-        'Cannot delete bid that is not in PENDING status',
+        this.messageService.getErrorMessage(
+          'bid.cannot_delete_not_pending',
+          language,
+        ),
       );
     }
 
@@ -423,11 +469,16 @@ export class BidService {
     });
 
     return {
-      message: 'Bid deleted successfully',
+      message: this.messageService.getSuccessMessage('bid.deleted', language),
     };
   }
 
-  async findBidsForJobOwner(jobId: string, userId: string, userRole: string) {
+  async findBidsForJobOwner(
+    jobId: string,
+    userId: string,
+    userRole: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // First verify the job exists and get its details
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
@@ -439,7 +490,9 @@ export class BidService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
     }
 
     // Check authorization based on job type and user role
@@ -459,7 +512,10 @@ export class BidService {
 
     if (!isAuthorized) {
       throw new ForbiddenException(
-        'You are not authorized to view bids for this job',
+        this.messageService.getErrorMessage(
+          'bid.not_authorized_view_job',
+          language,
+        ),
       );
     }
 
@@ -520,6 +576,7 @@ export class BidService {
     jobType?: string,
     status?: string,
     jobId?: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     let whereClause: any = {};
 
@@ -536,7 +593,9 @@ export class BidService {
       });
 
       if (!job) {
-        throw new NotFoundException('Job not found');
+        throw new NotFoundException(
+          this.messageService.getErrorMessage('job.job_not_found', language),
+        );
       }
 
       // Check authorization based on job type and user role
@@ -556,7 +615,10 @@ export class BidService {
 
       if (!isAuthorized) {
         throw new ForbiddenException(
-          'You are not authorized to view bids for this job',
+          this.messageService.getErrorMessage(
+            'bid.not_authorized_view_job',
+            language,
+          ),
         );
       }
 
@@ -584,7 +646,12 @@ export class BidService {
           ],
         };
       } else {
-        throw new ForbiddenException('Invalid user role');
+        throw new ForbiddenException(
+          this.messageService.getErrorMessage(
+            'bid.invalid_user_role',
+            language,
+          ),
+        );
       }
 
       // Add job type filter if provided

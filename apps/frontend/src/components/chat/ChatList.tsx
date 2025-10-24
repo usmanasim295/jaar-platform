@@ -90,16 +90,16 @@ export const ChatList: React.FC<ChatListProps> = ({
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
       const otherParticipant = chat.participants?.find(p => p.user);
       if (otherParticipant?.user) {
-        return otherParticipant.user.nationalId || 'Unknown User';
+        return otherParticipant.user.nationalId || t('Unknown User');
       }
     }
 
     // For community chats, show the community name
     if (chat.type === 'COMMUNITY_GROUP' && chat.community) {
-      return chat.community.name?.en || chat.community.name?.ar || 'Community';
+      return chat.community.name?.en || chat.community.name?.ar || t('Community');
     }
 
-    return chat.name?.en || chat.name?.ar || 'Unknown Chat';
+    return chat.name?.en || chat.name?.ar || t('Unknown Chat');
   };
 
   const getChatSubtitle = (chat: Chat) => {
@@ -138,49 +138,49 @@ export const ChatList: React.FC<ChatListProps> = ({
 
   const getLastMessage = (chat: Chat) => {
     if (!chat.messages || chat.messages.length === 0) {
-      return 'No messages yet';
+      return t('No messages yet');
     }
 
     const lastMessage = chat.messages[chat.messages.length - 1];
 
     if (!lastMessage) {
-      return 'No messages yet';
+      return t('No messages yet');
     }
 
     if (lastMessage.type === 'POLL') {
-      return '📊 Poll created';
+      return `📊 ${t('Poll created')}`;
     }
 
     if (lastMessage.type === 'IMAGE') {
-      return '📷 Image';
+      return `📷 ${t('Image')}`;
     }
 
     if (lastMessage.type === 'VOICE_NOTE') {
-      return '🎤 Voice note';
+      return `🎤 ${t('Voice note')}`;
     }
 
     if (lastMessage.type === 'FILE') {
       // Check MIME type for more specific preview
       const mimeType = lastMessage.mimeType;
       if (mimeType?.startsWith('video/')) {
-        return '🎥 Video';
+        return `🎥 ${t('Video')}`;
       }
       if (mimeType?.startsWith('audio/')) {
-        return '🎵 Audio';
+        return `🎵 ${t('Audio')}`;
       }
       if (mimeType?.startsWith('image/')) {
-        return '📷 Image';
+        return `📷 ${t('Image')}`;
       }
       if (mimeType?.includes('pdf')) {
-        return '📄 PDF';
+        return `📄 ${t('PDF')}`;
       }
       if (mimeType?.includes('word') || mimeType?.includes('document')) {
-        return '📝 Document';
+        return `📝 ${t('Document')}`;
       }
       if (mimeType?.includes('excel') || mimeType?.includes('spreadsheet')) {
-        return '📊 Spreadsheet';
+        return `📊 ${t('Spreadsheet')}`;
       }
-      return '📎 File';
+      return `📎 ${t('File')}`;
     }
 
     // Handle both string and object content formats
@@ -191,9 +191,9 @@ export const ChatList: React.FC<ChatListProps> = ({
       typeof lastMessage.content === 'object' &&
       lastMessage.content !== null
     ) {
-      return lastMessage.content.en || lastMessage.content.ar || 'Message';
+      return lastMessage.content.en || lastMessage.content.ar || t('Message');
     }
-    return 'Message';
+    return t('Message');
   };
 
   const formatTime = (dateString: string) => {
@@ -221,7 +221,7 @@ export const ChatList: React.FC<ChatListProps> = ({
   if (error) {
     return (
       <EmptyState
-        title="Error Loading Chats"
+        title={t("Error Loading Chats")}
         description={error}
         icon={MessageCircle}
       />

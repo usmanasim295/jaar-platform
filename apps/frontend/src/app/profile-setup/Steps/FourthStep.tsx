@@ -1,20 +1,21 @@
-"use client";
+'use client';
 
 import React, {
   useEffect,
   useState,
   forwardRef,
   useImperativeHandle,
-} from "react";
-import { StepProps } from "../types";
-import { Currency } from "@/components/assets/icons";
-import { useTranslation } from "react-i18next";
-import { useSetServiceRatesMutation } from "@/store/api";
-import type { Language } from "@/types/api";
+} from 'react';
+import { StepProps } from '../types';
+import { Currency } from '@/components/assets/icons';
+import { useTranslation } from 'react-i18next';
+import { useSetServiceRatesMutation } from '@/store/api';
+import type { Language } from '@/types/api';
+import i18n from '@/i18n';
 
 const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
-  const storedNames = localStorage.getItem("selectedServicesName");
-  const storedIds = localStorage.getItem("selectedServices");
+  const storedNames = localStorage.getItem('selectedServicesName');
+  const storedIds = localStorage.getItem('selectedServices');
   const selectedServicesName: string[] = storedNames
     ? JSON.parse(storedNames)
     : [];
@@ -28,31 +29,35 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         serviceId: id,
         serviceName: selectedServicesName[idx],
         rate: 500, // default
-      })),
+      }))
   );
   const [serviceProviderId, setServiceProviderId] = useState<string | null>(
-    null,
+    null
   );
   const [setServiceRates, { error }] = useSetServiceRatesMutation();
   const { t } = useTranslation();
   useEffect(() => {
-    const id = localStorage.getItem("serviceProviderId");
+    const id = localStorage.getItem('serviceProviderId');
     if (id) setServiceProviderId(id);
   }, []);
   const handleRateChange = (serviceName: string, value: string) => {
-    setRates((prev) => {
-      const updated = prev.map((r) =>
-        r.serviceName === serviceName ? { ...r, rate: Number(value) } : r,
+    setRates(prev => {
+      const updated = prev.map(r =>
+        r.serviceName === serviceName ? { ...r, rate: Number(value) } : r
       );
-      setData("fourth", { serviceRates: updated }); 
       return updated;
     });
   };
 
+  // Update parent data when rates change
+  useEffect(() => {
+    setData('fourth', { serviceRates: rates });
+  }, [rates]);
+
   const handleSubmit = async () => {
     if (!serviceProviderId || !rates.length) return false;
 
-    const finalRates = rates.map((r) => ({
+    const finalRates = rates.map(r => ({
       serviceId: r.serviceId,
       rate: String(r.rate),
     }));
@@ -63,14 +68,14 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
           serviceProviderId,
           serviceRates: finalRates,
         },
-        lang: 'en' as Language,
+        lang: i18n.language as Language,
       }).unwrap();
 
-      setData("fourth", { serviceRates: rates });
-      console.log("Step 4 success:", res);
+      setData('fourth', { serviceRates: rates });
+      console.log('Step 4 success:', res);
       return true;
     } catch (err) {
-      console.error("Step 4 failed:", err);
+      console.error('Step 4 failed:', err);
       return false;
     }
   };
@@ -83,7 +88,7 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
     <div className="max-w-[648px] w-full">
       <h1 className="font-urbanist text-xl sm:text-2xl lg:typo-heading1 font-bold mb-4 sm:mb-6 lg:mb-8 leading-tight">
         {t(
-          "Let us know your standard service rates. It will help HOA's to offer you job",
+          "Let us know your standard service rates. It will help HOA's to offer you job"
         )}
       </h1>
 
@@ -94,7 +99,8 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
             className="bg-(--white) border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] px-3 sm:px-4 py-2.5 sm:py-3 overflow-hidden w-full sm:max-w-[312px] text-sm sm:text-base lg:typo-body leading-[100%] text-(--black)"
           >
             <p className="text-(--grey-text) text-xs sm:typo-small font-jakarta font-regular mb-1 sm:mb-0.5">
-              {t(`How much do you charge for ${rateObj.serviceName}?`)}
+              {t('How much do you charge for')} {t(rateObj.serviceName)}
+              {t('?')}
             </p>
 
             <div className="flex items-center gap-2">
@@ -103,7 +109,7 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
                 type="number"
                 className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium input"
                 value={rateObj.rate}
-                onChange={(e) =>
+                onChange={e =>
                   handleRateChange(rateObj.serviceName, e.target.value)
                 }
               />
@@ -112,7 +118,9 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         ))}
       </div>
       {error && (
-        <p className="text-red-500 mt-2 text-sm sm:text-base">{t("Failed to submit Rates")}</p>
+        <p className="text-red-500 mt-2 text-sm sm:text-base">
+          {t('Failed to submit Rates')}
+        </p>
       )}
     </div>
   );

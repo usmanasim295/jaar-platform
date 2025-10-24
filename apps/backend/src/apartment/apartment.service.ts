@@ -9,22 +9,33 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateApartmentDto } from './dto/create-apartment.dto';
 import { AddHouseDto } from './dto/add-house.dto';
 import { TranslationService } from '../common/services/translation.service';
+import { MessageService } from '../common/services/message.service';
 
 @Injectable()
 export class ApartmentService {
   constructor(
     private prisma: PrismaService,
     private translationService: TranslationService,
+    private messageService: MessageService,
   ) {}
 
-  async create(createApartmentDto: CreateApartmentDto, leaderId: string) {
+  async create(
+    createApartmentDto: CreateApartmentDto,
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
     });
 
     if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException('Only leaders can create apartments');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'apartment.only_leaders_can_create',
+          language,
+        ),
+      );
     }
 
     // Check if HOA number already exists
@@ -35,7 +46,10 @@ export class ApartmentService {
     if (existingApartment) {
       if (existingApartment.leaderId) {
         throw new ConflictException(
-          'HOA number already exists and has a leader',
+          this.messageService.getErrorMessage(
+            'apartment.hoa_has_leader',
+            language,
+          ),
         );
       } else {
         // Update existing apartment to assign this leader
@@ -61,7 +75,10 @@ export class ApartmentService {
         });
 
         return {
-          message: 'Apartment updated and leader assigned successfully',
+          message: this.messageService.getSuccessMessage(
+            'apartment.updated_and_leader_assigned',
+            language,
+          ),
           apartment: updatedApartment,
         };
       }
@@ -113,7 +130,10 @@ export class ApartmentService {
     });
 
     return {
-      message: 'Apartment created successfully',
+      message: this.messageService.getSuccessMessage(
+        'apartment.created',
+        language,
+      ),
       apartment,
     };
   }
@@ -149,7 +169,7 @@ export class ApartmentService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, language: 'en' | 'ar' = 'en') {
     const apartment = await this.prisma.apartment.findUnique({
       where: { id },
       include: {
@@ -205,20 +225,27 @@ export class ApartmentService {
     });
 
     if (!apartment) {
-      throw new NotFoundException('Apartment not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('apartment.not_found', language),
+      );
     }
 
     return apartment;
   }
 
-  async findByLeader(leaderId: string) {
+  async findByLeader(leaderId: string, language: 'en' | 'ar' = 'en') {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
     });
 
     if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException('Only leaders can view their apartments');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'apartment.only_leaders_can_view',
+          language,
+        ),
+      );
     }
 
     return this.prisma.apartment.findMany({
@@ -273,6 +300,7 @@ export class ApartmentService {
     id: string,
     updateApartmentDto: CreateApartmentDto,
     leaderId: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     // Verify the apartment exists and belongs to this leader
     const existingApartment = await this.prisma.apartment.findFirst({
@@ -284,7 +312,10 @@ export class ApartmentService {
 
     if (!existingApartment) {
       throw new NotFoundException(
-        'Apartment not found or you are not authorized to update it',
+        this.messageService.getErrorMessage(
+          'apartment.not_found_or_unauthorized',
+          language,
+        ),
       );
     }
 
@@ -303,12 +334,15 @@ export class ApartmentService {
     });
 
     return {
-      message: 'Apartment updated successfully',
+      message: this.messageService.getSuccessMessage(
+        'apartment.updated',
+        language,
+      ),
       apartment: updatedApartment,
     };
   }
 
-  async remove(id: string, leaderId: string) {
+  async remove(id: string, leaderId: string, language: 'en' | 'ar' = 'en') {
     // Verify the apartment exists and belongs to this leader
     const existingApartment = await this.prisma.apartment.findFirst({
       where: {
@@ -319,7 +353,10 @@ export class ApartmentService {
 
     if (!existingApartment) {
       throw new NotFoundException(
-        'Apartment not found or you are not authorized to delete it',
+        this.messageService.getErrorMessage(
+          'apartment.not_found_or_unauthorized_delete',
+          language,
+        ),
       );
     }
 
@@ -337,18 +374,26 @@ export class ApartmentService {
     });
 
     if (!apartmentWithRelations) {
-      throw new NotFoundException('Apartment not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('apartment.not_found', language),
+      );
     }
 
     if (apartmentWithRelations._count.houses > 0) {
       throw new BadRequestException(
-        'Cannot delete apartment that has houses. Please remove all houses first.',
+        this.messageService.getErrorMessage(
+          'apartment.cannot_delete_with_houses',
+          language,
+        ),
       );
     }
 
     if (apartmentWithRelations._count.jobs > 0) {
       throw new BadRequestException(
-        'Cannot delete apartment that has jobs. Please remove all jobs first.',
+        this.messageService.getErrorMessage(
+          'apartment.cannot_delete_with_jobs',
+          language,
+        ),
       );
     }
 
@@ -357,7 +402,10 @@ export class ApartmentService {
     });
 
     return {
-      message: 'Apartment deleted successfully',
+      message: this.messageService.getSuccessMessage(
+        'apartment.deleted_success',
+        language,
+      ),
     };
   }
 
@@ -365,6 +413,7 @@ export class ApartmentService {
     apartmentId: string,
     houseData: AddHouseDto,
     leaderId: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     // Verify the apartment exists and belongs to this leader
     const apartment = await this.prisma.apartment.findFirst({
@@ -376,7 +425,10 @@ export class ApartmentService {
 
     if (!apartment) {
       throw new NotFoundException(
-        'Apartment not found or you are not authorized to add houses to it',
+        this.messageService.getErrorMessage(
+          'apartment.not_found_or_unauthorized_add_houses',
+          language,
+        ),
       );
     }
 
@@ -386,7 +438,12 @@ export class ApartmentService {
     });
 
     if (!houseOwner || houseOwner.role !== 'HOME_OWNER') {
-      throw new BadRequestException('House owner must be a HOME_OWNER');
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'apartment.house_owner_must_be_home_owner',
+          language,
+        ),
+      );
     }
 
     // Create the house
@@ -415,12 +472,19 @@ export class ApartmentService {
     });
 
     return {
-      message: 'House added successfully',
+      message: this.messageService.getSuccessMessage(
+        'apartment.house_added',
+        language,
+      ),
       house,
     };
   }
 
-  async removeHouse(houseId: string, leaderId: string) {
+  async removeHouse(
+    houseId: string,
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the house exists and belongs to an apartment managed by this leader
     const house = await this.prisma.house.findFirst({
       where: {
@@ -436,7 +500,10 @@ export class ApartmentService {
 
     if (!house) {
       throw new NotFoundException(
-        'House not found or you are not authorized to remove it',
+        this.messageService.getErrorMessage(
+          'apartment.house_not_found_or_unauthorized_remove',
+          language,
+        ),
       );
     }
 
@@ -445,12 +512,15 @@ export class ApartmentService {
     });
 
     return {
-      message: 'House removed successfully',
+      message: this.messageService.getSuccessMessage(
+        'apartment.house_removed',
+        language,
+      ),
     };
   }
 
   // Create apartment without leader (for home owners who sign up first)
-  async createWithoutLeader(hoaNumber: string) {
+  async createWithoutLeader(hoaNumber: string, language: 'en' | 'ar' = 'en') {
     // Use translation service to translate default values
     const nameTranslations =
       await this.translationService.createTranslationObject(`HOA ${hoaNumber}`);
@@ -477,7 +547,11 @@ export class ApartmentService {
   }
 
   // Assign leader to existing apartment
-  async assignLeader(hoaNumber: string, leaderId: string) {
+  async assignLeader(
+    hoaNumber: string,
+    leaderId: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     // Verify the user is a leader
     const leader = await this.prisma.user.findUnique({
       where: { id: leaderId },
@@ -485,7 +559,10 @@ export class ApartmentService {
 
     if (!leader || leader.role !== 'LEADER') {
       throw new ForbiddenException(
-        'Only leaders can be assigned to apartments',
+        this.messageService.getErrorMessage(
+          'apartment.only_leaders_can_be_assigned',
+          language,
+        ),
       );
     }
 
@@ -495,11 +572,18 @@ export class ApartmentService {
     });
 
     if (!apartment) {
-      throw new NotFoundException('Apartment not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('apartment.not_found', language),
+      );
     }
 
     if (apartment.leaderId) {
-      throw new ConflictException('Apartment already has a leader');
+      throw new ConflictException(
+        this.messageService.getErrorMessage(
+          'apartment.already_has_leader',
+          language,
+        ),
+      );
     }
 
     // Assign leader to apartment
@@ -518,7 +602,10 @@ export class ApartmentService {
     });
 
     return {
-      message: 'Leader assigned to apartment successfully',
+      message: this.messageService.getSuccessMessage(
+        'apartment.leader_assigned',
+        language,
+      ),
       apartment: updatedApartment,
     };
   }

@@ -6,7 +6,8 @@ import Button from '../../components/ui/Button';
 import dynamicImport from 'next/dynamic';
 import { CaretLeft } from '@/components/assets/icons';
 import { useTranslation } from 'react-i18next';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { Bounce, toast } from 'react-toastify';
+import i18n from '@/i18n';
 
 // Force dynamic rendering (no SSR)
 export const dynamic = 'force-dynamic';
@@ -37,6 +38,8 @@ const Page = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [stepData, setStepData] = useState(initialStepData);
   const [loading, setLoading] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
 
   const StepComponent = steps[currentStep];
 
@@ -62,20 +65,20 @@ const Page = () => {
         setLoading(false);
         if (!success) {
           if (currentStep == 2) {
-            toast('Please Select atleast 1 or more', {
-              position: 'top-left',
+            toast(t('Please Select atleast 1 or more'), {
+              position: 'top-right',
               autoClose: 5000,
               hideProgressBar: false,
               closeOnClick: false,
               pauseOnHover: true,
               draggable: true,
               progress: undefined,
-              theme: 'dark',
+              theme: 'light',
               transition: Bounce,
             });
           } else {
-            toast('Please complete the current step before proceeding.', {
-              position: 'top-left',
+            toast(t('Please complete the current step before proceeding.'), {
+              position: 'top-right',
               autoClose: 5000,
               hideProgressBar: false,
               closeOnClick: false,
@@ -125,6 +128,12 @@ const Page = () => {
   };
 
   useEffect(() => {
+    // Set client-side state to prevent hydration mismatch
+    setIsClient(true);
+    setIsRTL(i18n.language === 'ar');
+  }, []);
+
+  useEffect(() => {
     // Check if we're in the browser environment
     if (typeof window === 'undefined') return;
 
@@ -142,6 +151,30 @@ const Page = () => {
       router.push('/signup');
     }
   }, [router]);
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setIsRTL(i18n.language === 'ar');
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, []);
+
+  // Prevent hydration mismatch by not rendering until client-side
+  if (!isClient) {
+    return (
+      <div className="py-2 sm:py-2.5 bg-(--white) w-full flex flex-col justify-between mt-8 sm:mt-12.5 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)]">
+        <div className="w-full flex justify-center px-4 sm:px-6 lg:px-10">
+          <div className="w-full max-w-[1300px] flex flex-col justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-2 sm:py-2.5 bg-(--white) w-full flex flex-col justify-between mt-8 sm:mt-12.5 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)]">
       <title>Profile Setup</title>
@@ -166,13 +199,19 @@ const Page = () => {
           <div className="w-full flex max-w-[1300px] justify-between items-center gap-2 sm:gap-4">
             <Button
               variant="secondary"
-              className="flex items-center justify-center gap-1 sm:gap-[5px] sm:py-[19px] font-semibold font-anevir text-sm sm:text-base"
+              className={`flex items-center justify-center gap-1 sm:gap-[5px] sm:py-[19px] font-semibold font-anevir text-sm sm:text-base ${
+                isClient && isRTL ? 'flex-row-reverse' : ''
+              }`}
               onClick={() => {
                 if (currentStep === 0) router.push('/signup');
                 else setCurrentStep(s => Math.max(s - 1, 0));
               }}
             >
-              <CaretLeft className="w-5 h-5 hidden lg:inline" />
+              <CaretLeft
+                className={`w-5 h-5 hidden lg:inline ${
+                  isClient && isRTL ? 'rotate-180' : ''
+                }`}
+              />
               <span className="text-center text-[#2d6a87]">
                 {t('Previous')}
               </span>
@@ -193,7 +232,6 @@ const Page = () => {
           </div>
         </div>
       </div>
-      <ToastContainer />
     </div>
   );
 };

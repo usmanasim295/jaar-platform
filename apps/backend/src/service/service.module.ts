@@ -6,6 +6,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TranslationService } from '../common/services/translation.service';
 import { LanguageService } from '../common/services/language.service';
+import { MessageService } from '../common/services/message.service';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { LanguageService } from '../common/services/language.service';
     PrismaService,
     TranslationService,
     LanguageService,
+    MessageService,
   ],
   exports: [ServiceService],
 })

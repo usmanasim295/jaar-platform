@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../prisma/prisma.service';
+import { MessageService } from '../common/services/message.service';
 
 import { SetMetadata } from '@nestjs/common';
 import { jwtConstants } from './constants';
@@ -24,6 +25,7 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private reflector: Reflector,
     private prisma: PrismaService,
+    private messageService: MessageService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -79,7 +81,12 @@ export class AuthGuard implements CanActivate {
       );
 
       if (requiredRoles && !requiredRoles.includes(user.role)) {
-        throw new ForbiddenException('Access denied: insufficient role');
+        throw new ForbiddenException(
+          this.messageService.getErrorMessage(
+            'auth.access_denied_insufficient_role',
+            'en',
+          ),
+        );
       }
     } catch {
       throw new UnauthorizedException();

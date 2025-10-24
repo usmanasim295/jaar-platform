@@ -27,6 +27,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
 import { S3Service } from '../common/services/s3.service';
+import { MessageService } from '../common/services/message.service';
 
 @Controller('job-completion-request')
 @UseGuards(AuthGuard)
@@ -35,6 +36,7 @@ export class JobCompletionRequestController {
     private readonly jobCompletionRequestService: JobCompletionRequestService,
     private readonly languageService: LanguageService,
     private readonly s3Service: S3Service,
+    private readonly messageService: MessageService,
   ) {}
 
   @Post()
@@ -47,15 +49,17 @@ export class JobCompletionRequestController {
     @Query('lang') lang?: string,
   ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Check if this is a service provider
     if (user.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can create completion requests',
+        this.messageService.getErrorMessage(
+          'completion.only_service_providers_can_create',
+          language,
+        ),
       );
     }
-
-    const language = this.languageService.validateLanguage(lang);
 
     // Handle file uploads
     if (files && files.length > 0) {
@@ -95,6 +99,7 @@ export class JobCompletionRequestController {
     const result = await this.jobCompletionRequestService.create(
       createDto,
       user.id,
+      language,
     );
 
     return {
@@ -120,20 +125,23 @@ export class JobCompletionRequestController {
     @Query('status') status?: string,
   ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Check if this is a service provider
     if (user.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can view their completion requests',
+        this.messageService.getErrorMessage(
+          'completion.only_service_providers_can_view',
+          language,
+        ),
       );
     }
-
-    const language = this.languageService.validateLanguage(lang);
     const requests =
       await this.jobCompletionRequestService.findByServiceProvider(
         user.id,
         jobType,
         status,
+        language,
       );
 
     return this.languageService.transformNestedArrayForLanguage(
@@ -156,19 +164,22 @@ export class JobCompletionRequestController {
     @Query('status') status?: string,
   ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Check if this is a service provider
     if (user.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can view their jobs',
+        this.messageService.getErrorMessage(
+          'completion.only_service_providers_can_view_jobs',
+          language,
+        ),
       );
     }
-
-    const language = this.languageService.validateLanguage(lang);
     const jobs = await this.jobCompletionRequestService.getServiceProviderJobs(
       user.id,
       jobType,
       status,
+      language,
     );
 
     return this.languageService.transformNestedArrayForLanguage(
@@ -193,6 +204,7 @@ export class JobCompletionRequestController {
     const requests = await this.jobCompletionRequestService.findPendingRequests(
       user.id,
       user.role,
+      language,
     );
 
     return this.languageService.transformNestedArrayForLanguage(
@@ -208,7 +220,10 @@ export class JobCompletionRequestController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const request = await this.jobCompletionRequestService.findOne(id);
+    const request = await this.jobCompletionRequestService.findOne(
+      id,
+      language,
+    );
 
     return this.languageService.transformNestedObjectForLanguage(
       request,
@@ -236,6 +251,7 @@ export class JobCompletionRequestController {
       updateDto,
       user.id,
       user.role,
+      language,
     );
 
     return {

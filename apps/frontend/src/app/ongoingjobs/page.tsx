@@ -23,6 +23,7 @@ export default function OngoingJobsPage() {
   const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
+  const [isRTL, setIsRTL] = useState(false);
 
   // Filter states for completion requests
   const [completionJobTypeFilter, setCompletionJobTypeFilter] = useState<
@@ -34,6 +35,11 @@ export default function OngoingJobsPage() {
 
   // Get current language
   const currentLang = i18n.language as 'en' | 'ar';
+
+  // Handle RTL detection
+  React.useEffect(() => {
+    setIsRTL(i18n.language === 'ar');
+  }, [i18n.language]);
 
   // Get tab configuration
   const tabConfig = getTabConfig();
@@ -228,7 +234,21 @@ export default function OngoingJobsPage() {
                     e.target.value as 'HOME_SERVICE' | 'COMMUNITY_SERVICE' | ''
                   )
                 }
-                className="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className={`w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 appearance-none bg-white cursor-pointer transition-all duration-200 ${
+                  isRTL ? 'pl-8 sm:pl-10' : 'pr-8 sm:pr-10'
+                }`}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: isRTL
+                    ? 'left 8px center'
+                    : 'right 8px center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '16px',
+                }}
+                onMouseDown={e => {
+                  // Ensure dropdown opens reliably
+                  e.currentTarget.focus();
+                }}
               >
                 <option value="">{t('All Job Types')}</option>
                 <option value="HOME_SERVICE">{t('Home Service')}</option>
@@ -250,7 +270,21 @@ export default function OngoingJobsPage() {
                     e.target.value as 'PENDING' | 'APPROVED' | 'REJECTED' | ''
                   )
                 }
-                className="w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className={`w-full p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 appearance-none bg-white cursor-pointer transition-all duration-200 ${
+                  isRTL ? 'pl-8 sm:pl-10' : 'pr-8 sm:pr-10'
+                }`}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: isRTL
+                    ? 'left 8px center'
+                    : 'right 8px center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: '16px',
+                }}
+                onMouseDown={e => {
+                  // Ensure dropdown opens reliably
+                  e.currentTarget.focus();
+                }}
               >
                 <option value="">{t('All Statuses')}</option>
                 <option value="PENDING">{t('Pending Review')}</option>
@@ -266,7 +300,7 @@ export default function OngoingJobsPage() {
                   setCompletionJobTypeFilter('');
                   setCompletionStatusFilter('');
                 }}
-                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base bg-gray-500 text-white rounded-lg hover:bg-gray-600 cursor-pointer transition-colors"
               >
                 {t('Clear Filters')}
               </button>

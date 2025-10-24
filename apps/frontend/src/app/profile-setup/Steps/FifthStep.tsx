@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
 import React, {
   useState,
   forwardRef,
   useImperativeHandle,
   useEffect,
-} from "react";
-import { StepProps } from "../types";
-import { useTranslation } from "react-i18next";
-import i18n from "@/i18n";
-import { useUpdateProfileStepMutation } from "@/store/api";
-import type { Language } from "@/types/api";
-import Button from "../../../components/ui/Button";
+} from 'react';
+import { StepProps } from '../types';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
+import { useUpdateProfileStepMutation } from '@/store/api';
+import type { Language } from '@/types/api';
+import Button from '../../../components/ui/Button';
 
 const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const { t } = useTranslation();
-  const [location, setLocation] = useState(data?.fifth?.location || "");
-  const [landmark, setLandmark] = useState(data?.fifth?.landmark || "");
+  const [location, setLocation] = useState(data?.fifth?.location || '');
+  const [landmark, setLandmark] = useState(data?.fifth?.landmark || '');
   const [updateProfileStep, { error }] = useUpdateProfileStepMutation();
 
   useEffect(() => {
-    setData("fifth", { location, landmark });
-  }, [location, landmark, setData]);
+    setData('fifth', { location, landmark });
+  }, [location, landmark]);
   const handleSubmitStep5 = async () => {
-    const id = localStorage.getItem("serviceProviderId");
+    const id = localStorage.getItem('serviceProviderId');
     if (!id) {
-      console.error("Service provider ID is missing!");
+      // Service provider ID missing - this should not happen in normal flow
       return false;
     }
     const payload = {
@@ -45,11 +45,11 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         lang: i18n.language as Language,
       }).unwrap();
 
-      setData("fifth", { location, landmark });
-      console.log("Step 5 success:", res);
+      setData('fifth', { location, landmark });
+      console.log('Step 5 success:', res);
       return true;
     } catch (err) {
-      console.error("Step 5 failed:", err);
+      // Step 5 failed - error will be shown via error state
       return false;
     }
   };
@@ -71,18 +71,21 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
           className="mt-4 sm:mt-6 border-none rounded-xl sm:rounded-2xl w-full"
         />
         <p className="mt-3 sm:mt-4 text-sm sm:text-base lg:typo-body font-normal font-jakarta">
-          Muheel Facilities Managment
+          {t('Muheel Facilities Managment')}
         </p>
         <h3 className="mt-1 sm:mt-2 text-sm sm:text-base lg:typo-body font-semibold mb-3 sm:mb-4 font-jakarta">
-          Saudi Arabia
+          {t('Saudi Arabia')}
         </h3>
 
-        <Button variant="inline" className="mb-4 sm:mb-6 font-jakarta text-sm sm:text-base">
-          {t("Use my Current Location")}
+        <Button
+          variant="inline"
+          className="mb-4 sm:mb-6 font-jakarta text-sm sm:text-base"
+        >
+          {t('Use my Current Location')}
         </Button>
 
         <h2 className="text-sm sm:text-base lg:typo-label font-semibold mb-3 sm:mb-4 font-jakarta">
-          {t("Add Manually")}
+          {t('Add Manually')}
         </h2>
 
         <form>
@@ -90,28 +93,28 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
             {/* Location Input */}
             <div className="bg-(--white) border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] px-3 sm:px-4 py-2.5 sm:py-3 overflow-hidden w-full sm:max-w-[300px]">
               <p className="text-(--grey-text) text-xs sm:typo-small font-jakarta font-regular mb-1">
-                {t("Location")}
+                {t('Location')}
               </p>
               <input
                 type="text"
                 value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                onChange={e => setLocation(e.target.value)}
                 className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-(--black)"
-                placeholder={t("Muheel Facilities Managment")}
+                placeholder={t('Muheel Facilities Managment')}
               />
             </div>
 
             {/* Landmark Input */}
             <div className="bg-(--white) border-2 border-(--light-grey) rounded-lg sm:rounded-[10px] px-3 sm:px-4 py-2.5 sm:py-3 overflow-hidden w-full sm:max-w-[300px]">
               <p className="text-(--grey-text) text-xs sm:typo-small font-jakarta font-regular mb-1">
-                {t("Landmark")}
+                {t('Landmark')}
               </p>
               <input
                 type="text"
                 value={landmark}
-                onChange={(e) => setLandmark(e.target.value)}
+                onChange={e => setLandmark(e.target.value)}
                 className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-(--black)"
-                placeholder={t("Tea House")}
+                placeholder={t('Tea House')}
               />
             </div>
           </div>
@@ -119,7 +122,9 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
       </div>
 
       {error && (
-        <p className="text-red-500 mt-2 text-sm sm:text-base">{t("Failed to submit location")}</p>
+        <p className="text-red-500 mt-2 text-sm sm:text-base">
+          {t('Failed to submit location')}
+        </p>
       )}
     </div>
   );

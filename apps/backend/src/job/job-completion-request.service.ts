@@ -12,6 +12,7 @@ import {
   JobCompletionRequestStatus,
 } from './dto/update-job-completion-request.dto';
 import { TranslationService } from '../common/services/translation.service';
+import { MessageService } from '../common/services/message.service';
 import { JobStatus } from '@prisma/client';
 
 @Injectable()
@@ -19,11 +20,13 @@ export class JobCompletionRequestService {
   constructor(
     private prisma: PrismaService,
     private translationService: TranslationService,
+    private messageService: MessageService,
   ) {}
 
   async create(
     createDto: CreateJobCompletionRequestDto & { completionImages?: string[] },
     serviceProviderId: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     // Verify the service provider exists and is active
     const serviceProvider = await this.prisma.serviceProvider.findUnique({
@@ -31,11 +34,21 @@ export class JobCompletionRequestService {
     });
 
     if (!serviceProvider) {
-      throw new NotFoundException('Service provider not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'completion.service_provider_not_found',
+          language,
+        ),
+      );
     }
 
     if (!serviceProvider.isActive) {
-      throw new ForbiddenException('Service provider account is not active');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'completion.account_not_active',
+          language,
+        ),
+      );
     }
 
     // Verify the job exists and is in progress
@@ -49,12 +62,17 @@ export class JobCompletionRequestService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
     }
 
     if (job.status !== JobStatus.IN_PROGRESS) {
       throw new BadRequestException(
-        'Job must be in progress to create completion request',
+        this.messageService.getErrorMessage(
+          'job.must_be_in_progress',
+          language,
+        ),
       );
     }
 
@@ -69,7 +87,7 @@ export class JobCompletionRequestService {
 
     if (!acceptedBid) {
       throw new ForbiddenException(
-        'You must have an accepted bid for this job to create completion request',
+        this.messageService.getErrorMessage('job.no_accepted_bid', language),
       );
     }
 
@@ -85,7 +103,10 @@ export class JobCompletionRequestService {
 
     if (existingRequest) {
       throw new ConflictException(
-        'Completion request already exists for this job',
+        this.messageService.getErrorMessage(
+          'job.completion_already_exists',
+          language,
+        ),
       );
     }
 
@@ -150,7 +171,10 @@ export class JobCompletionRequestService {
     });
 
     return {
-      message: 'Job completion request submitted successfully',
+      message: this.messageService.getSuccessMessage(
+        'job.completion_submitted',
+        language,
+      ),
       completionRequest,
     };
   }
@@ -159,6 +183,7 @@ export class JobCompletionRequestService {
     serviceProviderId: string,
     jobType?: string,
     status?: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     const whereClause: any = {
       serviceProviderId: serviceProviderId,
@@ -231,7 +256,11 @@ export class JobCompletionRequestService {
     });
   }
 
-  async findPendingRequests(userId: string, userRole: string) {
+  async findPendingRequests(
+    userId: string,
+    userRole: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
     let whereClause: any = {
       status: 'PENDING',
     };
@@ -249,7 +278,12 @@ export class JobCompletionRequestService {
         createdBy: userId,
       };
     } else {
-      throw new ForbiddenException('Invalid user role');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'completion.invalid_user_role',
+          language,
+        ),
+      );
     }
 
     return this.prisma.jobCompletionRequest.findMany({
@@ -302,7 +336,7 @@ export class JobCompletionRequestService {
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, language: 'en' | 'ar' = 'en') {
     const completionRequest = await this.prisma.jobCompletionRequest.findUnique(
       {
         where: { id },
@@ -359,7 +393,12 @@ export class JobCompletionRequestService {
     );
 
     if (!completionRequest) {
-      throw new NotFoundException('Job completion request not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'job.completion_request_not_found',
+          language,
+        ),
+      );
     }
 
     return completionRequest;
@@ -370,6 +409,7 @@ export class JobCompletionRequestService {
     updateDto: UpdateJobCompletionRequestDto,
     userId: string,
     userRole: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     // Verify the completion request exists
     const completionRequest = await this.prisma.jobCompletionRequest.findUnique(
@@ -388,12 +428,20 @@ export class JobCompletionRequestService {
     );
 
     if (!completionRequest) {
-      throw new NotFoundException('Job completion request not found');
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'job.completion_request_not_found',
+          language,
+        ),
+      );
     }
 
     if (completionRequest.status !== 'PENDING') {
       throw new BadRequestException(
-        'Completion request is not in pending status',
+        this.messageService.getErrorMessage(
+          'job.completion_not_pending',
+          language,
+        ),
       );
     }
 
@@ -417,7 +465,10 @@ export class JobCompletionRequestService {
 
     if (!isAuthorized) {
       throw new ForbiddenException(
-        'You are not authorized to update this completion request',
+        this.messageService.getErrorMessage(
+          'job.not_authorized_update_completion',
+          language,
+        ),
       );
     }
 
@@ -498,8 +549,13 @@ export class JobCompletionRequestService {
       });
     }
 
+    const messageKey =
+      updateDto.status === 'APPROVED'
+        ? 'job.completion_approved'
+        : 'job.completion_rejected';
+
     return {
-      message: `Job completion request ${updateDto.status.toLowerCase()} successfully`,
+      message: this.messageService.getSuccessMessage(messageKey, language),
       completionRequest: updatedRequest,
     };
   }
@@ -508,6 +564,7 @@ export class JobCompletionRequestService {
     serviceProviderId: string,
     jobType?: string,
     status?: string,
+    language: 'en' | 'ar' = 'en',
   ) {
     const whereClause: any = {
       bids: {

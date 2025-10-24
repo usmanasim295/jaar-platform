@@ -24,6 +24,7 @@ import { BidStatus } from '@prisma/client';
 import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
+import { MessageService } from '../common/services/message.service';
 
 @Controller('bid')
 @UseGuards(AuthGuard)
@@ -31,6 +32,7 @@ export class BidController {
   constructor(
     private readonly bidService: BidService,
     private readonly languageService: LanguageService,
+    private readonly messageService: MessageService,
   ) {}
 
   @Post()
@@ -53,16 +55,22 @@ export class BidController {
   ) {
     const user = req['user'];
 
+    const language = this.languageService.validateLanguage(lang);
+
     // Check if this is a service provider
     if (user.type !== 'serviceProvider') {
-      throw new ForbiddenException('Only service providers can create bids');
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'bid.only_service_providers_can_bid',
+          language,
+        ),
+      );
     }
-
-    const language = this.languageService.validateLanguage(lang);
     const result = await this.bidService.create(
       createBidDto,
       user.id,
       document,
+      language,
     );
 
     return {
@@ -109,15 +117,17 @@ export class BidController {
   @Roles('SERVICE_PROVIDER')
   async findMyBids(@Req() req: any, @Query('lang') lang?: string) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Check if this is a service provider
     if (user.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can view their bids',
+        this.messageService.getErrorMessage(
+          'bid.only_service_providers_can_view',
+          language,
+        ),
       );
     }
-
-    const language = this.languageService.validateLanguage(lang);
     const bids = await this.bidService.findByServiceProvider(user.id);
 
     return this.languageService.transformNestedArrayForLanguage(
@@ -187,7 +197,7 @@ export class BidController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const bid = await this.bidService.findOne(id);
+    const bid = await this.bidService.findOne(id, language);
 
     return this.languageService.transformNestedObjectForLanguage(
       bid,
@@ -231,16 +241,25 @@ export class BidController {
 
   @Delete(':id')
   @Roles('SERVICE_PROVIDER')
-  async remove(@Param('id') id: string, @Req() req: any) {
+  async remove(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
     const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
     // Check if this is a service provider
+
     if (user.type !== 'serviceProvider') {
       throw new ForbiddenException(
-        'Only service providers can delete their bids',
+        this.messageService.getErrorMessage(
+          'bid.only_service_providers_can_delete',
+          language,
+        ),
       );
     }
 
-    return this.bidService.remove(id, user.id);
+    return this.bidService.remove(id, user.id, language);
   }
 }

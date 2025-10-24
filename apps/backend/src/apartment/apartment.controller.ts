@@ -37,6 +37,7 @@ export class ApartmentController {
     const result = await this.apartmentService.create(
       createApartmentDto,
       user.id,
+      language,
     );
 
     return {
@@ -74,7 +75,10 @@ export class ApartmentController {
   async findMyApartments(@Req() req: Request, @Query('lang') lang?: string) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const apartments = await this.apartmentService.findByLeader(user.id);
+    const apartments = await this.apartmentService.findByLeader(
+      user.id,
+      language,
+    );
 
     return this.languageService.transformNestedArrayForLanguage(
       apartments,
@@ -90,7 +94,7 @@ export class ApartmentController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
     const language = this.languageService.validateLanguage(lang);
-    const apartment = await this.apartmentService.findOne(id);
+    const apartment = await this.apartmentService.findOne(id, language);
 
     return this.languageService.transformNestedObjectForLanguage(
       apartment,
@@ -118,6 +122,7 @@ export class ApartmentController {
       id,
       updateApartmentDto,
       user.id,
+      language,
     );
 
     return {

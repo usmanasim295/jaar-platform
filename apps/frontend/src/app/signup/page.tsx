@@ -1,19 +1,50 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import SignupForm from '../../components/forms/SignupForm';
 import { useTranslation } from 'react-i18next';
 import { RouteProtection } from '@/components/RouteProtection';
+import LanguageToggleButton from '@/components/LanguageToggleButton';
+import i18n from '@/i18n';
 
 const page = () => {
   const { t } = useTranslation();
+  const [isClient, setIsClient] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    setIsRTL(i18n.language === 'ar');
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setIsRTL(i18n.language === 'ar');
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => i18n.off('languageChanged', handleLanguageChange);
+  }, []);
+
   return (
     <RouteProtection requireAuth={false}>
-      <div className="min-h-screen flex items-center justify-center" dir="ltr">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        dir={isClient ? (isRTL ? 'rtl' : 'ltr') : 'ltr'}
+      >
         <title>{t('Sign Up')}</title>
         <div className="w-full h-[-webkit-fill-available] flex">
           {/* Form */}
-          <div className="w-full lg:w-1/2 py-4 px-4 sm:py-6 sm:px-8 lg:px-12 flex flex-col pt-[60px] sm:pt-[80px] lg:pt-[100px]">
+          <div
+            className={`w-full lg:w-1/2 py-4 px-4 sm:py-6 sm:px-8 flex flex-col pt-[60px] sm:pt-[80px] lg:pt-[100px] ${
+              isClient && isRTL ? 'lg:pr-12 lg:pl-2' : 'lg:pl-12 lg:pr-2'
+            }`}
+          >
+            {/* Language Toggle */}
+            <div className="flex justify-end mb-4">
+              <LanguageToggleButton />
+            </div>
+
             <Image
               src="/assets/icons/SiteLogo.svg"
               width={80}
@@ -33,13 +64,19 @@ const page = () => {
           </div>
 
           {/* Image - Hidden on mobile and tablet */}
-          <div className="hidden lg:block w-1/2 h-[100vh] sticky top-0">
+          <div
+            className={`hidden lg:block w-1/2 h-[100vh] sticky top-0 ${
+              isClient && isRTL ? 'right-0' : 'left-0'
+            }`}
+          >
             <div className="w-full h-full">
               <Image
                 src="/assets/SignupImage.png"
                 alt="image"
                 fill
-                className="object-cover object-left"
+                className={`object-cover ${
+                  isClient && isRTL ? 'object-right' : 'object-left'
+                }`}
               />
             </div>
           </div>
