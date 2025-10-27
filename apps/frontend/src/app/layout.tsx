@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NavbarWrapper from './NavbarWrapper';
@@ -6,6 +7,9 @@ import '../i18n'; // import i18n config
 import ReduxProvider from '@/store/ReduxProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ToastWrapper from '@/components/ToastWrapper';
+import { CONFIG } from '../lib/config';
+
+const defaultLang = CONFIG.DEFAULT_LANGUAGE || 'ar';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,7 +33,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar">
+    <html lang={defaultLang} dir={defaultLang === 'ar' ? 'rtl' : 'ltr'}>
+      
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
