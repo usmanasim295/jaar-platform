@@ -142,7 +142,7 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
       {/* Modal for viewing images */}
       {selectedIndex !== null && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-white/10 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={handleCloseModal}
           onKeyDown={handleKeyDown}
           tabIndex={0}

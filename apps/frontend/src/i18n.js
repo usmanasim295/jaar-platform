@@ -11,7 +11,8 @@ if (typeof window !== 'undefined' && !i18n.isInitialized) {
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
-      fallbackLng: 'en',
+      fallbackLng: 'ar',
+      // lng: 'ar',
       supportedLngs: ['en', 'ar'],
       interpolation: { escapeValue: false },
       backend: {

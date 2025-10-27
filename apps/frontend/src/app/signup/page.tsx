@@ -70,14 +70,21 @@ const page = () => {
             }`}
           >
             <div className="w-full h-full">
-              <Image
-                src="/assets/SignupImage.png"
-                alt="image"
-                fill
-                className={`object-cover ${
-                  isClient && isRTL ? 'object-right' : 'object-left'
-                }`}
-              />
+              {isRTL ? (
+                <Image
+                  src="/assets/rtlAuthImage.svg"
+                  alt="image"
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <Image
+                  src="/assets/ltrAuthImage.svg"
+                  alt="image"
+                  fill
+                  className="object-cover"
+                />
+              )}
             </div>
           </div>
         </div>
