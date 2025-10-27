@@ -34,11 +34,16 @@ const LanguageToggleButton: FC<LanguageToggleButtonProps> = ({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // Initialize language if not set
     if (!i18n.language) {
-      i18n.changeLanguage('ar'); // Default to Arabic
+      const defaultLang = 'ar'; // Default to Arabic
+      i18n.changeLanguage(defaultLang);
+      document.documentElement.setAttribute('lang', defaultLang);
+      document.documentElement.setAttribute('dir', 'rtl');
     }
     setLoaded(true);
   }, [i18n]);
+
   useEffect(() => {
     if (!loaded) return;
 
