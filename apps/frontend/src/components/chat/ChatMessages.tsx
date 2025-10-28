@@ -768,7 +768,7 @@
 //           type="file"
 //           className="hidden"
 //           onChange={handleFileUpload}
-//           accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+//           accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.wmv,.mp4,.mov,.avi"
 //           multiple
 //         />
 //       </div>
@@ -1014,7 +1014,7 @@
 //         type="file"
 //         className="hidden"
 //         onChange={handleFileUpload}
-//         accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+//         accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.wmv,.mp4,.mov,.avi"
 //         multiple
 //       />
 
@@ -1904,7 +1904,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           type="file"
           className="hidden"
           onChange={handleFileUpload}
-          accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+          accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.wmv,.mp4,.mov,.avi"
           multiple
         />
       </div>
@@ -2168,7 +2168,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         type="file"
         className="hidden"
         onChange={handleFileUpload}
-        accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+        accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.wmv,.mp4,.mov,.avi"
         multiple
       />
 
