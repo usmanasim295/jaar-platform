@@ -274,7 +274,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-lg border border-gray-200 p-4 max-w-xs ${className}`}
+      className={`bg-white rounded-lg border border-gray-200 p-4 max-w-sm sm:max-w-md ${className}`}
     >
       <audio ref={audioRef} preload="metadata" controls={false} playsInline>
         <source src={src} type={mimeType} />

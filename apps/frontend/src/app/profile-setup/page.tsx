@@ -64,31 +64,7 @@ const Page = () => {
         const success = await stepRef.submit();
         setLoading(false);
         if (!success) {
-          if (currentStep == 2) {
-            toast(t('Please Select atleast 1 or more'), {
-              position: 'top-right',
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: 'light',
-              transition: Bounce,
-            });
-          } else {
-            toast(t('Please complete the current step before proceeding.'), {
-              position: 'top-right',
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: 'dark',
-              transition: Bounce,
-            });
-          }
+          // Don't show duplicate toast messages - let each step handle its own toasts
           return;
         }
       }
@@ -207,14 +183,19 @@ const Page = () => {
                 else setCurrentStep(s => Math.max(s - 1, 0));
               }}
             >
+              {/* <div className={`flex items-center justify-center gap-1 sm:gap-[5px] sm:py-[19px] font-semibold font-anevir text-sm sm:text-base ${
+                isClient && isRTL ? 'flex-row-reverse' : ''
+              }`}> */}
               <CaretLeft
-                className={`w-5 h-5 hidden lg:inline ${
-                  isClient && isRTL ? 'rotate-180' : ''
+                className={`w-5 hidden lg:inline ${
+                  isClient && isRTL ? '' : ''
                 }`}
               />
               <span className="text-center text-[#2d6a87]">
                 {t('Previous')}
               </span>
+              {/* </div> */}
+
               {/* <span className="xs:hidden">{t('Prev')}</span> */}
             </Button>
 

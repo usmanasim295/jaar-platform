@@ -255,7 +255,7 @@ export default function MyBids() {
                       <p className="text-gray-600 text-xs sm:text-sm">
                         {t('Bid Amount')}:{' '}
                         <span className="font-semibold text-green-600">
-                          ${bid.totalPrice}
+                          ﷼{bid.totalPrice}
                         </span>
                       </p>
                     </div>

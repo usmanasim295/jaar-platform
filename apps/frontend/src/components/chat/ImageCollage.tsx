@@ -59,26 +59,29 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
   const renderCollage = () => {
     if (images.length === 1) {
       return (
-        <img
-          src={images[0].src}
-          alt={images[0].alt}
-          className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => handleImageClick(0)}
-        />
+        <div className="relative w-full max-h-64 rounded-lg overflow-hidden">
+          <img
+            src={images[0].src}
+            alt={images[0].alt}
+            className="w-full h-full max-h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => handleImageClick(0)}
+          />
+        </div>
       );
     }
 
     if (images.length === 2) {
       return (
-        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden max-h-48">
           {images.map((image, index) => (
-            <img
-              key={index}
-              src={image.src}
-              alt={image.alt}
-              className="w-full h-24 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => handleImageClick(index)}
-            />
+            <div key={index} className="relative">
+              <img
+                src={image.src}
+                alt={image.alt}
+                className="w-full h-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleImageClick(index)}
+              />
+            </div>
           ))}
         </div>
       );
@@ -86,26 +89,32 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
 
     if (images.length === 3) {
       return (
-        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
-          <img
-            src={images[0].src}
-            alt={images[0].alt}
-            className="w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => handleImageClick(0)}
-          />
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden max-h-48">
+          <div className="relative">
+            <img
+              src={images[0].src}
+              alt={images[0].alt}
+              className="w-full h-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => handleImageClick(0)}
+            />
+          </div>
           <div className="grid grid-rows-2 gap-1">
-            <img
-              src={images[1].src}
-              alt={images[1].alt}
-              className="w-full h-15 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => handleImageClick(1)}
-            />
-            <img
-              src={images[2].src}
-              alt={images[2].alt}
-              className="w-full h-15 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => handleImageClick(2)}
-            />
+            <div className="relative">
+              <img
+                src={images[1].src}
+                alt={images[1].alt}
+                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleImageClick(1)}
+              />
+            </div>
+            <div className="relative">
+              <img
+                src={images[2].src}
+                alt={images[2].alt}
+                className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleImageClick(2)}
+              />
+            </div>
           </div>
         </div>
       );
@@ -113,13 +122,13 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
 
     // 4 or more images
     return (
-      <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+      <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden max-h-48">
         {images.slice(0, 4).map((image, index) => (
           <div key={index} className="relative">
             <img
               src={image.src}
               alt={image.alt}
-              className="w-full h-24 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              className="w-full h-full max-h-24 object-cover cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => handleImageClick(index)}
             />
             {index === 3 && images.length > 4 && (
@@ -142,13 +151,13 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
       {/* Modal for viewing images */}
       {selectedIndex !== null && (
         <div
-          className="fixed inset-0 bg-white/10 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-white/10 backdrop-blur-sm bg-opacity-75 z-[100] flex items-center justify-center p-4"
           onClick={handleCloseModal}
           onKeyDown={handleKeyDown}
           tabIndex={0}
         >
           <div
-            className="relative max-w-4xl max-h-[80vh] w-full"
+            className="relative w-full h-full max-w-6xl max-h-[90vh] flex items-center justify-center"
             onClick={e => e.stopPropagation()}
           >
             {/* Close button */}
@@ -177,12 +186,15 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
               </>
             )}
 
-            {/* Image */}
-            <img
-              src={images[selectedIndex].src}
-              alt={images[selectedIndex].alt}
-              className="w-full h-full object-contain rounded-lg"
-            />
+            {/* Image container with fixed dimensions */}
+            <div className="relative w-full h-full max-w-5xl max-h-[85vh] flex items-center justify-center">
+              <img
+                src={images[selectedIndex].src}
+                alt={images[selectedIndex].alt}
+                className="max-w-full max-h-full object-contain rounded-lg"
+                style={{ maxHeight: '85vh' }}
+              />
+            </div>
 
             {/* Image counter */}
             {images.length > 1 && (

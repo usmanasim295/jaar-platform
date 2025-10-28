@@ -18,6 +18,7 @@ import {
   PestControl,
   PlumberIcon,
 } from '../../../components/assets/icons';
+import { toast } from 'react-toastify';
 
 const iconMap: Record<string, React.ElementType> = {
   'AC Services': AirConditionIcon,
@@ -67,7 +68,10 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
     });
   };
   const handleSubmit = async () => {
-    if (!serviceProviderId || !selectedServices.length) return false;
+    if (!serviceProviderId || !selectedServices.length) {
+      toast.error(t('Please select at least one service to continue.'));
+      return false;
+    }
 
     try {
       const res = await selectServices({
@@ -79,9 +83,11 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
       }).unwrap();
       console.log('Step 3 success:', res);
       setData('third', { serviceIds: selectedServices });
+      toast.success(t('Services selected successfully!'));
       return true;
     } catch (err) {
       console.error('Step 3 failed:', err);
+      toast.error(t('Failed to save services. Please try again.'));
       return false;
     }
   };

@@ -12,6 +12,7 @@ import i18n from '@/i18n';
 import { useUpdateProfileStepMutation } from '@/store/api';
 import type { Language } from '@/types/api';
 import Button from '../../../components/ui/Button';
+import { toast } from 'react-toastify';
 
 const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const { t } = useTranslation();
@@ -25,9 +26,21 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const handleSubmitStep5 = async () => {
     const id = localStorage.getItem('serviceProviderId');
     if (!id) {
-      // Service provider ID missing - this should not happen in normal flow
+      toast.error(t('Service provider ID is missing. Please try again.'));
       return false;
     }
+
+    // Validate required fields
+    if (!location.trim()) {
+      toast.error(t('Please enter your location.'));
+      return false;
+    }
+
+    if (!landmark.trim()) {
+      toast.error(t('Please enter a landmark.'));
+      return false;
+    }
+
     const payload = {
       serviceProviderId: id,
       locations: [
@@ -47,9 +60,15 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
       setData('fifth', { location, landmark });
       console.log('Step 5 success:', res);
+      toast.success(t('Location information saved successfully!'));
       return true;
-    } catch (err) {
-      // Step 5 failed - error will be shown via error state
+    } catch (err: any) {
+      console.error('Step 5 failed:', err);
+      const errorMessage =
+        err?.data?.message ||
+        err?.message ||
+        t('Failed to save location. Please try again.');
+      toast.error(errorMessage);
       return false;
     }
   };

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   API_CONFIG,
@@ -21,6 +22,7 @@ export const useChat = (
   onMessageForViewedChat?: (message: ChatMessage) => void
 ) => {
   const { token, user } = useAuth();
+  const { i18n } = useTranslation();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export const useChat = (
       const endpoint = API_ENDPOINTS.SERVICE_PROVIDER_CHATS;
 
       const response = await fetch(
-        `${API_CONFIG.BASE_URL}${endpoint}?lang=${API_CONFIG.DEFAULT_LANGUAGE}`,
+        `${API_CONFIG.BASE_URL}${endpoint}?lang=${i18n.language}`,
         {
           method: 'GET',
           headers: getHeaders(token),
@@ -60,7 +62,7 @@ export const useChat = (
     } finally {
       setLoading(false);
     }
-  }, [token, user]);
+  }, [token, user, i18n.language]);
 
   // Fetch unread count
   const fetchUnreadCount = useCallback(async () => {
@@ -137,13 +139,13 @@ export const useChat = (
     };
   }, [token, user]);
 
-  // Fetch initial data
+  // Fetch initial data - refetch when language changes
   useEffect(() => {
     if (token) {
       fetchChats();
       fetchUnreadCount();
     }
-  }, [token, fetchChats, fetchUnreadCount]);
+  }, [token, fetchChats, fetchUnreadCount]); // Refetch when language changes
 
   // Setup socket event listeners
   useEffect(() => {
@@ -313,6 +315,7 @@ export const useChat = (
 
 export const useChatMessages = (chatId: string | null) => {
   const { token, user } = useAuth();
+  const { i18n } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -345,7 +348,7 @@ export const useChatMessages = (chatId: string | null) => {
           page: '1',
           limit: '50',
           order: 'desc',
-          lang: API_CONFIG.DEFAULT_LANGUAGE || 'en',
+          lang: i18n.language,
           ...(cursor && { cursor }),
         });
 
@@ -389,7 +392,7 @@ export const useChatMessages = (chatId: string | null) => {
         setLoading(false);
       }
     },
-    [chatId, token]
+    [chatId, token, i18n.language]
   );
 
   // Load more messages (pagination)
@@ -419,7 +422,7 @@ export const useChatMessages = (chatId: string | null) => {
 
       try {
         const response = await fetch(
-          `${API_CONFIG.BASE_URL}${API_ENDPOINTS.SEND_MESSAGE}?lang=${API_CONFIG.DEFAULT_LANGUAGE}`,
+          `${API_CONFIG.BASE_URL}${API_ENDPOINTS.SEND_MESSAGE}?lang=${i18n.language}`,
           {
             method: 'POST',
             headers: getHeaders(token),
@@ -462,7 +465,7 @@ export const useChatMessages = (chatId: string | null) => {
 
       try {
         const response = await fetch(
-          `${API_CONFIG.BASE_URL}${API_ENDPOINTS.UPLOAD_MESSAGE_FILE}?lang=${API_CONFIG.DEFAULT_LANGUAGE}`,
+          `${API_CONFIG.BASE_URL}${API_ENDPOINTS.UPLOAD_MESSAGE_FILE}?lang=${i18n.language}`,
           {
             method: 'POST',
             headers: {
@@ -510,7 +513,7 @@ export const useChatMessages = (chatId: string | null) => {
 
       try {
         const response = await fetch(
-          `${API_CONFIG.BASE_URL}${API_ENDPOINTS.CREATE_POLL}?lang=${API_CONFIG.DEFAULT_LANGUAGE}`,
+          `${API_CONFIG.BASE_URL}${API_ENDPOINTS.CREATE_POLL}?lang=${i18n.language}`,
           {
             method: 'POST',
             headers: getHeaders(token),
