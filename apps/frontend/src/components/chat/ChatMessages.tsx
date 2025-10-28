@@ -1547,10 +1547,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           <div className="space-y-1.5 sm:space-y-2">
             <video
               controls
-              className="max-w-[200px] sm:max-w-xs rounded-lg"
+              className="max-w-[250px] sm:max-w-xs rounded-lg"
               style={{
                 height: '36px',
-                width: '200px',
+                width: '250px',
                 backgroundColor: '#f3f4f6',
               }}
             >
@@ -1604,10 +1604,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             <div className="space-y-1.5 sm:space-y-2">
               <video
                 controls
-                className="max-w-[200px] sm:max-w-xs rounded-lg"
+                className="max-w-[250px] sm:max-w-sm rounded-lg"
                 style={{
                   height: '36px',
-                  width: '200px',
+                  width: '250px',
                   backgroundColor: '#f3f4f6',
                 }}
               >

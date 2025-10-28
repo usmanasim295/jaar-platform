@@ -341,7 +341,7 @@ export default function JobDetails({ params }: JobDetailsProps) {
                       <span className="font-medium">
                         {t('Your Bid Amount')}:
                       </span>{' '}
-                      ${userBidStatus.totalPrice}
+                      ﷼{userBidStatus.totalPrice}
                     </div>
                     <div className="text-xs sm:text-sm">
                       <span className="font-medium">{t('Cover Letter')}:</span>

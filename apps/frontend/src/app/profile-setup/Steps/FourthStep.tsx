@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useSetServiceRatesMutation } from '@/store/api';
 import type { Language } from '@/types/api';
 import i18n from '@/i18n';
+import { toast } from 'react-toastify';
 
 const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const storedNames = localStorage.getItem('selectedServicesName');
@@ -55,7 +56,17 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
   }, [rates]);
 
   const handleSubmit = async () => {
-    if (!serviceProviderId || !rates.length) return false;
+    if (!serviceProviderId || !rates.length) {
+      toast.error(t('Please set rates for all services to continue.'));
+      return false;
+    }
+
+    // Validate that all rates are positive numbers
+    const invalidRates = rates.filter(rate => !rate.rate || rate.rate <= 0);
+    if (invalidRates.length > 0) {
+      toast.error(t('Please enter valid rates for all services.'));
+      return false;
+    }
 
     const finalRates = rates.map(r => ({
       serviceId: r.serviceId,
@@ -73,9 +84,11 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
       setData('fourth', { serviceRates: rates });
       console.log('Step 4 success:', res);
+      toast.success(t('Service rates saved successfully!'));
       return true;
     } catch (err) {
       console.error('Step 4 failed:', err);
+      toast.error(t('Failed to save service rates. Please try again.'));
       return false;
     }
   };
