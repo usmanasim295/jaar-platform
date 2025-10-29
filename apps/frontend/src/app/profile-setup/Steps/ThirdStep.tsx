@@ -27,6 +27,13 @@ const iconMap: Record<string, React.ElementType> = {
   Plumber: PlumberIcon,
   Painter: PainterIcon,
   'Pest Control': PestControl,
+  // Arabic names
+  'خدمات تكييف الهواء': AirConditionIcon,
+  'خدمات التنظيف': CleaningIcon,
+  كهربائي: CableIcon,
+  سباك: PlumberIcon,
+  رسام: PainterIcon,
+  'مكافحة الآفات': PestControl,
 };
 const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const { t, i18n } = useTranslation();
