@@ -42,6 +42,19 @@ export class NafathAppService {
     }
   }
 
+  private buildCurl(
+    method: 'GET' | 'POST',
+    url: string,
+    headers: Record<string, string>,
+    body?: unknown,
+  ): string {
+    const headerParts = Object.entries(headers).map(
+      ([key, value]) => `-H '${key}: ${value}'`,
+    );
+    const dataPart = body ? ` -d '${JSON.stringify(body)}'` : '';
+    return `curl -X ${method} '${url}' ${headerParts.join(' ')}${dataPart}`;
+  }
+
   async createRequest(
     createRequestDto: CreateRequestDto,
     queryDto: CreateRequestQueryDto,
@@ -62,6 +75,15 @@ export class NafathAppService {
       console.log(
         `Creating Nafath request for nationalId: ${createRequestDto.nationalId}`,
       );
+
+      // Log curl equivalent
+      const curlCreate = this.buildCurl(
+        'POST',
+        `${url}?${params.toString()}`,
+        headers,
+        createRequestDto,
+      );
+      console.log('[NAFATH CURL] Create Request:', curlCreate);
 
       const response: AxiosResponse<NafathCreateRequestResponseDto> =
         await firstValueFrom(
@@ -126,6 +148,10 @@ export class NafathAppService {
         `Getting Nafath request status for transId: ${requestStatusDto.transId}`,
       );
 
+      // Log curl equivalent
+      const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
+      console.log('[NAFATH CURL] Get Status:', curlStatus);
+
       const response: AxiosResponse<NafathStatusResponseDto> =
         await firstValueFrom(
           this.httpService.post(url, requestStatusDto, { headers }),
@@ -169,6 +195,10 @@ export class NafathAppService {
       };
 
       console.log('Retrieving Nafath JWK');
+
+      // Log curl equivalent
+      const curlJwk = this.buildCurl('GET', url, headers);
+      console.log('[NAFATH CURL] Get JWK:', curlJwk);
 
       const response: AxiosResponse<NafathJwkResponseDto> =
         await firstValueFrom(this.httpService.get(url, { headers }));
