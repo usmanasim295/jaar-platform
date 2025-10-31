@@ -24,7 +24,7 @@ export class S3Service {
     }
 
     this.s3Client = new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
+      region: process.env.AWS_REGION || 'me-south-1',
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -56,7 +56,7 @@ export class S3Service {
 
       await this.s3Client.send(command);
 
-      return `https://${this.bucketName}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
+      return `https://${this.bucketName}.s3.${process.env.AWS_REGION || 'me-south-1'}.amazonaws.com/${key}`;
     } catch (error) {
       throw new BadRequestException(
         `Failed to upload file to S3: ${error.message}`,
