@@ -30,12 +30,21 @@ export class NafathAppService {
     private readonly jwtService: JwtService,
     private readonly messageService: MessageService,
   ) {
-    this.nafathBaseUrl =
-      process.env.NAFATH_BASE_URL || 'https://nafath.api.elm.sa/stg';
-    this.appId = process.env.NAFATH_APP_ID || '';
-    this.appKey = process.env.NAFATH_APP_KEY || '';
+    // Remove quotes and whitespace from env variables
+    this.nafathBaseUrl = (
+      process.env.NAFATH_BASE_URL || 'https://nafath.api.elm.sa'
+    )
+      .replace(/^["']|["']$/g, '')
+      .trim();
+    this.appId = (process.env.NAFATH_APP_ID || '')
+      .replace(/^["']|["']$/g, '')
+      .trim();
+    this.appKey = (process.env.NAFATH_APP_KEY || '')
+      .replace(/^["']|["']$/g, '')
+      .trim();
 
     console.debug(`Received APP-ID: ${this.appId}, APP-KEY: ${this.appKey}`);
+    console.debug(`NAFATH_BASE_URL: ${this.nafathBaseUrl}`);
 
     if (!this.appId || !this.appKey) {
       console.warn('NAFATH_APP_ID or NAFATH_APP_KEY not configured');
@@ -48,11 +57,24 @@ export class NafathAppService {
     headers: Record<string, string>,
     body?: unknown,
   ): string {
-    const headerParts = Object.entries(headers).map(
-      ([key, value]) => `-H '${key}: ${value}'`,
-    );
-    const dataPart = body ? ` -d '${JSON.stringify(body)}'` : '';
-    return `curl -X ${method} '${url}' ${headerParts.join(' ')}${dataPart}`;
+    // Remove quotes from URL if present
+    const cleanUrl = url.replace(/^["']|["']$/g, '');
+
+    // Build header parts, ensuring values don't have extra quotes
+    const headerParts = Object.entries(headers).map(([key, value]) => {
+      // Remove quotes from header values
+      const cleanValue = String(value).replace(/^["']|["']$/g, '');
+      // Escape single quotes in values
+      const escapedValue = cleanValue.replace(/'/g, "'\\''");
+      return `-H '${key}: ${escapedValue}'`;
+    });
+
+    // Build data part
+    const dataPart = body
+      ? ` -d '${JSON.stringify(body).replace(/'/g, "'\\''")}'`
+      : '';
+
+    return `curl -X ${method} '${cleanUrl}' ${headerParts.join(' ')}${dataPart}`;
   }
 
   async createRequest(
@@ -60,11 +82,14 @@ export class NafathAppService {
     queryDto: CreateRequestQueryDto,
   ): Promise<NafathCreateRequestResponseDto> {
     try {
-      const url = `${this.nafathBaseUrl}/api/v1/mfa/request`;
+      // Ensure base URL doesn't have trailing slash and construct full URL
+      const baseUrl = this.nafathBaseUrl.replace(/\/$/, '');
+      const url = `${baseUrl}/api/v1/mfa/request`;
       const params = new URLSearchParams({
         local: queryDto.local,
         requestId: queryDto.requestId,
       });
+      const fullUrl = `${url}?${params.toString()}`;
 
       const headers = {
         'APP-ID': this.appId,
@@ -75,11 +100,13 @@ export class NafathAppService {
       console.log(
         `Creating Nafath request for nationalId: ${createRequestDto.nationalId}`,
       );
+      console.log(`Full URL: ${fullUrl}`);
+      console.log(`Headers:`, JSON.stringify(headers, null, 2));
 
       // Log curl equivalent
       const curlCreate = this.buildCurl(
         'POST',
-        `${url}?${params.toString()}`,
+        fullUrl,
         headers,
         createRequestDto,
       );
@@ -87,47 +114,78 @@ export class NafathAppService {
 
       const response: AxiosResponse<NafathCreateRequestResponseDto> =
         await firstValueFrom(
-          this.httpService.post(
-            `${url}?${params.toString()}`,
-            createRequestDto,
-            { headers },
-          ),
+          this.httpService.post(fullUrl, createRequestDto, { headers }),
         );
 
       console.log(
         `Nafath request created successfully: ${response.data.transId}`,
       );
       return response.data;
-    } catch (error) {
-      console.log(
-        'Error creating Nafath request:',
-        error.response?.data || error.message,
-      );
-      console.log(
-        'Error creating Nafath request: status=',
-        error.response?.status,
-      );
-      console.log(
-        'Error creating Nafath request: data=',
-        JSON.stringify(error.response?.data),
-      );
-      console.log('Error creating Nafath request: message=', error.message);
+    } catch (error: any) {
+      // Comprehensive error logging
+      console.error('========== NAFATH CREATE REQUEST ERROR ==========');
+      console.error('Error Type:', error?.constructor?.name || typeof error);
+      console.error('Error Message:', error?.message);
+      console.error('Error Stack:', error?.stack);
 
-      if (error.response?.data) {
-        const errorData: NafathErrorResponseDto = error.response.data;
-        throw new HttpException(
-          {
-            message: errorData.message,
-            code: errorData.code,
-            reference: errorData.reference,
-          },
-          error.response.status,
+      if (error?.response) {
+        console.error('HTTP Status:', error.response.status);
+        console.error('HTTP Status Text:', error.response.statusText);
+        console.error(
+          'Response Headers:',
+          JSON.stringify(error.response.headers, null, 2),
+        );
+        console.error(
+          'Response Data:',
+          JSON.stringify(error.response.data, null, 2),
         );
       }
 
+      if (error?.request) {
+        console.error(
+          'Request Config:',
+          JSON.stringify(
+            {
+              url: error.config?.url,
+              method: error.config?.method,
+              headers: error.config?.headers,
+              data: error.config?.data,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
+      if (error?.config) {
+        console.error(
+          'Axios Config:',
+          JSON.stringify(
+            {
+              url: error.config.url,
+              method: error.config.method,
+              baseURL: error.config.baseURL,
+              timeout: error.config.timeout,
+              headers: error.config.headers,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
+      console.error(
+        'Full Error Object:',
+        JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
+      );
+      console.error('=================================================');
+
       throw new HttpException(
-        'Failed to create Nafath request',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          message: error.message || 'Failed to create Nafath request',
+          error: 'NafathRequestError',
+        },
+        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -136,7 +194,9 @@ export class NafathAppService {
     requestStatusDto: RequestStatusDto,
   ): Promise<NafathStatusResponseDto> {
     try {
-      const url = `${this.nafathBaseUrl}/api/v1/mfa/request/status`;
+      // Ensure base URL doesn't have trailing slash
+      const baseUrl = this.nafathBaseUrl.replace(/\/$/, '');
+      const url = `${baseUrl}/api/v1/mfa/request/status`;
 
       const headers = {
         'APP-ID': this.appId,
@@ -147,6 +207,8 @@ export class NafathAppService {
       console.log(
         `Getting Nafath request status for transId: ${requestStatusDto.transId}`,
       );
+      console.log(`Full URL: ${url}`);
+      console.log(`Headers:`, JSON.stringify(headers, null, 2));
 
       // Log curl equivalent
       const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
@@ -159,34 +221,64 @@ export class NafathAppService {
 
       console.log(`Nafath request status retrieved: ${response.data.status}`);
       return response.data;
-    } catch (error) {
-      console.error(
-        'Error getting Nafath request status:',
-        error.response?.data || error.message,
-      );
+    } catch (error: any) {
+      // Comprehensive error logging
+      console.error('========== NAFATH GET STATUS ERROR ==========');
+      console.error('Error Type:', error?.constructor?.name || typeof error);
+      console.error('Error Message:', error?.message);
+      console.error('Error Stack:', error?.stack);
 
-      if (error.response?.data) {
-        const errorData: NafathErrorResponseDto = error.response.data;
-        throw new HttpException(
-          {
-            message: errorData.message,
-            code: errorData.code,
-            reference: errorData.reference,
-          },
-          error.response.status,
+      if (error?.response) {
+        console.error('HTTP Status:', error.response.status);
+        console.error('HTTP Status Text:', error.response.statusText);
+        console.error(
+          'Response Headers:',
+          JSON.stringify(error.response.headers, null, 2),
+        );
+        console.error(
+          'Response Data:',
+          JSON.stringify(error.response.data, null, 2),
         );
       }
 
+      if (error?.config) {
+        console.error(
+          'Axios Config:',
+          JSON.stringify(
+            {
+              url: error.config.url,
+              method: error.config.method,
+              baseURL: error.config.baseURL,
+              headers: error.config.headers,
+              data: error.config.data,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
+      console.error(
+        'Full Error Object:',
+        JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
+      );
+      console.error('=============================================');
+
       throw new HttpException(
-        'Failed to get Nafath request status',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          message: error.message || 'Failed to get Nafath request status',
+          error: 'NafathStatusError',
+        },
+        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   async getJwk(): Promise<NafathJwkResponseDto> {
     try {
-      const url = `${this.nafathBaseUrl}/api/v1/mfa/jwk`;
+      // Ensure base URL doesn't have trailing slash
+      const baseUrl = this.nafathBaseUrl.replace(/\/$/, '');
+      const url = `${baseUrl}/api/v1/mfa/jwk`;
 
       const headers = {
         'APP-ID': this.appId,
@@ -195,6 +287,8 @@ export class NafathAppService {
       };
 
       console.log('Retrieving Nafath JWK');
+      console.log(`Full URL: ${url}`);
+      console.log(`Headers:`, JSON.stringify(headers, null, 2));
 
       // Log curl equivalent
       const curlJwk = this.buildCurl('GET', url, headers);
@@ -205,27 +299,54 @@ export class NafathAppService {
 
       console.log('Nafath JWK retrieved successfully');
       return response.data;
-    } catch (error) {
-      console.error(
-        'Error retrieving Nafath JWK:',
-        error.response?.data || error.message,
-      );
+    } catch (error: any) {
+      // Comprehensive error logging
+      console.error('========== NAFATH GET JWK ERROR ==========');
+      console.error('Error Type:', error?.constructor?.name || typeof error);
+      console.error('Error Message:', error?.message);
+      console.error('Error Stack:', error?.stack);
 
-      if (error.response?.data) {
-        const errorData: NafathErrorResponseDto = error.response.data;
-        throw new HttpException(
-          {
-            message: errorData.message,
-            code: errorData.code,
-            reference: errorData.reference,
-          },
-          error.response.status,
+      if (error?.response) {
+        console.error('HTTP Status:', error.response.status);
+        console.error('HTTP Status Text:', error.response.statusText);
+        console.error(
+          'Response Headers:',
+          JSON.stringify(error.response.headers, null, 2),
+        );
+        console.error(
+          'Response Data:',
+          JSON.stringify(error.response.data, null, 2),
         );
       }
 
+      if (error?.config) {
+        console.error(
+          'Axios Config:',
+          JSON.stringify(
+            {
+              url: error.config.url,
+              method: error.config.method,
+              baseURL: error.config.baseURL,
+              headers: error.config.headers,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
+      console.error(
+        'Full Error Object:',
+        JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
+      );
+      console.error('==========================================');
+
       throw new HttpException(
-        'Failed to retrieve Nafath JWK',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          message: error.message || 'Failed to retrieve Nafath JWK',
+          error: 'NafathJwkError',
+        },
+        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
