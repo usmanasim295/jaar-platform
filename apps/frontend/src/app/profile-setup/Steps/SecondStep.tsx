@@ -43,6 +43,17 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
       return false;
     }
     if (selectedFile) {
+      // Validate file size before submission (double-check)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (selectedFile.size > maxSize) {
+        const errorMessage = t(
+          'File too large. Please choose a file smaller than 5MB.'
+        );
+        setValidationError(errorMessage);
+        toast.error(errorMessage);
+        return false;
+      }
+
       try {
         const res = await uploadDocument({
           data: {
@@ -99,6 +110,8 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
             );
             setValidationError(errorMessage);
             toast.error(errorMessage);
+            setSelectedFile(null);
+            setFileName(null);
             return;
           }
 

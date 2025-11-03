@@ -33,6 +33,7 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
     const maxSize = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > maxSize) {
       toast.error(t('File too large. Please choose a file smaller than 5MB.'));
+      setSelectedFile(null); // Clear selected file on error
       return;
     }
 
@@ -44,6 +45,7 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
     ];
     if (!allowedTypes.includes(file.type)) {
       toast.error(t('Please select a PDF or Word document.'));
+      setSelectedFile(null); // Clear selected file on error
       return;
     }
 
@@ -107,6 +109,18 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
     }
 
     const values = getValues();
+
+    // Validate file size before submission (double-check)
+    if (selectedFile) {
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (selectedFile.size > maxSize) {
+        toast.error(
+          t('File too large. Please choose a file smaller than 5MB.')
+        );
+        return false;
+      }
+    }
+
     const formData = new FormData();
     formData.append('serviceProviderId', id);
     formData.append('firstName', values.firstName);

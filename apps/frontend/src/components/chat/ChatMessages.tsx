@@ -1056,6 +1056,7 @@ import { socketService } from '@/lib/socket';
 import { ImageModal } from './ImageModal';
 import { VideoModal } from './VideoModal';
 import ImageCollage from './ImageCollage';
+import { toast } from 'react-toastify';
 
 interface ChatMessagesProps {
   chat: Chat | null;
@@ -1187,11 +1188,24 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     const files = e.target.files;
     if (!files || !chat) return;
 
+    // Validate file sizes (5MB limit per file)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    const filesArray = Array.from(files);
+    const oversizedFiles = filesArray.filter(file => file.size > maxSize);
+
+    if (oversizedFiles.length > 0) {
+      toast.error(t('File too large. Please choose a file smaller than 5MB.'));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
     setIsUploading(true);
     try {
       // Upload all selected files
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (let i = 0; i < filesArray.length; i++) {
+        const file = filesArray[i];
         await onUploadFile(file, `Shared ${file.name}`);
       }
     } catch (error) {

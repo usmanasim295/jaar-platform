@@ -17,10 +17,19 @@ const FileUpload: React.FC<FileUploadProps> = ({
   children,
   required,
 }) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       onFileSelect(file);
+      // Always reset input after selection to allow re-selection of same file
+      // Use setTimeout to ensure the value is cleared after the event completes
+      setTimeout(() => {
+        if (e.target) {
+          e.target.value = '';
+        }
+      }, 0);
     }
   };
 
@@ -29,6 +38,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       {children ? children : <span>{label || 'Upload File'}</span>}
 
       <input
+        ref={fileInputRef}
         type="file"
         accept={accept}
         required={required}

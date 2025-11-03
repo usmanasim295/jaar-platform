@@ -105,6 +105,7 @@ export default function JobDetails({ params }: JobDetailsProps) {
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         toast.error(t('File size must be less than 5MB'));
+        event.target.value = ''; // Clear input to allow re-selection
         return;
       }
 
@@ -118,12 +119,15 @@ export default function JobDetails({ params }: JobDetailsProps) {
       ];
       if (!allowedTypes.includes(file.type)) {
         toast.error(t('Please upload a PDF, DOC, DOCX, or image file'));
+        event.target.value = ''; // Clear input to allow re-selection
         return;
       }
 
       setSelectedFile(file);
       setSelectedFileName(file.name);
     }
+    // Always clear input after processing to allow re-selection of same file
+    event.target.value = '';
   };
 
   // Submit bid
@@ -141,6 +145,16 @@ export default function JobDetails({ params }: JobDetailsProps) {
     if (!data.totalPrice || !data.coverLetter) {
       toast.error(t('Please fill in all required fields'));
       return;
+    }
+
+    // Validate file size before submission (double-check)
+    if (selectedFile) {
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (selectedFile.size > maxSize) {
+        toast.error(t('File size must be less than 5MB'));
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     setIsSubmitting(true);
