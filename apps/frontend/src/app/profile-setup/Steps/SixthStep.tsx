@@ -41,12 +41,14 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         toast.error(
           t('File too large. Please choose a file smaller than 5MB.')
         );
+        e.target.value = ''; // Clear input to allow re-selection
         return;
       }
 
       // Check file type
       if (!file.type.startsWith('image/')) {
         toast.error(t('Please select an image file.'));
+        e.target.value = ''; // Clear input to allow re-selection
         return;
       }
 
@@ -54,6 +56,8 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
       const imageUrl = URL.createObjectURL(file);
       setImagePreview(imageUrl);
     }
+    // Always clear input after processing to allow re-selection of same file
+    e.target.value = '';
   };
   const handleRemoveImage = () => {
     setImagePreview(null);
@@ -91,6 +95,17 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
       console.log('Translation result:', errorMessage);
       toast.error(errorMessage);
       return false;
+    }
+
+    // Validate file size before submission (double-check)
+    if (imageFile) {
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (imageFile.size > maxSize) {
+        toast.error(
+          t('File too large. Please choose a file smaller than 5MB.')
+        );
+        return false;
+      }
     }
 
     const formData = new FormData();

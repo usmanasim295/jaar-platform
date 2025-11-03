@@ -38,20 +38,24 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
 
   // Debug effect to monitor image state changes
   React.useEffect(() => {
-    console.log('completionImages state changed:', completionImages.length, 'images');
+    console.log(
+      'completionImages state changed:',
+      completionImages.length,
+      'images'
+    );
   }, [completionImages]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     console.log('handleImageChange called with files:', files.length);
-    
+
     // Early return if no files selected
     if (files.length === 0) {
       console.log('No files selected');
       return;
     }
-    
+
     // Check total image count limit (max 10 images)
     const totalImages = completionImages.length + files.length;
     if (totalImages > 10) {
@@ -60,16 +64,36 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
       e.target.value = ''; // Clear input on error
       return;
     }
-    
+
+    // Validate file size for each image (5MB limit per image)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    const invalidFiles = files.filter(file => file.size > maxSize);
+
+    if (invalidFiles.length > 0) {
+      toast.error(t('File too large. Please choose a file smaller than 5MB.'));
+      // Clear input immediately to allow re-selection
+      if (e.target) {
+        e.target.value = '';
+      }
+      return;
+    }
+
     console.log('Adding files to state:', files.length, 'files');
-    
+
     // Add files to state using functional update
     setCompletionImages(prev => {
       const newImages = [...prev, ...files];
-      console.log('State updated - Previous:', prev.length, 'New:', files.length, 'Total:', newImages.length);
+      console.log(
+        'State updated - Previous:',
+        prev.length,
+        'New:',
+        files.length,
+        'Total:',
+        newImages.length
+      );
       return newImages;
     });
-    
+
     // Reset input to allow reselection of same files
     // Use requestAnimationFrame to ensure state update happens first
     requestAnimationFrame(() => {
@@ -82,7 +106,27 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setAdditionalDocument(file);
+
+    if (file) {
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        toast.error(
+          t('File too large. Please choose a file smaller than 5MB.')
+        );
+        // Clear input immediately to allow re-selection
+        if (e.target) {
+          e.target.value = '';
+        }
+        setAdditionalDocument(null); // Clear selected document on error
+        return;
+      }
+
+      setAdditionalDocument(file);
+    } else {
+      setAdditionalDocument(null);
+    }
+
     // Reset input to allow reselection of same files
     e.target.value = '';
   };
@@ -103,6 +147,28 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
 
     if (!completionNotes.trim()) {
       toast.error(t('Completion notes are required'));
+      return;
+    }
+
+    // Validate file sizes before submission (double-check)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+
+    // Check completion images
+    if (completionImages.length > 0) {
+      const oversizedImages = completionImages.filter(
+        img => img.size > maxSize
+      );
+      if (oversizedImages.length > 0) {
+        toast.error(
+          t('File too large. Please choose a file smaller than 5MB.')
+        );
+        return;
+      }
+    }
+
+    // Check additional document
+    if (additionalDocument && additionalDocument.size > maxSize) {
+      toast.error(t('File too large. Please choose a file smaller than 5MB.'));
       return;
     }
 
@@ -195,7 +261,7 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
                 accept="image/*"
                 multiple
                 onChange={handleImageChange}
-                onClick={(e) => {
+                onClick={e => {
                   // Ensure the input is properly focused and ready
                   console.log('File input clicked');
                 }}
@@ -203,7 +269,8 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
               />
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {t('Upload images showing the completed work')} ({t('Max 10 images')})
+              {t('Upload images showing the completed work')} (
+              {t('Max 10 images')})
               {completionImages.length > 0 && (
                 <span className="ml-2 text-blue-600 font-medium">
                   ({completionImages.length}/10 {t('images selected')})
@@ -225,13 +292,13 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
                       type="button"
                       onClick={() => removeImage(index)}
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                      style={{ 
+                      style={{
                         padding: '0',
                         paddingTop: '1.5px',
                         border: 'none',
                         outline: 'none',
                         fontSize: '12px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
                       }}
                     >
                       x
@@ -257,7 +324,8 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
               />
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {t('Upload any additional documentation (PDF, DOC, DOCX)')} ({t('Max 5MB')})
+              {t('Upload any additional documentation (PDF, DOC, DOCX)')} (
+              {t('Max 5MB')})
             </p>
 
             {/* Display selected document */}

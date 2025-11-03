@@ -6,6 +6,7 @@ import {
   getFormHeaders,
   getLanguageParam,
 } from '@/lib/api-config';
+import i18n from '@/i18n';
 import type {
   SignupRequest,
   SignupResponse,
@@ -61,7 +62,10 @@ const baseQueryWithErrorHandling = async (
         error: {
           ...result.error,
           data: {
-            message: 'File too large. Please choose a smaller file.',
+            message:
+              typeof window !== 'undefined'
+                ? i18n.t('File too large. Please choose a smaller file.')
+                : 'File too large. Please choose a smaller file.',
             status: 413,
           },
         },
@@ -74,7 +78,10 @@ const baseQueryWithErrorHandling = async (
         error: {
           ...result.error,
           data: {
-            message: 'Invalid request. Please check your input.',
+            message:
+              typeof window !== 'undefined'
+                ? i18n.t('Invalid request. Please check your input.')
+                : 'Invalid request. Please check your input.',
             status: 400,
           },
         },
