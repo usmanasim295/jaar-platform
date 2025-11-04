@@ -83,8 +83,9 @@ const SignupForm = () => {
           placeholderAnimate
           rules={{ required: t("Name is required") }}
           onInput={(e) => {
+            // Allow both English and Arabic letters, plus spaces
             e.currentTarget.value = e.currentTarget.value.replace(
-              /[^A-Za-z\s]/g,
+              /[^A-Za-z\u0600-\u06FF\s]/g,
               "",
             );
           }}

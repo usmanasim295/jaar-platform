@@ -133,12 +133,23 @@ body {
   font-size: 0.75rem; /* 12px */
   line-height: 100%;
 }
+/* Phone input styles - keeping for compatibility */
 .PhoneInputInput {
   @apply w-full focus:outline-none mt-1.5;
+  direction: ltr !important; /* Phone numbers always LTR */
 }
 
+/* Hide country selector completely */
 .PhoneInputCountry {
-  @apply mt-1.5;
+  display: none !important;
+}
+
+.PhoneInputCountryIcon {
+  display: none !important;
+}
+
+.PhoneInputCountrySelect {
+  display: none !important;
 }
 
 .shadow-light {
