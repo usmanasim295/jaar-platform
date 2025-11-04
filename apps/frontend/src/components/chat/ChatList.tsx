@@ -26,7 +26,7 @@ export const ChatList: React.FC<ChatListProps> = ({
   onSelectChat,
   onMarkAsRead,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<'All' | 'Unread'>('All');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -96,7 +96,9 @@ export const ChatList: React.FC<ChatListProps> = ({
 
     // For community chats, show the community name
     if (chat.type === 'COMMUNITY_GROUP' && chat.community) {
-      return chat.community.name?.en || chat.community.name?.ar || t('Community');
+      return (
+        chat.community.name?.en || chat.community.name?.ar || t('Community')
+      );
     }
 
     return chat.name?.en || chat.name?.ar || t('Unknown Chat');
@@ -191,7 +193,13 @@ export const ChatList: React.FC<ChatListProps> = ({
       typeof lastMessage.content === 'object' &&
       lastMessage.content !== null
     ) {
-      return lastMessage.content.en || lastMessage.content.ar || t('Message');
+      // Prioritize current language
+      const currentLang = i18n.language;
+      if (currentLang === 'ar') {
+        return lastMessage.content.ar || lastMessage.content.en || t('Message');
+      } else {
+        return lastMessage.content.en || lastMessage.content.ar || t('Message');
+      }
     }
     return t('Message');
   };
@@ -221,7 +229,7 @@ export const ChatList: React.FC<ChatListProps> = ({
   if (error) {
     return (
       <EmptyState
-        title={t("Error Loading Chats")}
+        title={t('Error Loading Chats')}
         description={error}
         icon={MessageCircle}
       />

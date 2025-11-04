@@ -1086,7 +1086,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   onLoadMore,
   currentUserId,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
@@ -1448,7 +1448,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       return message.content;
     }
     if (typeof message.content === 'object' && message.content !== null) {
-      return message.content.en || message.content.ar || '';
+      // Prioritize current language, fallback to other language, then empty string
+      const currentLang = i18n.language;
+      if (currentLang === 'ar') {
+        return message.content.ar || message.content.en || '';
+      } else {
+        return message.content.en || message.content.ar || '';
+      }
     }
     return '';
   };
