@@ -120,6 +120,8 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
               <Currency className="w-4 h-4 sm:w-5 sm:h-5" />
               <input
                 type="number"
+                step="any"
+                min="0"
                 className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium input"
                 value={rateObj.rate}
                 onChange={e =>
