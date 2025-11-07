@@ -375,11 +375,6 @@ export const useChatMessages = (chatId: string | null) => {
         } else {
           // Initial load - set messages as they come (newest first)
           setMessages(deduplicateMessages(data.messages || []));
-
-          // Auto-scroll to bottom when initially loading messages
-          setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
         }
 
         setHasMore(data.hasMore);
@@ -396,9 +391,9 @@ export const useChatMessages = (chatId: string | null) => {
   );
 
   // Load more messages (pagination)
-  const loadMoreMessages = useCallback(() => {
+  const loadMoreMessages = useCallback(async () => {
     if (hasMore && nextCursor && !loading) {
-      fetchMessages(nextCursor, true);
+      await fetchMessages(nextCursor, true);
     }
   }, [hasMore, nextCursor, loading, fetchMessages]);
 
@@ -580,14 +575,6 @@ export const useChatMessages = (chatId: string | null) => {
   }, [chatId, fetchMessages]);
 
   // Auto-scroll to bottom when messages change (for initial load)
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }
-  }, [messages.length]); // Only trigger when message count changes, not on every message update
-
   // Join chat room when chatId changes
   useEffect(() => {
     if (!chatId) return;
@@ -608,11 +595,6 @@ export const useChatMessages = (chatId: string | null) => {
       const deduplicated = deduplicateMessages(newMessages);
       return deduplicated;
     });
-
-    // Scroll to bottom
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
   }, []);
 
   return {

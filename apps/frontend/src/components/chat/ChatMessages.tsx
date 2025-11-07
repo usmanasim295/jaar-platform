@@ -1,6 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChatMessage, Chat } from '@/components/modals/type';
 import { MessageSkeleton, EmptyState } from './ChatSkeleton';
@@ -30,7 +37,7 @@ interface ChatMessagesProps {
     type?: 'TEXT' | 'IMAGE' | 'VOICE_NOTE' | 'FILE'
   ) => Promise<void>;
   onUploadFile: (file: File, content: string) => Promise<void>;
-  onLoadMore: () => void;
+  onLoadMore: () => Promise<void> | void;
   currentUserId?: string;
 }
 
@@ -63,6 +70,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   const recordingIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const recordingTimeRef = useRef(0);
   const isRecordingInProgressRef = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const latestMessageIdRef = useRef<string | undefined>(undefined);
+  const pendingInitialScrollRef = useRef(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Modal states
   const [imageModal, setImageModal] = useState<{
@@ -494,6 +505,28 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     </div>
   );
 
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = 'auto') => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        if (behavior === 'auto') {
+          container.scrollTop = container.scrollHeight;
+        } else {
+          container.scrollTo({ top: container.scrollHeight, behavior });
+        }
+        return;
+      }
+
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({
+          behavior,
+          block: 'end',
+        });
+      }
+    },
+    [messagesEndRef]
+  );
+
   // Get sender name
   const getSenderName = (message: ChatMessage) => {
     if (message.senderServiceProvider) {
@@ -822,19 +855,88 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   useEffect(() => {
     if (isRecording || typingUsers.size > 0 || isSending) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      scrollToBottom('smooth');
     }
-  }, [isRecording, typingUsers.size, isSending]);
+  }, [isRecording, typingUsers.size, isSending, scrollToBottom]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+    pendingInitialScrollRef.current = true;
+    latestMessageIdRef.current = undefined;
+  }, [chat?.id]);
+
+  useLayoutEffect(() => {
+    if (!pendingInitialScrollRef.current) {
+      return;
     }
-  }, [messages.length]);
+
+    if (loading) {
+      return;
+    }
+
+    if (!messages.length) {
+      pendingInitialScrollRef.current = false;
+      return;
+    }
+
+    pendingInitialScrollRef.current = false;
+    scrollToBottom('auto');
+    const retryTimer = window.setTimeout(() => {
+      scrollToBottom('auto');
+    }, 200);
+
+    return () => {
+      window.clearTimeout(retryTimer);
+    };
+  }, [messages, loading, scrollToBottom]);
+
+  useEffect(() => {
+    if (!messages.length) {
+      latestMessageIdRef.current = undefined;
+      return;
+    }
+
+    const latestMessageId = messages[0]?.id;
+    const previousLatestMessageId = latestMessageIdRef.current;
+
+    if (!pendingInitialScrollRef.current && previousLatestMessageId) {
+      const hasNewLatestMessage =
+        latestMessageId && latestMessageId !== previousLatestMessageId;
+
+      if (hasNewLatestMessage) {
+        scrollToBottom('smooth');
+      }
+    }
+
+    latestMessageIdRef.current = latestMessageId;
+  }, [messages, scrollToBottom]);
+
+  const handleLoadMoreClick = async () => {
+    if (isLoadingMore) {
+      return;
+    }
+
+    const container = scrollContainerRef.current;
+    const previousScrollHeight = container?.scrollHeight ?? 0;
+    const previousScrollTop = container?.scrollTop ?? 0;
+
+    try {
+      setIsLoadingMore(true);
+      await onLoadMore();
+    } finally {
+      requestAnimationFrame(() => {
+        const targetContainer = scrollContainerRef.current;
+        if (!targetContainer) {
+          setIsLoadingMore(false);
+          return;
+        }
+
+        const newScrollHeight = targetContainer.scrollHeight;
+        const heightDifference = newScrollHeight - previousScrollHeight;
+        targetContainer.scrollTop = previousScrollTop + heightDifference;
+        setIsLoadingMore(false);
+      });
+    }
+  };
 
   // Cleanup recording on unmount or chat change
   useEffect(() => {
@@ -967,6 +1069,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     <div className="flex flex-col h-full">
       {/* Messages */}
       <div
+        ref={scrollContainerRef}
         className="flex-1 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 overflow-y-auto min-h-0"
         style={{
           scrollbarWidth: 'thin',
@@ -975,10 +1078,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
       >
         {hasMore && (
           <button
-            onClick={onLoadMore}
-            className="w-full py-1.5 sm:py-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700"
+            onClick={handleLoadMoreClick}
+            disabled={isLoadingMore}
+            className="w-full py-1.5 sm:py-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('Load more messages')}
+            {isLoadingMore ? t('Loading...') : t('Load more messages')}
           </button>
         )}
 
