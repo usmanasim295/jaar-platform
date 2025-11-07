@@ -55,9 +55,20 @@ export default function MyBids() {
     return i18n.language === 'ar' ? text.ar : text.en;
   };
 
+  const resolveLocale = () => {
+    const lang = i18n.language;
+    if (!lang) return undefined;
+    if (lang.startsWith('ar')) return 'ar-SA';
+    return lang;
+  };
+
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString(resolveLocale(), {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   // Get status badge styling

@@ -149,18 +149,7 @@ export default function Navbar() {
               </div>
             </div>
           ) : null
-          // <div className="flex gap-4">
-          //   <Link href="/signin">
-          //     <Button variant="secondary" className="px-4 py-2">
-          //       {t('Sign In')}
-          //     </Button>
-          //   </Link>
-          //   <Link href="/signup">
-          //     <Button variant="primary" className="px-4 py-2">
-          //       {t('Sign Up')}
-          //     </Button>
-          //   </Link>
-          // </div>
+          
           }
           <button
             className="lg:hidden text-gray-700"

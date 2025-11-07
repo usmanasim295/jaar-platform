@@ -19,13 +19,24 @@ const JobCard: FC<JobCardProps> = ({
   bids,
   jobId,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+
+  const resolveLocale = () => {
+    const lang = i18n.language;
+    if (!lang) return undefined;
+    if (lang.startsWith('ar')) return 'ar-SA';
+    return lang;
+  };
 
   // Format date from ISO string
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString(resolveLocale(), {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   // Get status color
@@ -127,7 +138,8 @@ const JobCard: FC<JobCardProps> = ({
           {/* Apartment Location */}
           {apartment && (
             <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
-              <MapPin size={16} className='h-4 w-4' /> {apartment.name}, {apartment.city}
+              <MapPin size={16} className="h-4 w-4" /> {apartment.name},{' '}
+              {apartment.city}
             </span>
           )}
 

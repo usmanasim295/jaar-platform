@@ -35,7 +35,7 @@ interface JobDetailsProps {
 }
 
 export default function JobDetails({ params }: JobDetailsProps) {
-  const { t } = useTranslation();
+  const { t, i18n: i18nextInstance } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const {
     control,
@@ -94,6 +94,21 @@ export default function JobDetails({ params }: JobDetailsProps) {
   const userBidStatus = jobData?.bids?.find(
     bid => bid.serviceProviderId === user?.id
   );
+
+  const resolveLocale = () => {
+    const lang = i18nextInstance.language;
+    if (!lang) return undefined;
+    if (lang.startsWith('ar')) return 'ar-SA';
+    return lang;
+  };
+
+  const formatDate = (value: string) => {
+    return new Date(value).toLocaleDateString(resolveLocale(), {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -316,8 +331,8 @@ export default function JobDetails({ params }: JobDetailsProps) {
                 <div className="flex items-center gap-1.5 bg-(--light-grey) p-2 sm:p-2.5 rounded-lg text-xs sm:typo-small font-medium text-[#15120F]">
                   <CalenderBlank className="w-4 h-4 flex-shrink-0" />
                   <span className="text-xs sm:text-sm break-words">
-                    {new Date(jobData.startDate).toLocaleDateString()} -{' '}
-                    {new Date(jobData.endDate).toLocaleDateString()}
+                    {formatDate(jobData.startDate)} -{' '}
+                    {formatDate(jobData.endDate)}
                   </span>
                 </div>
               )}
