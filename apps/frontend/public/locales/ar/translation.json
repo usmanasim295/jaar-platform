@@ -382,5 +382,7 @@
   "PDF": "PDF",
   "Document": "ملف",
   "Spreadsheet": "جدول بيانات",
-  "File": "ملف"
+  "File": "ملف",
+  "Today": "اليوم",
+  "Yesterday": "أمس"
 }

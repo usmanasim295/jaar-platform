@@ -382,5 +382,7 @@
   "PDF": "PDF",
   "Document": "Document",
   "Spreadsheet": "Spreadsheet",
-  "File": "File"
+  "File": "File",
+  "Today": "Today",
+  "Yesterday": "Yesterday"
 }
