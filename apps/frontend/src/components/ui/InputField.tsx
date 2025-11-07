@@ -134,6 +134,7 @@ const InputField = <T extends FieldValues>({
                 placeholder={placeholderAnimate ? ' ' : placeholder}
                 value={field.value || ''}
                 min={type === 'number' ? 0 : undefined}
+                step={type === 'number' ? 'any' : undefined}
                 onChange={e => {
                   const value =
                     type === 'number' ? Number(e.target.value) : e.target.value;

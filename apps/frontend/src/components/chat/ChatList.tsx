@@ -30,6 +30,12 @@ export const ChatList: React.FC<ChatListProps> = ({
   const [activeTab, setActiveTab] = useState<'All' | 'Unread'>('All');
   const [searchTerm, setSearchTerm] = useState('');
 
+  const resolveLocale = () => {
+    if (!i18n.language) return undefined;
+    if (i18n.language.startsWith('ar')) return 'ar-SA';
+    return i18n.language;
+  };
+
   // Add custom scrollbar styles
   useEffect(() => {
     const style = document.createElement('style');
@@ -210,15 +216,18 @@ export const ChatList: React.FC<ChatListProps> = ({
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString([], {
+      return date.toLocaleTimeString(resolveLocale(), {
         hour: '2-digit',
         minute: '2-digit',
       });
     } else if (diffInHours < 168) {
       // 7 days
-      return date.toLocaleDateString([], { weekday: 'short' });
+      return date.toLocaleDateString(resolveLocale(), { weekday: 'short' });
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString(resolveLocale(), {
+        month: 'short',
+        day: 'numeric',
+      });
     }
   };
 

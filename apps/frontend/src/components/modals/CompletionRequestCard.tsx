@@ -29,8 +29,19 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
     : null;
 
   // Format date
+  const resolveLocale = () => {
+    const lang = i18n.language;
+    if (!lang) return undefined;
+    if (lang.startsWith('ar')) return 'ar-SA';
+    return lang;
+  };
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString(resolveLocale(), {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   };
 
   // Get status color and text

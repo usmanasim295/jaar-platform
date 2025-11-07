@@ -67,7 +67,7 @@ export const VideoModal: React.FC<VideoModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-white/10 backdrop-blur-sm bg-opacity-75 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
@@ -115,9 +115,9 @@ export const VideoModal: React.FC<VideoModalProps> = ({
         </div>
 
         {/* Video Info */}
-        <div className="absolute bottom-4 left-4 z-10 bg-black bg-opacity-50 rounded-lg px-3 py-2">
-          <p className="text-white text-sm">{fileName}</p>
-        </div>
+        {/* <div className="absolute bottom-4 left-4 z-10 bg-black bg-opacity-50 rounded-lg px-3 py-2 w-full">
+          <p className="text-white text-sm truncate">{fileName}</p>
+        </div> */}
       </div>
     </div>
   );

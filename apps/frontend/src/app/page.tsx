@@ -597,7 +597,7 @@ export default function Home() {
               <div className="sticky top-24 space-y-6">
                 <div className="bg-(--white) p-6 rounded-2xl shadow-dark">
                   <div className="flex items-center gap-3 pb-6">
-                    <div className="w-[60px] h-[60px] rounded-full bg-gray-200 overflow-hidden">
+                    <div className="w-[60px] h-[60px] rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                       {isProfileLoading ? (
                         <div className="w-full h-full bg-gray-200 animate-pulse" />
                       ) : profileData?.profilePictureUrl ? (
@@ -612,8 +612,11 @@ export default function Home() {
                         </div>
                       )}
                     </div>
-                    <div>
-                      <div className="font-semibold typo-heading3 text-(--primary) ">
+                    <div className="flex-1 min-w-0">
+                      <div
+                        className="font-semibold typo-heading3 text-(--primary) truncate"
+                        title={profileData?.name || user?.name || t('User')}
+                      >
                         {isProfileLoading ? (
                           <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
                         ) : (
@@ -621,7 +624,10 @@ export default function Home() {
                         )}
                       </div>
                       {profileData?.bio && (
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p
+                          className="text-sm text-gray-600 mt-1 line-clamp-2 truncate"
+                          title={profileData.bio}
+                        >
                           {profileData.bio}
                         </p>
                       )}

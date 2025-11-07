@@ -15,7 +15,22 @@ import { tagIcons } from './tagIcons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const resolveLocale = () => {
+    const lang = i18n.language;
+    if (!lang) return undefined;
+    if (lang.startsWith('ar')) return 'ar-SA';
+    return lang;
+  };
+
+  const formatDate = (value: string) => {
+    return new Date(value).toLocaleDateString(resolveLocale(), {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
   const { user } = useAuth();
   const modalContentRef = useRef<HTMLDivElement>(null);
 
@@ -187,8 +202,8 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                 <div className="bg-[#f3f3f3] px-2 sm:px-3 py-[6px] rounded-lg typo-small text-[#15120F] font-medium flex items-center gap-2">
                   <CalenderBlank className="flex-shrink-0" />
                   <span className="break-words">
-                    {new Date(selectedJob.startDate).toLocaleDateString()} -{' '}
-                    {new Date(selectedJob.endDate).toLocaleDateString()}
+                    {formatDate(selectedJob.startDate)} -{' '}
+                    {formatDate(selectedJob.endDate)}
                   </span>
                 </div>
               )}
