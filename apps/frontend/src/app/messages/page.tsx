@@ -63,9 +63,9 @@ function ChatUIContent() {
         <div className="flex items-center justify-center h-48 sm:h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
-            <p className="text-sm sm:text-base text-gray-600">
+            {/* <p className="text-sm sm:text-base text-gray-600">
               {t('Loading...')}
-            </p>
+            </p> */}
           </div>
         </div>
       </div>
