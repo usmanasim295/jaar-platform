@@ -865,29 +865,97 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   }, [chat?.id]);
 
   useLayoutEffect(() => {
-    if (!pendingInitialScrollRef.current) {
-      return;
-    }
-
-    if (loading) {
-      return;
-    }
-
+    // Initial-open behavior: always show the bottom (last message)
+    // pendingInitialScrollRef is set to true when chat changes.
+    if (!pendingInitialScrollRef.current) return;
+    if (loading) return;
     if (!messages.length) {
       pendingInitialScrollRef.current = false;
       return;
     }
 
-    pendingInitialScrollRef.current = false;
-    scrollToBottom('auto');
-    const retryTimer = window.setTimeout(() => {
-      scrollToBottom('auto');
-    }, 200);
+    let cancelled = false;
+
+    const container = () => scrollContainerRef.current;
+    const jumpToBottom = (behavior: ScrollBehavior = 'auto') => {
+      const c = container();
+      if (c) {
+        if (behavior === 'auto') c.scrollTop = c.scrollHeight;
+        else c.scrollTo({ top: c.scrollHeight, behavior });
+        return;
+      }
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior, block: 'end' });
+      }
+    };
+
+    // Wait for images/videos inside container to load or timeout
+    const waitForMedia = async () => {
+      const c = container();
+      if (!c) return;
+      const media = Array.from(
+        c.querySelectorAll('img, video')
+      ) as (HTMLImageElement | HTMLVideoElement)[];
+      if (media.length === 0) return;
+
+      return new Promise<void>(resolve => {
+        let remaining = media.length;
+        const cleanup = () => {
+          media.forEach(m => {
+            m.removeEventListener('load', onDone);
+            m.removeEventListener('loadeddata', onDone);
+            m.removeEventListener('error', onDone);
+          });
+        };
+
+        const onDone = () => {
+          remaining--;
+          if (remaining <= 0) {
+            clearTimeout(timeout);
+            cleanup();
+            resolve();
+          }
+        };
+
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          resolve();
+        }, 900);
+
+        media.forEach(m => {
+          if (
+            (m instanceof HTMLImageElement && m.complete) ||
+            (m instanceof HTMLVideoElement && m.readyState >= 2)
+          ) {
+            onDone();
+          } else {
+            m.addEventListener('load', onDone, { once: true });
+            m.addEventListener('loadeddata', onDone, { once: true });
+            m.addEventListener('error', onDone, { once: true });
+          }
+        });
+      });
+    };
+
+    // Immediate jump (no animation) so user sees latest message quickly,
+    // then wait for media/layout and perform a final smooth scroll to prevent jumping.
+    (async () => {
+      jumpToBottom('auto');
+      try {
+        await waitForMedia();
+      } catch (_) {
+        /* ignore */
+      }
+      if (!cancelled) {
+        jumpToBottom('smooth');
+        pendingInitialScrollRef.current = false;
+      }
+    })();
 
     return () => {
-      window.clearTimeout(retryTimer);
+      cancelled = true;
     };
-  }, [messages, loading, scrollToBottom]);
+  }, [chat?.id, messages, loading, scrollToBottom]);
 
   useEffect(() => {
     if (!messages.length) {

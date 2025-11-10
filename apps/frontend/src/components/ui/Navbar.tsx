@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Button from './Button';
 
 export default function Navbar() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -88,11 +88,11 @@ export default function Navbar() {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
               <div className="w-6 h-6 border-2 border-gray-300 border-t-[#2d6a87] rounded-full animate-spin" />
             </div>
           ) : isAuthenticated ? (
-            <div className="flex gap-4 items-center">
+            <div className="hidden lg:flex gap-4 items-center">
               {/* <div className="flex items-center justify-center rounded-full h-11 w-11 bg-(--primary) shrink-0">
                 <Image
                   src={"/assets/icons/Bell.svg"}
@@ -123,7 +123,9 @@ export default function Navbar() {
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <div
+                    className={`absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 ${i18n.language === 'ar' ? 'left-0' : 'right-0'}`}
+                  >
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">
                         {user?.name}
@@ -148,9 +150,7 @@ export default function Navbar() {
                 )}
               </div>
             </div>
-          ) : null
-          
-          }
+          ) : null}
           <button
             className="lg:hidden text-gray-700"
             onClick={() => setIsOpen(!isOpen)}
