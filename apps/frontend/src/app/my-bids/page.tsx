@@ -260,7 +260,7 @@ export default function MyBids() {
                 >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 capitalize">
                         {getLocalizedText(bid.job.title)}
                       </h3>
                       <p className="text-gray-600 text-xs sm:text-sm">

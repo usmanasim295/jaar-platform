@@ -12,6 +12,7 @@ model User {
   nationalId String   @unique
   password   String
   role       Role
+  isBlocked  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   userDoc    UserDoc?
@@ -52,7 +53,7 @@ model Apartment {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
-
+// TODO remove house
 model House {
   id          String    @id @default(uuid())
   houseNumber String // House/Flat number within apartment
@@ -84,7 +85,8 @@ model ServiceProvider {
   bankAccountNumber     String?
   bankDocumentUrl       String?
   isActive              Boolean                   @default(false)
-  isVerified            Boolean                   @default(true)
+  isVerified            Boolean                   @default(false)
+  isBlocked             Boolean                   @default(false)
 
   rating             Float                  @default(0)
   totalEarnings      Float                  @default(0)
@@ -97,6 +99,15 @@ model ServiceProvider {
   sentMessages     Message[]
   pollVotes        PollVote[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  isBlocked Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

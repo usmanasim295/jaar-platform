@@ -29,18 +29,42 @@ import type {
   JobCompletionRequest,
   JobCompletionRequestSubmit,
   JobCompletionRequestResponse,
+  AdminLoginRequest,
+  AdminLoginResponse,
+  AdminSummaryResponse,
+  AdminUserStatsResponse,
+  AdminTopServiceProvidersResponse,
+  AdminServiceProviderStatsResponse,
+  AdminPaginatedResponse,
+  AdminHomeownerRow,
+  AdminLeaderRow,
+  AdminServiceProviderRow,
+  AdminUpdateBlockStatusRequest,
+  AdminUpdateBlockStatusResponse,
+  AdminUpdateServiceProviderBlockStatusResponse,
+  AdminUpdateVerificationStatusRequest,
+  AdminUpdateVerificationStatusResponse,
+  AdminUserDetailResponse,
+  AdminServiceProviderDetailResponse,
 } from '@/types/api';
 
 // Custom base query with error handling
 const baseQuery = fetchBaseQuery({
   baseUrl: API_CONFIG.BASE_URL,
-  prepareHeaders: (headers, { getState }) => {
-    // Get token from localStorage or state
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  prepareHeaders: (headers, { endpoint }) => {
+    if (typeof window === 'undefined') {
+      return headers;
+    }
+
+    const endpointName = endpoint ?? '';
+    const isAdminEndpoint = endpointName.toLowerCase().includes('admin');
+    const tokenKey = isAdminEndpoint ? 'adminToken' : 'token';
+    const token = localStorage.getItem(tokenKey);
+
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
+
     return headers;
   },
 });
@@ -102,6 +126,15 @@ export const api = createApi({
     'Jobs',
     'MyBids',
     'CompletionRequests',
+    'AdminSummary',
+    'AdminUserStats',
+    'AdminTopProviders',
+    'AdminHomeowners',
+    'AdminLeaders',
+    'AdminServiceProviders',
+    'AdminServiceProviderStats',
+    'AdminUserDetail',
+    'AdminServiceProviderDetail',
   ],
   endpoints: builder => ({
     // Authentication endpoints
@@ -392,6 +425,213 @@ export const api = createApi({
       providesTags: ['CompletionRequests'],
       keepUnusedDataFor: 300, // Cache for 5 minutes
     }),
+
+    // Admin Authentication
+    adminLogin: builder.mutation<
+      AdminLoginResponse,
+      { body: AdminLoginRequest; lang: Language }
+    >({
+      query: ({ body, lang }) => ({
+        url: `${API_ENDPOINTS.ADMIN_LOGIN}${getLanguageParam(lang)}`,
+        method: 'POST',
+        body,
+        headers: getHeaders(),
+      }),
+      invalidatesTags: [
+        'AdminSummary',
+        'AdminUserStats',
+        'AdminTopProviders',
+        'AdminHomeowners',
+        'AdminLeaders',
+        'AdminServiceProviders',
+      ],
+    }),
+
+    // Admin Dashboard
+    getAdminSummary: builder.query<AdminSummaryResponse, Language | void>({
+      query: (lang = API_CONFIG.DEFAULT_LANGUAGE as Language) =>
+        `${API_ENDPOINTS.ADMIN_SUMMARY}${getLanguageParam(lang)}`,
+      providesTags: ['AdminSummary'],
+    }),
+
+    getAdminUserStats: builder.query<
+      AdminUserStatsResponse,
+      { lang: Language; filter: 'weekly' | 'monthly' | 'yearly' }
+    >({
+      query: ({ lang, filter }) => {
+        const params = new URLSearchParams();
+        params.append('lang', lang);
+        params.append('filter', filter);
+        return `${API_ENDPOINTS.ADMIN_USER_STATS}?${params.toString()}`;
+      },
+      providesTags: ['AdminUserStats'],
+    }),
+
+    getAdminTopServiceProviders: builder.query<
+      AdminTopServiceProvidersResponse,
+      Language | void
+    >({
+      query: (lang = API_CONFIG.DEFAULT_LANGUAGE as Language) =>
+        `${API_ENDPOINTS.ADMIN_TOP_SERVICE_PROVIDERS}${getLanguageParam(lang)}`,
+      providesTags: ['AdminTopProviders'],
+    }),
+
+    getAdminServiceProviderStats: builder.query<
+      AdminServiceProviderStatsResponse,
+      { lang: Language; filter: 'weekly' | 'monthly' | 'yearly' }
+    >({
+      query: ({ lang, filter }) => {
+        const params = new URLSearchParams();
+        params.append('lang', lang);
+        params.append('filter', filter);
+        return `${API_ENDPOINTS.ADMIN_SERVICE_PROVIDER_STATS}?${params.toString()}`;
+      },
+      providesTags: ['AdminServiceProviderStats'],
+    }),
+
+    getAdminUserDetail: builder.query<
+      AdminUserDetailResponse,
+      { id: string; lang: Language }
+    >({
+      query: ({ id, lang }) =>
+        `${API_ENDPOINTS.ADMIN_USERS}/${id}${getLanguageParam(lang)}`,
+      providesTags: ['AdminHomeowners', 'AdminLeaders'],
+    }),
+
+    getAdminServiceProviderDetail: builder.query<
+      AdminServiceProviderDetailResponse,
+      { id: string; lang: Language }
+    >({
+      query: ({ id, lang }) =>
+        `${API_ENDPOINTS.ADMIN_SERVICE_PROVIDERS}/${id}${getLanguageParam(lang)}`,
+      providesTags: ['AdminServiceProviders', 'AdminTopProviders'],
+    }),
+
+    // Admin Tables
+    getAdminHomeowners: builder.query<
+      AdminPaginatedResponse<AdminHomeownerRow>,
+      { lang: Language; page: number; limit: number; search?: string }
+    >({
+      query: ({ lang, page, limit, search }) => {
+        const params = new URLSearchParams();
+        params.append('lang', lang);
+        params.append('page', String(page));
+        params.append('limit', String(limit));
+        if (search) {
+          params.append('search', search);
+        }
+
+        return `${API_ENDPOINTS.ADMIN_HOMEOWNERS}?${params.toString()}`;
+      },
+      providesTags: ['AdminHomeowners'],
+    }),
+
+    getAdminLeaders: builder.query<
+      AdminPaginatedResponse<AdminLeaderRow>,
+      { lang: Language; page: number; limit: number; search?: string }
+    >({
+      query: ({ lang, page, limit, search }) => {
+        const params = new URLSearchParams();
+        params.append('lang', lang);
+        params.append('page', String(page));
+        params.append('limit', String(limit));
+        if (search) {
+          params.append('search', search);
+        }
+
+        return `${API_ENDPOINTS.ADMIN_HOA_LEADERS}?${params.toString()}`;
+      },
+      providesTags: ['AdminLeaders'],
+    }),
+
+    getAdminServiceProviders: builder.query<
+      AdminPaginatedResponse<AdminServiceProviderRow>,
+      { lang: Language; page: number; limit: number; search?: string }
+    >({
+      query: ({ lang, page, limit, search }) => {
+        const params = new URLSearchParams();
+        params.append('lang', lang);
+        params.append('page', String(page));
+        params.append('limit', String(limit));
+        if (search) {
+          params.append('search', search);
+        }
+
+        return `${API_ENDPOINTS.ADMIN_SERVICE_PROVIDERS}?${params.toString()}`;
+      },
+      providesTags: ['AdminServiceProviders', 'AdminTopProviders'],
+    }),
+
+    getAdminUnverifiedServiceProviders: builder.query<
+      AdminPaginatedResponse<AdminServiceProviderRow>,
+      { lang: Language; page: number; limit: number; search?: string }
+    >({
+      query: ({ lang, page, limit, search }) => {
+        const params = new URLSearchParams();
+        params.append('lang', lang);
+        params.append('page', String(page));
+        params.append('limit', String(limit));
+        if (search) {
+          params.append('search', search);
+        }
+
+        return `${API_ENDPOINTS.ADMIN_SERVICE_PROVIDERS_PENDING}?${params.toString()}`;
+      },
+      providesTags: ['AdminServiceProviders', 'AdminTopProviders'],
+    }),
+
+    updateAdminUserBlockStatus: builder.mutation<
+      AdminUpdateBlockStatusResponse,
+      { id: string; body: AdminUpdateBlockStatusRequest; lang: Language }
+    >({
+      query: ({ id, body, lang }) => ({
+        url: `${API_ENDPOINTS.ADMIN_USERS}/${id}/block${getLanguageParam(lang)}`,
+        method: 'PATCH',
+        body,
+        headers: getHeaders(),
+      }),
+      invalidatesTags: ['AdminHomeowners', 'AdminLeaders'],
+    }),
+
+    updateAdminServiceProviderBlockStatus: builder.mutation<
+      AdminUpdateServiceProviderBlockStatusResponse,
+      { id: string; body: AdminUpdateBlockStatusRequest; lang: Language }
+    >({
+      query: ({ id, body, lang }) => ({
+        url: `${API_ENDPOINTS.ADMIN_SERVICE_PROVIDERS}/${id}/block${getLanguageParam(
+          lang
+        )}`,
+        method: 'PATCH',
+        body,
+        headers: getHeaders(),
+      }),
+      invalidatesTags: [
+        'AdminServiceProviders',
+        'AdminTopProviders',
+        'AdminServiceProviderStats',
+        'AdminServiceProviderDetail',
+      ],
+    }),
+
+    updateAdminServiceProviderVerificationStatus: builder.mutation<
+      AdminUpdateVerificationStatusResponse,
+      { id: string; body: AdminUpdateVerificationStatusRequest; lang: Language }
+    >({
+      query: ({ id, body, lang }) => ({
+        url: `${API_ENDPOINTS.ADMIN_SERVICE_PROVIDERS}/${id}/verify${getLanguageParam(
+          lang
+        )}`,
+        method: 'PATCH',
+        body,
+        headers: getHeaders(),
+      }),
+      invalidatesTags: [
+        'AdminServiceProviders',
+        'AdminTopProviders',
+        'AdminServiceProviderStats',
+        'AdminServiceProviderDetail',
+      ],
+    }),
   }),
 });
 
@@ -413,4 +653,18 @@ export const {
   useInitiateChatMutation,
   useSubmitJobCompletionRequestMutation,
   useGetMyCompletionRequestsQuery,
+  useAdminLoginMutation,
+  useGetAdminSummaryQuery,
+  useGetAdminUserStatsQuery,
+  useGetAdminTopServiceProvidersQuery,
+  useGetAdminServiceProviderStatsQuery,
+  useGetAdminUserDetailQuery,
+  useGetAdminServiceProviderDetailQuery,
+  useGetAdminHomeownersQuery,
+  useGetAdminLeadersQuery,
+  useGetAdminServiceProvidersQuery,
+  useGetAdminUnverifiedServiceProvidersQuery,
+  useUpdateAdminUserBlockStatusMutation,
+  useUpdateAdminServiceProviderBlockStatusMutation,
+  useUpdateAdminServiceProviderVerificationStatusMutation,
 } = api;

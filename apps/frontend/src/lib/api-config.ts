@@ -53,6 +53,20 @@ export const API_ENDPOINTS = {
   CREATE_POLL: 'chat/poll',
   VOTE_POLL: 'chat/poll/vote',
   POLL_RESULTS: 'chat/poll',
+
+  // Admin
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_SUMMARY: '/admin/summary',
+  ADMIN_USER_STATS: '/admin/user-stats',
+  ADMIN_TOP_SERVICE_PROVIDERS: '/admin/service-providers/top',
+  ADMIN_HOMEOWNERS: '/admin/homeowners',
+  ADMIN_HOA_LEADERS: '/admin/hoa-leaders',
+  ADMIN_SERVICE_PROVIDERS: '/admin/service-providers',
+  ADMIN_SERVICE_PROVIDERS_PENDING: '/admin/service-providers/pending',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_SERVICE_PROVIDER_STATS: '/admin/service-providers/stats',
+  ADMIN_SERVICE_PROVIDER_DETAIL: '/admin/service-providers',
+  ADMIN_USER_DETAIL: '/admin/users',
 } as const;
 
 // Request Headers

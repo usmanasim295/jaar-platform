@@ -8,7 +8,7 @@ import {
   Path,
   RegisterOptions,
 } from 'react-hook-form';
-import { Currency, EyeOpenIcon } from '../assets/icons';
+import { Currency, EyeOpenIcon, SaudiRiyalSymbol } from '../assets/icons';
 import { EyeClosed } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
@@ -121,10 +121,12 @@ const InputField = <T extends FieldValues>({
           return (
             <div className="relative">
               {type === 'number' && (
-                <div className={`absolute top-9 lg:top-10 -translate-y-1/2 text-gray-500 ${
-                  isRTL ? 'right-4' : 'left-4'
-                }`}>
-                  <Currency />
+                <div
+                  className={`absolute top-9 lg:top-10 -translate-y-1/2 text-gray-500 w-3 h-3.5 ${
+                    isRTL ? 'right-4' : 'left-4'
+                  }`}
+                >
+                  <SaudiRiyalSymbol />
                 </div>
               )}
 
@@ -186,9 +188,11 @@ const InputField = <T extends FieldValues>({
       />
       {error && (
         <div className="relative text-[10px] text-red-500">
-          <span className={`absolute -bottom-3.5 ${
-            isRTL ? 'left-3' : 'right-3'
-          }`}>{error}</span>
+          <span
+            className={`absolute -bottom-3.5 ${isRTL ? 'left-3' : 'right-3'}`}
+          >
+            {error}
+          </span>
         </div>
       )}{' '}
     </div>

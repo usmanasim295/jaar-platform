@@ -524,3 +524,238 @@ export interface AuthState {
   isLoading: boolean;
   error: string | null;
 }
+
+// Admin Types
+export interface AdminInfo {
+  id: string;
+  email: string;
+  createdAt: string;
+}
+
+export interface AdminAuthState {
+  isAuthenticated: boolean;
+  admin: AdminInfo | null;
+  token: string | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface AdminLoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AdminLoginResponse {
+  access_token: string;
+  admin: AdminInfo;
+  message: string;
+}
+
+export interface AdminSummaryResponse {
+  totals: {
+    homeOwners: number;
+    leaders: number;
+    serviceProviders: number;
+  };
+  message: string;
+}
+
+export interface AdminUserStatsResponse {
+  filter: 'weekly' | 'monthly' | 'yearly';
+  homeOwners: number;
+  leaders: number;
+  total: number;
+  message: string;
+}
+
+export interface AdminServiceProviderRow {
+  id: string;
+  name: string;
+  email: string;
+  rating: number;
+  totalEarnings: number;
+  completedJobs: number;
+  status: string;
+  isBlocked: boolean;
+  isVerified: boolean;
+  createdDate: string;
+}
+
+export interface AdminTopServiceProvidersResponse {
+  providers: AdminServiceProviderRow[];
+  message: string;
+}
+
+export interface AdminServiceProviderStatsPoint {
+  date: string;
+  count: number;
+}
+
+export interface AdminServiceProviderStatsResponse {
+  filter: 'weekly' | 'monthly' | 'yearly';
+  total: number;
+  data: AdminServiceProviderStatsPoint[];
+  message: string;
+}
+
+export interface AdminUserDetailJob {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  createdAt: string;
+  services: { id: string; name: string }[];
+}
+
+export interface AdminUserOwnedProperty {
+  id: string;
+  houseNumber: string | null;
+  apartmentName: string;
+  city: string;
+  community: string;
+  createdAt: string;
+}
+
+export interface AdminUserManagedCommunity {
+  id: string;
+  name: string;
+  city: string;
+  community: string;
+  jobsCount: number;
+}
+
+export interface AdminUserDetailData {
+  id: string;
+  role: string;
+  nationalId: string;
+  status: string;
+  isBlocked: boolean;
+  createdAt: string;
+  documents: string[];
+  stats: {
+    totalJobs: number;
+    totalOngoingJobs: number;
+    totalCompletedJobs: number;
+  };
+  ownedHouses: AdminUserOwnedProperty[];
+  managedApartments: AdminUserManagedCommunity[];
+  createdJobs: AdminUserDetailJob[];
+}
+
+export interface AdminUserDetailResponse {
+  data: AdminUserDetailData;
+  message: string;
+}
+
+export interface AdminServiceProviderRecentCompletion {
+  id: string;
+  status: string;
+  submittedAt: string;
+  job: AdminUserDetailJob | null;
+}
+
+export interface AdminServiceProviderDetailData {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  bio: string;
+  email: string;
+  phoneNumber: string;
+  status: string;
+  isBlocked: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  rating: number;
+  totalJobs: number;
+  totalEarnings: number;
+  documents: {
+    government?: string | null;
+    bank?: string | null;
+    profilePicture?: string | null;
+  };
+  stats: {
+    totalJobs: number;
+    completedJobs: number;
+    pendingJobs: number;
+  };
+  services: { id: string; name: string }[];
+  serviceRates: {
+    id: string;
+    name: string;
+    rate: string;
+    description?: string | null;
+  }[];
+  locations: {
+    id: string;
+    city: string;
+    state?: string | null;
+    country: string;
+    isActive: boolean;
+  }[];
+  recentCompletions: AdminServiceProviderRecentCompletion[];
+}
+
+export interface AdminServiceProviderDetailResponse {
+  data: AdminServiceProviderDetailData;
+  message: string;
+}
+
+export interface AdminPaginatedMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdminPaginatedResponse<T> {
+  data: T[];
+  meta: AdminPaginatedMeta;
+  message: string;
+}
+
+export interface AdminHomeownerRow {
+  id: string;
+  name: string;
+  createdDate: string;
+  apartments: number;
+  status: string;
+  isBlocked: boolean;
+}
+
+export interface AdminLeaderRow {
+  id: string;
+  name: string;
+  createdDate: string;
+  apartments: number;
+  communityId: string | null;
+  status: string;
+  isBlocked: boolean;
+}
+
+export interface AdminUpdateBlockStatusRequest {
+  isBlocked: boolean;
+}
+
+export interface AdminUpdateBlockStatusResponse {
+  message: string;
+  user: {
+    id: string;
+    role: string;
+    isBlocked: boolean;
+  };
+}
+
+export interface AdminUpdateServiceProviderBlockStatusResponse {
+  message: string;
+  serviceProvider: AdminServiceProviderRow;
+}
+
+export interface AdminUpdateVerificationStatusRequest {
+  isVerified: boolean;
+}
+
+export interface AdminUpdateVerificationStatusResponse {
+  message: string;
+  serviceProvider: AdminServiceProviderRow;
+}

@@ -132,10 +132,14 @@ export default function Navbar() {
                       </p>
                       <div className="max-w-[150px]">
                         <p
-                          className="text-xs text-gray-500 truncate"
+                          className={`text-xs text-gray-500 truncate `}
+                          style={{
+                            direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
+                            unicodeBidi: 'plaintext',
+                          }}
                           title={user?.email}
                         >
-                          {user?.email}
+                          {user?.email}abc
                         </p>
                       </div>
                     </div>

@@ -45,6 +45,7 @@ export class AuthController {
     document: Express.Multer.File,
     @Query('lang') lang?: string,
   ) {
+    console.log('--------------------request hit----------------------');
     const language = this.languageService.validateLanguage(lang);
     const result = await this.authService.signup(signupDto, document, language);
 

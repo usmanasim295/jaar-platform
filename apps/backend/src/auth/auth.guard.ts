@@ -50,12 +50,55 @@ export class AuthGuard implements CanActivate {
         secret: jwtConstants.secret,
       });
 
+      // Check if this is an admin token
+      if (payload.adminId || payload.role === 'ADMIN') {
+        const adminId = payload.adminId || payload.id;
+        const admin = await this.prisma.admin.findUnique({
+          where: { id: adminId },
+        });
+
+        if (!admin || admin.isBlocked) {
+          throw new UnauthorizedException(
+            this.messageService.getErrorMessage('auth.account_blocked', 'en'),
+          );
+        }
+
+        request['user'] = {
+          ...payload,
+          id: admin.id,
+          role: 'ADMIN',
+          type: 'admin',
+        };
+
+        const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+          ROLES_KEY,
+          [context.getHandler(), context.getClass()],
+        );
+
+        if (requiredRoles && !requiredRoles.includes('ADMIN')) {
+          throw new ForbiddenException(
+            this.messageService.getErrorMessage(
+              'auth.access_denied_insufficient_role',
+              'en',
+            ),
+          );
+        }
+
+        return true;
+      }
+
       // Check if this is a service provider token
       if (payload.serviceProviderId) {
         const serviceProvider = await this.prisma.serviceProvider.findUnique({
           where: { id: payload.serviceProviderId },
         });
         if (!serviceProvider) throw new UnauthorizedException();
+
+        if (serviceProvider.isBlocked) {
+          throw new ForbiddenException(
+            this.messageService.getErrorMessage('auth.account_blocked', 'en'),
+          );
+        }
 
         request['user'] = {
           ...payload,
@@ -73,6 +116,12 @@ export class AuthGuard implements CanActivate {
       });
 
       if (!user) throw new UnauthorizedException();
+
+      if (user.isBlocked) {
+        throw new ForbiddenException(
+          this.messageService.getErrorMessage('auth.account_blocked', 'en'),
+        );
+      }
 
       //  Check for roles
       const requiredRoles = this.reflector.getAllAndOverride<string[]>(
