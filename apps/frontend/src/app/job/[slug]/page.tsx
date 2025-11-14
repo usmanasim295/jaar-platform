@@ -573,7 +573,8 @@ ${user?.name || t('Service Provider')}`
               className="lg:hidden w-full flex items-center justify-between py-3 border-t border-gray-200 hover:bg-gray-50 transition-colors rounded-b-lg"
             >
               <span className="font-semibold text-sm sm:text-base text-(--primary-black)">
-                {t('Location Details')}
+                {/* {t('Location Details')} */}
+                {t('Location')}
               </span>
               <svg
                 className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${
@@ -601,9 +602,9 @@ ${user?.name || t('Service Provider')}`
               }`}
             >
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="font-semibold text-base sm:text-lg text-(--primary-black) mb-3">
+                {/* <h3 className="font-semibold text-base sm:text-lg text-(--primary-black) mb-3">
                   {t('Location')}
-                </h3>
+                </h3> */}
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3629265.841639736!2d39.7831443!3d24.1307375!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15e7b33fe7952a41%3A0x5960504bc21ab69b!2sSaudi%20Arabia!5e0!3m2!1sen!2ssa!4v1690196107614"
                   height="120"

@@ -4,8 +4,10 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NavbarWrapper from './NavbarWrapper';
 import '../i18n'; // import i18n config
-import ReduxProvider from '@/store/ReduxProvider';
+import { headers } from 'next/headers';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { AdminAuthProvider } from '@/contexts/AdminAuthContext';
+import ReduxProvider from '@/store/ReduxProvider';
 import ToastWrapper from '@/components/ToastWrapper';
 import { CONFIG } from '../lib/config';
 
@@ -27,22 +29,27 @@ export const metadata: Metadata = {
   icons: '/assets/icons/SiteLogo.svg',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const pathname = headersList.get('x-invoke-path') || '';
+  const isAdminRoute = pathname.startsWith('/admin');
+
   return (
     <html lang={defaultLang} dir={defaultLang === 'ar' ? 'rtl' : 'ltr'}>
-      
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReduxProvider>
           <AuthProvider>
-            <NavbarWrapper />
-            {children}
-            <ToastWrapper />
+            <AdminAuthProvider>
+              {!isAdminRoute && <NavbarWrapper />}
+              {children}
+              <ToastWrapper />
+            </AdminAuthProvider>
           </AuthProvider>
         </ReduxProvider>
       </body>

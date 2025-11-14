@@ -15,6 +15,22 @@ export class MessageService {
       en: 'Invalid credentials',
       ar: 'بيانات اعتماد غير صحيحة',
     },
+    'auth.account_blocked': {
+      en: 'Account is blocked. Please contact support.',
+      ar: 'الحساب محظور. يرجى التواصل مع الدعم.',
+    },
+    'admin.email_exists': {
+      en: 'Admin with this email already exists',
+      ar: 'هناك مسؤول بهذا البريد الإلكتروني بالفعل',
+    },
+    'admin.invalid_credentials': {
+      en: 'Invalid admin credentials',
+      ar: 'بيانات اعتماد المسؤول غير صحيحة',
+    },
+    'admin.not_found': {
+      en: 'Admin not found',
+      ar: 'المسؤول غير موجود',
+    },
     'auth.user_not_found': {
       en: 'User not found',
       ar: 'المستخدم غير موجود',
@@ -194,6 +210,10 @@ export class MessageService {
     'service_provider.account_not_active': {
       en: 'Account is not active. Please complete your registration.',
       ar: 'الحساب غير نشط. يرجى إكمال التسجيل.',
+    },
+    'service_provider.verification_pending': {
+      en: 'Your verification request is pending. Please wait for admin approval.',
+      ar: 'طلب التحقق الخاص بك قيد الانتظار. يرجى انتظار موافقة المسؤول.',
     },
 
     // Chat Errors
@@ -597,6 +617,22 @@ export class MessageService {
     'service_provider.login_success': {
       en: 'Login successful',
       ar: 'تم تسجيل الدخول بنجاح',
+    },
+    'admin.register_success': {
+      en: 'Admin registered successfully',
+      ar: 'تم تسجيل المسؤول بنجاح',
+    },
+    'admin.login_success': {
+      en: 'Admin login successful',
+      ar: 'تم تسجيل دخول المسؤول بنجاح',
+    },
+    'admin.block_status_updated': {
+      en: 'Status updated successfully',
+      ar: 'تم تحديث الحالة بنجاح',
+    },
+    'admin.verification_status_updated': {
+      en: 'Verification status updated successfully',
+      ar: 'تم تحديث حالة التحقق بنجاح',
     },
 
     // Chat Success

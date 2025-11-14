@@ -12,6 +12,7 @@ import { ServiceProviderModule } from './service-provider/service-provider.modul
 import { ApartmentModule } from './apartment/apartment.module';
 import { ChatModule } from './chat/chat.module';
 import { NafathAppModule } from './nafath-app/nafath-app.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NafathAppModule } from './nafath-app/nafath-app.module';
     ApartmentModule,
     ChatModule,
     NafathAppModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

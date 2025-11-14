@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { S3Service } from 'src/common/services/s3.service';
@@ -429,6 +430,12 @@ export class ServiceProviderService {
       );
     }
 
+    if (serviceProvider.isBlocked) {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage('auth.account_blocked', language),
+      );
+    }
+
     // Validate password
     const isPasswordValid = await bcrypt.compare(
       dto.password,
@@ -438,6 +445,15 @@ export class ServiceProviderService {
       throw new UnauthorizedException(
         this.messageService.getErrorMessage(
           'service_provider.invalid_credentials',
+          language,
+        ),
+      );
+    }
+
+    if (!serviceProvider.isVerified) {
+      throw new UnauthorizedException(
+        this.messageService.getErrorMessage(
+          'service_provider.verification_pending',
           language,
         ),
       );
