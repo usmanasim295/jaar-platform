@@ -338,6 +338,8 @@
   "COMPLETED": "Completed",
   "CANCELLED": "Cancelled",
   "POSTED BY LEADER": "Posted by Leader",
+  "POSTED_BY_LEADER": "Posted by Leader",
+  "SENT_TO_LEADER": "Sent to Leader",
   "PENDING": "Pending",
   "ACCEPTED": "Accepted",
   "REJECTED": "Rejected",
@@ -499,5 +501,8 @@
   "Service provider unverified successfully": "Service provider unverified successfully",
   "Review and verify service provider registration requests": "Review and verify service provider registration requests",
   "Verification Status": "Verification Status",
-  "Community ID": "Community ID"
+  "Community ID": "Community ID",
+  "Service Rates": "Service Rates",
+  "Jobs Completed": "Jobs Completed",
+  "Role": "Role"
 }
