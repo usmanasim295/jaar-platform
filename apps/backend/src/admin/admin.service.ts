@@ -310,8 +310,11 @@ export class AdminService {
 
     // Calculate stats from created jobs only
     const totalJobs = allCreatedJobs.length;
+    // const totalOngoingJobs = allCreatedJobs.filter(
+    //   (job) => job.status === 'OPEN' || job.status === 'IN_PROGRESS',
+    // ).length;
     const totalOngoingJobs = allCreatedJobs.filter(
-      (job) => job.status === 'OPEN' || job.status === 'IN_PROGRESS',
+      (job) => job.status === 'IN_PROGRESS',
     ).length;
     const totalCompletedJobs = allCreatedJobs.filter(
       (job) => job.status === 'COMPLETED',

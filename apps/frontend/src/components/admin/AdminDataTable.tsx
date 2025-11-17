@@ -167,8 +167,8 @@ export function AdminDataTable<T extends AdminDataRow>({
 
         <form
           onSubmit={handleSearchSubmit}
-          className={`flex w-full flex-col gap-3 sm:flex-row sm:items-center ${
-            isRTL ? 'sm:justify-start' : 'sm:justify-end'
+          className={`flex w-full flex-col gap-3 sm:flex-row  ${
+            isRTL ? 'sm:justify-end' : 'sm:justify-end'
           }`}
         >
           <div className="relative w-full sm:max-w-xs">

@@ -272,7 +272,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="mt-6">
-              <div className="rounded-2xl border border-slate-100 bg-white p-3 sm:p-6">
+              <div className="rounded-2xl border border-slate-100 bg-white">
                 <div className="h-[280px] w-full">
                   {chartData.length === 0 ? (
                     <div className="flex h-full items-center justify-center text-sm text-slate-500">
@@ -415,7 +415,9 @@ export default function AdminDashboardPage() {
           <div className="mt-6 overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-sm">
               <thead className="text-left text-xs uppercase tracking-wide text-slate-400">
-                <tr>
+                <tr
+                  className={`${currentLang === 'ar' ? 'text-right' : 'text-left'}`}
+                >
                   <th className="px-4 py-3 font-semibold">
                     {t('Service Provider')}
                   </th>

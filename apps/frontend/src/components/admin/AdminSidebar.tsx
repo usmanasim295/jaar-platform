@@ -65,9 +65,7 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
       }`}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div
-        className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}
-      >
+      <div className={`flex items-center justify-between `}>
         {/* <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0E7490] font-semibold text-white shadow-md">
             J
@@ -104,7 +102,7 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
             key={link.id}
             href={link.href}
             className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-              isRTL ? 'flex-row-reverse text-right' : 'text-left'
+              isRTL ? ' text-right' : 'text-left'
             } ${
               pathname === link.href || pathname?.startsWith(`${link.href}/`)
                 ? 'bg-[#0E7490] text-white shadow-md'
