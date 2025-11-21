@@ -43,10 +43,6 @@ export function AdminNavbar({
           >
             <Menu className="h-5 w-5" />
           </button>
-          {/* <div>
-            <h1 className="font-anevir text-2xl text-slate-800">{title}</h1>
-            {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
-          </div> */}
         </div>
 
         <div className="flex items-center gap-3">

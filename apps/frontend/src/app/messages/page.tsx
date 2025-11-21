@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Menu, Wifi, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,17 +8,24 @@ import { ChatList } from '@/components/chat/ChatList';
 import { ChatMessages } from '@/components/chat/ChatMessages';
 import { Chat } from '@/components/modals/type';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { set } from 'react-hook-form';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 function ChatUIContent() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [isRTL, setIsRTL] = useState(false);
   const { user, isAuthenticated, isLoading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+
+ // Handle RTL detection
+  React.useEffect(() => {
+    setIsRTL(i18n.language === 'ar');
+  }, [i18n.language]);
 
   // Chat functionality - ALL HOOKS MUST BE CALLED AT THE TOP LEVEL
   const {
@@ -63,9 +70,6 @@ function ChatUIContent() {
         <div className="flex items-center justify-center h-48 sm:h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-orange-500 mx-auto mb-3 sm:mb-4"></div>
-            {/* <p className="text-sm sm:text-base text-gray-600">
-              {t('Loading...')}
-            </p> */}
           </div>
         </div>
       </div>
@@ -159,21 +163,6 @@ function ChatUIContent() {
             {t('Messages')}
           </h2>
         </div>
-
-        {/* Connection Status */}
-        {/* <div className="flex items-center gap-2">
-          {isConnected ? (
-            <div className="flex items-center gap-1 text-green-600">
-              <Wifi className="w-4 h-4" />
-              <span className="text-sm">Connected</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 text-red-600">
-              <WifiOff className="w-4 h-4" />
-              <span className="text-sm">Disconnected</span>
-            </div>
-          )}
-        </div> */}
       </div>
 
       <div className="shadow-dark rounded-xl flex flex-col lg:flex-row mt-4 sm:mt-6 h-[calc(100vh-200px)] sm:h-[calc(100vh-180px)] lg:h-[75vh] overflow-hidden">
@@ -187,9 +176,17 @@ function ChatUIContent() {
 
         {/* Sidebar */}
         <div
-          className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}
+        className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${isRTL ? 'right-0' : 'left-0'}  ${
+        sidebarOpen
+          ? 'translate-x-0'
+          : isRTL
+            ? 'translate-x-full lg:translate-x-0'
+            : '-translate-x-full lg:translate-x-0'
+      }`}
+      dir={isRTL ? 'rtl' : 'ltr'}
+          // className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${
+          //   sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          // }`}
         >
           <ChatList
             chats={chats}
@@ -204,7 +201,7 @@ function ChatUIContent() {
 
         {/* Main Chat Area */}
         <div className="w-full lg:w-[75%] flex flex-col bg-white h-full">
-          {/* Chat Header - Fixed on mobile */}
+          {/* Chat Header */}
           {selectedChat && (
             <div className="flex items-center gap-2 sm:gap-3 border-b border-[#E6E6E6] px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex-shrink-0">
               <img

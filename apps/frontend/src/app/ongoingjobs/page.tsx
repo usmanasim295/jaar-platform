@@ -109,7 +109,6 @@ export default function OngoingJobsPage() {
         : errorFiltered;
 
   // Determine loading state based on active tab
-  // Use isLoading (not isFetching) to only show skeleton on initial load, not refetch
   const isLoading =
     activeTab === 'all'
       ? isLoadingAll

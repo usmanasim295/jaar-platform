@@ -160,9 +160,6 @@ export function AdminDataTable<T extends AdminDataRow>({
       <div className="flex flex-col gap-4 border-b border-slate-100 pb-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="w-full">
           <h2 className="text-xl font-anevir text-slate-800 w-full">{title}</h2>
-          {/* {description && (
-            <p className="mt-1 text-sm text-slate-500">{description}</p>
-          )} */}
         </div>
 
         <form
@@ -393,11 +390,7 @@ export function AdminDataTable<T extends AdminDataRow>({
               className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={currentPage === 1}
             >
-              {/* {isRTL ? ( */}
-              {/* <ChevronRight className="h-4 w-4" /> */}
-              {/* ) : ( */}
               <ChevronLeft className="h-4 w-4" />
-              {/* )} */}
             </button>
             {pageNumbers.map(page => (
               <button
@@ -419,11 +412,7 @@ export function AdminDataTable<T extends AdminDataRow>({
               className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={currentPage === totalPages}
             >
-              {/* {isRTL ? ( */}
-              {/* <ChevronLeft className="h-4 w-4" /> */}
-              {/* ) : ( */}
               <ChevronRight className="h-4 w-4" />
-              {/* )} */}
             </button>
           </div>
           <p

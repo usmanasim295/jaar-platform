@@ -361,16 +361,6 @@ export default function MyBids() {
                       )}
                     </div>
                   </div>
-
-                  {/* Cover Letter Preview */}
-                  {/* <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                      {t('Cover Letter')}
-                    </h4>
-                    <p className="text-sm text-gray-600 line-clamp-3">
-                      {bid.coverLetter}
-                    </p>
-                  </div> */}
                 </div>
               ))}
             </div>

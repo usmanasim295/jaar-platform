@@ -11,11 +11,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { api, useAdminLoginMutation } from '@/store/api';
-import type {
-  AdminAuthState,
-  AdminInfo,
-  Language,
-} from '@/types/api';
+import type { AdminAuthState, AdminInfo, Language } from '@/types/api';
 import i18n from '@/i18n';
 
 interface AdminAuthContextType extends AdminAuthState {
@@ -26,7 +22,7 @@ interface AdminAuthContextType extends AdminAuthState {
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
-  undefined,
+  undefined
 );
 
 interface AdminAuthProviderProps {
@@ -80,7 +76,7 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
   const login = async (
     email: string,
     password: string,
-    lang: Language = (i18n.language as Language) || 'en',
+    lang: Language = (i18n.language as Language) || 'en'
   ) => {
     setIsLoggingIn(true);
     setState(prev => ({ ...prev, error: null }));
@@ -149,7 +145,7 @@ export const AdminAuthProvider = ({ children }: AdminAuthProviderProps) => {
       clearError,
       isLoggingIn,
     }),
-    [state, isLoggingIn],
+    [state, isLoggingIn]
   );
 
   return (
@@ -166,4 +162,3 @@ export const useAdminAuth = () => {
   }
   return context;
 };
-

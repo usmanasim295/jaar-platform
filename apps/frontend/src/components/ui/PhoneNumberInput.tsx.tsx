@@ -65,14 +65,18 @@ const PhoneNumberInput = <T extends FieldValues>({
               return value.replace('+966', '').trim();
             }
             // Remove any existing country code
-            return value.replace(/^\+\d{1,3}\s*/, '').replace(/^0+/, '').trim();
+            return value
+              .replace(/^\+\d{1,3}\s*/, '')
+              .replace(/^0+/, '')
+              .trim();
           };
 
           // Format phone number for display (e.g., "12 345 678")
           const formatPhoneDisplay = (phone: string) => {
             const cleaned = phone.replace(/\D/g, '');
             if (cleaned.length <= 2) return cleaned;
-            if (cleaned.length <= 5) return `${cleaned.slice(0, 2)} ${cleaned.slice(2)}`;
+            if (cleaned.length <= 5)
+              return `${cleaned.slice(0, 2)} ${cleaned.slice(2)}`;
             return `${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5)}`;
           };
 
@@ -83,7 +87,9 @@ const PhoneNumberInput = <T extends FieldValues>({
             return '+966' + cleaned;
           };
 
-          const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const handleInputChange = (
+            e: React.ChangeEvent<HTMLInputElement>
+          ) => {
             const inputValue = e.target.value;
             const phoneNumber = inputValue.replace(/\D/g, ''); // Remove non-digits
             const formatted = formatFullValue(phoneNumber);
@@ -97,9 +103,11 @@ const PhoneNumberInput = <T extends FieldValues>({
 
           return (
             <div className="relative">
-              <div 
+              <div
                 className={`relative flex items-center border-2 rounded-[10px] ${
-                  error ? 'border-red-500 ring-red-200' : 'border-(--light-grey)'
+                  error
+                    ? 'border-red-500 ring-red-200'
+                    : 'border-(--light-grey)'
                 } ${inputClassName}`}
                 style={{ direction: 'ltr' }} // Always LTR for phone input container
               >
@@ -132,11 +140,7 @@ const PhoneNumberInput = <T extends FieldValues>({
                   htmlFor={name}
                   className={`absolute z-0 top-1 text-(--gray-2) text-sm transition-all ${
                     isRTL ? 'right-4' : 'left-4'
-                  } ${
-                    
-                    'top-1 text-xs text-(--grey-text)'
-                    
-                  }`}
+                  } ${'top-1 text-xs text-(--grey-text)'}`}
                   style={{ direction: isRTL ? 'rtl' : 'ltr' }}
                 >
                   {placeholder}
@@ -148,9 +152,11 @@ const PhoneNumberInput = <T extends FieldValues>({
       />
       {error && (
         <div className="relative text-[10px] text-red-500">
-          <span className={`absolute -bottom-3.5 ${
-            isRTL ? 'left-3' : 'right-3'
-          }`}>{error}</span>
+          <span
+            className={`absolute -bottom-3.5 ${isRTL ? 'left-3' : 'right-3'}`}
+          >
+            {error}
+          </span>
         </div>
       )}{' '}
     </div>

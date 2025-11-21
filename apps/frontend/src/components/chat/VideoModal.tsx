@@ -113,11 +113,6 @@ export const VideoModal: React.FC<VideoModalProps> = ({
             Your browser does not support the video tag.
           </video>
         </div>
-
-        {/* Video Info */}
-        {/* <div className="absolute bottom-4 left-4 z-10 bg-black bg-opacity-50 rounded-lg px-3 py-2 w-full">
-          <p className="text-white text-sm truncate">{fileName}</p>
-        </div> */}
       </div>
     </div>
   );

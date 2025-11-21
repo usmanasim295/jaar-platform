@@ -893,9 +893,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     const waitForMedia = async () => {
       const c = container();
       if (!c) return;
-      const media = Array.from(
-        c.querySelectorAll('img, video')
-      ) as (HTMLImageElement | HTMLVideoElement)[];
+      const media = Array.from(c.querySelectorAll('img, video')) as (
+        | HTMLImageElement
+        | HTMLVideoElement
+      )[];
       if (media.length === 0) return;
 
       return new Promise<void>(resolve => {

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useForm } from "react-hook-form";
-import Button from "../ui/Button";
-import InputField from "../ui/InputField";
-import PhoneNumberInput from "../ui/PhoneNumberInput.tsx";
-import { useRouter } from "next/navigation";
-import { useTranslation } from "react-i18next";
-import { useSignUpMutation } from "@/store/api";
-import type { Language } from "@/types/api";
-import i18n from "@/i18n";
-import { useEffect } from "react";
-import Link from "next/link";
+import { useForm } from 'react-hook-form';
+import Button from '../ui/Button';
+import InputField from '../ui/InputField';
+import PhoneNumberInput from '../ui/PhoneNumberInput.tsx';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import { useSignUpMutation } from '@/store/api';
+import type { Language } from '@/types/api';
+import i18n from '@/i18n';
+import { useEffect } from 'react';
+import Link from 'next/link';
 
 type SignupFormDataa = {
   name: string;
@@ -43,28 +43,24 @@ const SignupForm = () => {
         lang: i18n.language as Language,
       }).unwrap();
 
-      console.log("User Registered:", res);
-      
       // Store service provider data for profile setup
-      localStorage.setItem("serviceProviderId", res.serviceProvider?.id);
-      localStorage.setItem("name", JSON.stringify(res.serviceProvider?.name));
-      
+      localStorage.setItem('serviceProviderId', res.serviceProvider?.id);
+      localStorage.setItem('name', JSON.stringify(res.serviceProvider?.name));
+
       // Clear any existing auth data to ensure fresh signup flow
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+
       // Redirect to profile setup
-      router.push("/profile-setup");
-    } catch (err: any) {
-      console.error("Signup failed:", err?.data || err);
-    }
+      router.push('/profile-setup');
+    } catch (err: any) {}
   };
 
-  const password = watch("password");
+  const password = watch('password');
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (token) {
-      router.push("/");
+      router.push('/');
     }
   }, []);
   return (
@@ -78,15 +74,15 @@ const SignupForm = () => {
           name="name"
           control={control}
           type="text"
-          placeholder={t("Name")}
+          placeholder={t('Name')}
           inputClassName="h-[60px]"
           placeholderAnimate
-          rules={{ required: t("Name is required") }}
-          onInput={(e) => {
+          rules={{ required: t('Name is required') }}
+          onInput={e => {
             // Allow both English and Arabic letters, plus spaces
             e.currentTarget.value = e.currentTarget.value.replace(
               /[^A-Za-z\u0600-\u06FF\s]/g,
-              "",
+              ''
             );
           }}
           error={errors.name?.message}
@@ -96,22 +92,22 @@ const SignupForm = () => {
           name="email"
           control={control}
           type="email"
-          placeholder={t("Email")}
+          placeholder={t('Email')}
           inputClassName="h-[60px]"
           placeholderAnimate
           rules={{
-            required: t("Email is required"),
+            required: t('Email is required'),
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: t("Enter a valid email address"),
+              message: t('Enter a valid email address'),
             },
             minLength: {
               value: 5,
-              message: t("Email must be at least 5 characters"),
+              message: t('Email must be at least 5 characters'),
             },
             maxLength: {
               value: 50,
-              message: t("Email must not exceed 50 characters"),
+              message: t('Email must not exceed 50 characters'),
             },
           }}
           error={errors.email?.message}
@@ -120,12 +116,14 @@ const SignupForm = () => {
         <PhoneNumberInput
           name="phoneNumber"
           control={control}
-          placeholder={t("Phone Number")}
+          placeholder={t('Phone Number')}
           inputClassName="h-[60px]"
           rules={{
-            required: t("Phone number is required"),
-            validate: (value) =>
-              value && value.length > 8 ? true : t("Enter a valid phone number"),
+            required: t('Phone number is required'),
+            validate: value =>
+              value && value.length > 8
+                ? true
+                : t('Enter a valid phone number'),
           }}
           error={errors.phoneNumber?.message}
         />
@@ -134,16 +132,18 @@ const SignupForm = () => {
           name="password"
           control={control}
           type="password"
-          placeholder={t("Password")}
+          placeholder={t('Password')}
           inputClassName="h-[60px]"
           placeholderAnimate
           rules={{
-            required: t("Password is required"),
+            required: t('Password is required'),
             pattern: {
               value:
                 /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{6,}$/,
               message: t(
-                t("Use 6+ characters with uppercase, number, and special symbol"),
+                t(
+                  'Use 6+ characters with uppercase, number, and special symbol'
+                )
               ),
             },
           }}
@@ -154,13 +154,13 @@ const SignupForm = () => {
           name="confirmPassword"
           control={control}
           type="password"
-          placeholder={t("Confirm Password")}
+          placeholder={t('Confirm Password')}
           inputClassName="h-[60px]"
           placeholderAnimate
           rules={{
-            required: t("Confirm your password"),
-            validate: (value) =>
-              value === password || t("Password does not match"),
+            required: t('Confirm your password'),
+            validate: value =>
+              value === password || t('Password does not match'),
           }}
           error={errors.confirmPassword?.message}
         />
@@ -173,34 +173,26 @@ const SignupForm = () => {
           {isLoading ? (
             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white" />
           ) : (
-            t("Sign Up")
+            t('Sign Up')
           )}
         </Button>
 
         {error && (
           <p className="text-red-500 text-sm">
-            {'data' in error && error.data && typeof error.data === 'object' && 'message' in error.data ? 
-             (error.data as any).message : 
-             'message' in error ? (error as any).message :
-             t("Something went wrong please try again")}
+            {'data' in error &&
+            error.data &&
+            typeof error.data === 'object' &&
+            'message' in error.data
+              ? (error.data as any).message
+              : 'message' in error
+                ? (error as any).message
+                : t('Something went wrong please try again')}
           </p>
         )}
 
-        {/* <div className="text-center mt-1">
-          <p className="text-sm text-gray-600 font-jakarta">
-            {t("Already have an account?")}{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/signin")}
-              className="text-[#2d6a87] font-medium"
-            >
-              {t("Sign in")}
-            </button>
-          </p>
-        </div> */}
         <div className=" text-center">
           <p className="text-sm text-gray-600 font-jakarta">
-            {t("Already have an account?")}{' '}
+            {t('Already have an account?')}{' '}
             <Link href="/signin" className="text-[#2d6a87] font-medium">
               {t('Sign in')}
             </Link>
