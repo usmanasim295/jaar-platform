@@ -65,7 +65,8 @@ export function AdminNavbar({
                 }`}
                 disabled={currentLang === 'en'}
               >
-                {t('English')}
+                {/* {t('English')} */}
+                English
               </button>
               <button
                 onClick={() => currentLang !== 'ar' && onLanguageToggle('ar')}

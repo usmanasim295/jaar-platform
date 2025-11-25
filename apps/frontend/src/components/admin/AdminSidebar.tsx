@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, Home, LayoutDashboard, Users } from 'lucide-react';
+import { Building2, Home, LayoutDashboard, User, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
@@ -35,7 +35,7 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
       {
         id: 'homeowners',
         label: t('Homeowners'),
-        icon: <Home className="h-4 w-4" />,
+        icon: <Users className="h-4 w-4" />,
         href: '/admin/homeowners',
       },
       {
@@ -47,7 +47,7 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
       {
         id: 'service-providers',
         label: t('Service Providers'),
-        icon: <Users className="h-4 w-4" />,
+        icon: <User className="h-4 w-4" />,
         href: '/admin/service-providers',
       },
     ],

@@ -118,7 +118,7 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                   className="w-full sm:w-auto"
                 >
                   <Button className="!h-[40px] sm:!h-[35px] typo-small rounded-md !p-[10px] font-medium w-full sm:w-auto">
-                    {t('Bid On this Job')}
+                    {t('Bid on this Job')}
                   </Button>
                 </Link>
               )}

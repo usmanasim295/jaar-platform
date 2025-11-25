@@ -143,6 +143,21 @@ const InputField = <T extends FieldValues>({
                   field.onChange(value);
                   onChange?.(value);
                 }}
+                onKeyDown={e => {
+                  // Prevent + and - keys for number inputs
+                  if (type === 'number' && (e.key === '+' || e.key === '-')) {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={e => {
+                  // Prevent pasting content containing + or - characters for number inputs
+                  if (type === 'number') {
+                    const pastedText = e.clipboardData.getData('text');
+                    if (pastedText.includes('+') || pastedText.includes('-')) {
+                      e.preventDefault();
+                    }
+                  }
+                }}
                 onInput={onInput}
                 onBlur={field.onBlur}
                 dir={isRTL ? 'rtl' : 'ltr'}

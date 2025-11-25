@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Menu, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from './Button';
+import { useGetProfileQuery } from '@/store/api';
 
 export default function Navbar() {
   const { t, i18n } = useTranslation();
@@ -18,6 +19,20 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data: profileData,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useGetProfileQuery(
+    isAuthenticated && user
+      ? { serviceProviderId: user.id, lang: i18n.language as 'en' | 'ar' }
+      : { serviceProviderId: '', lang: 'en' as 'en' | 'ar' },
+    {
+      skip: !isAuthenticated || !user,
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const navItems = [
     { label: 'Find Jobs', path: '/' },
@@ -30,6 +45,12 @@ export default function Navbar() {
     logout();
     setShowUserMenu(false);
   };
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      refetchProfile();
+    }
+  }, [isAuthenticated, user?.id, refetchProfile]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -109,16 +130,21 @@ export default function Navbar() {
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                    {user?.name ? (
-                      <span className="text-sm font-semibold text-gray-700 capitalize">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
+                    {user?.name && profileData ? (
+                      // <span className="text-sm font-semibold text-gray-700 capitalize">
+                      //   {user.name.charAt(0).toUpperCase()}
+                      // </span>
+                      <img
+                        src={profileData.profilePictureUrl || ''}
+                        alt="Profile"
+                        className="w-full h-full rounded-full object-cover"
+                      />
                     ) : (
                       <User className="w-4 h-4 text-gray-600" />
                     )}
                   </div>
                   <span className="hidden md:block text-sm font-medium text-gray-700">
-                    {user?.name || 'User'}
+                    {profileData?.name || user?.name || 'User'}
                   </span>
                 </button>
 

@@ -90,16 +90,16 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
     if (images.length === 3) {
       return (
         <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden max-h-48">
-          <div className="relative">
+          <div className="relative h-48">
             <img
               src={images[0].src}
               alt={images[0].alt}
-              className="w-full h-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => handleImageClick(0)}
             />
           </div>
-          <div className="grid grid-rows-2 gap-1">
-            <div className="relative">
+          <div className="grid grid-rows-2 gap-1 h-48">
+            <div className="relative h-full">
               <img
                 src={images[1].src}
                 alt={images[1].alt}
@@ -107,7 +107,7 @@ const ImageCollage: React.FC<ImageCollageProps> = ({
                 onClick={() => handleImageClick(1)}
               />
             </div>
-            <div className="relative">
+            <div className="relative h-full">
               <img
                 src={images[2].src}
                 alt={images[2].alt}

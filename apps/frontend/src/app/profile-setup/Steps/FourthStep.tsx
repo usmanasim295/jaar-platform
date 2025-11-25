@@ -125,6 +125,17 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
                 onChange={e =>
                   handleRateChange(rateObj.serviceName, e.target.value)
                 }
+                onKeyDown={e => {
+                  if (e.key === '+' || e.key === '-') {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={e => {
+                  const pastedText = e.clipboardData.getData('text');
+                  if (pastedText.includes('+') || pastedText.includes('-')) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
           </div>

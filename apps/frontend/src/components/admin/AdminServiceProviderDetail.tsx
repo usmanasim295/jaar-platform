@@ -1,9 +1,10 @@
 'use client';
 
 import { skipToken } from '@reduxjs/toolkit/query';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { AdminPageLayout } from '@/components/admin/AdminPageLayout';
@@ -35,6 +36,7 @@ export function AdminServiceProviderDetailView() {
   const { t } = useTranslation();
   const currentLang = (i18n.language as Language) || 'en';
   const providerId = params?.id;
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const queryArgs = providerId
     ? { id: providerId, lang: currentLang }
@@ -110,6 +112,22 @@ export function AdminServiceProviderDetailView() {
                   <h2 className="font-anevir text-lg text-slate-800">
                     {t('Personal Information')}
                   </h2>
+                  {detail.documents.profilePicture && (
+                    <div className="mt-4 flex justify-center">
+                      <button
+                        onClick={() => setIsImageModalOpen(true)}
+                        className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-slate-100 transition-transform hover:scale-105 cursor-pointer"
+                      >
+                        <Image
+                          src={detail.documents.profilePicture}
+                          alt={detail.name || t('Profile Picture')}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </button>
+                    </div>
+                  )}
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs uppercase tracking-wide text-slate-400">
@@ -195,17 +213,6 @@ export function AdminServiceProviderDetailView() {
                               className="hover:underline"
                             >
                               {t('View Document')} · {t('Bank Document')}
-                            </Link>
-                          </li>
-                        )}
-                        {detail.documents.profilePicture && (
-                          <li>
-                            <Link
-                              href={detail.documents.profilePicture}
-                              target="_blank"
-                              className="hover:underline"
-                            >
-                              {t('View Document')} · {t('Profile Picture')}
                             </Link>
                           </li>
                         )}
@@ -383,6 +390,47 @@ export function AdminServiceProviderDetailView() {
                 )}
               </div>
             </section>
+          </div>
+        )}
+
+        {/* Image Modal */}
+        {isImageModalOpen && detail?.documents.profilePicture && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setIsImageModalOpen(false)}
+          >
+            <div className="relative max-h-[90vh] max-w-[90vw]">
+              <button
+                onClick={() => setIsImageModalOpen(false)}
+                className="absolute -right-2 -top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-700 transition-colors hover:bg-white hover:text-slate-900 shadow-lg"
+                aria-label={t('Close')}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+              <div
+                className="relative max-h-[90vh] max-w-[90vw]"
+                onClick={e => e.stopPropagation()}
+              >
+                <img
+                  src={detail.documents.profilePicture}
+                  alt={detail.name || t('Profile Picture')}
+                  className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
+                />
+              </div>
+            </div>
           </div>
         )}
       </AdminPageLayout>
