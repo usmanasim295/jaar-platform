@@ -63,14 +63,12 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
           lang: i18n.language as Language,
         }).unwrap();
 
-        console.log('Step 2 upload success:', res);
         setData('second', { document: selectedFile.name });
         setFileName(selectedFile.name);
         setValidationError(null); // Clear any previous validation errors
         toast.success(t('Document uploaded successfully!'));
         return true;
       } catch (err: any) {
-        console.error('Step 2 upload failed:', err);
         const errorMessage =
           err?.data?.message ||
           err?.message ||

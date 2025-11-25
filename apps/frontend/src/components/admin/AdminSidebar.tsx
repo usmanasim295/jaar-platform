@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, Home, LayoutDashboard, Users } from 'lucide-react';
+import { Building2, Home, LayoutDashboard, User, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
@@ -35,7 +35,7 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
       {
         id: 'homeowners',
         label: t('Homeowners'),
-        icon: <Home className="h-4 w-4" />,
+        icon: <Users className="h-4 w-4" />,
         href: '/admin/homeowners',
       },
       {
@@ -47,7 +47,7 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
       {
         id: 'service-providers',
         label: t('Service Providers'),
-        icon: <Users className="h-4 w-4" />,
+        icon: <User className="h-4 w-4" />,
         href: '/admin/service-providers',
       },
     ],
@@ -66,17 +66,6 @@ export function AdminSidebar({ isOpen, isRTL, onClose }: AdminSidebarProps) {
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className={`flex items-center justify-between `}>
-        {/* <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0E7490] font-semibold text-white shadow-md">
-            J
-          </div>
-          <div>
-            <p className="font-anevir text-xl text-[#0E1629]">JAR</p>
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
-              {t('Admin Panel')}
-            </p>
-          </div>
-        </div> */}
         <div className="flex items-center justify-center w-full">
           <Image
             src="/assets/icons/SiteLogo.svg"

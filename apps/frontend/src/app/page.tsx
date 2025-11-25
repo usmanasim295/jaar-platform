@@ -215,16 +215,6 @@ export default function Home() {
                 className="flex-shrink-0 bg-(--white) p-4 mt-2.5 mr-2.5 rounded-xl shadow-dark cursor-pointer min-w-[280px] hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-center gap-3 h-12">
-                  {/* <div className="w-12 h-12 rounded-full bg-(--primary) flex items-center justify-center">
-                    {(() => {
-                      // if (isProfileLoading) {
-                      //   return <CleaningIcon className="w-6 h-6 text-white" />;
-                      // }
-                      const firstService = profileData?.services?.[0]?.service?.name;
-                      const IconComponent = firstService ? serviceIconMap[firstService] : CleaningIcon;
-                      return <IconComponent className="w-6 h-6 text-white" />;
-                    })()}
-                  </div> */}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm text-(--primary-black)">
                       {t('Services')}

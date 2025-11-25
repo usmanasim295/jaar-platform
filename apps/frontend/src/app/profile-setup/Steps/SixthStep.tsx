@@ -91,8 +91,6 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
             : 'Bio is required. Please add a short bio about yourself.';
       }
 
-      console.log('Current language:', i18n.language);
-      console.log('Translation result:', errorMessage);
       toast.error(errorMessage);
       return false;
     }
@@ -125,7 +123,6 @@ const SixthStep = forwardRef(({ data, setData }: StepProps, ref) => {
         bio: bio.trim(),
         imageUrl: imagePreview,
       });
-      console.log('Step 6 success:', res);
       toast.success(t('Profile updated successfully!'));
       return true;
     } catch (err: any) {

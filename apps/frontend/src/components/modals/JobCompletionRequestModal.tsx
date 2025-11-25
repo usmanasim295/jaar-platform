@@ -37,29 +37,19 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
   }, [i18n.language]);
 
   // Debug effect to monitor image state changes
-  React.useEffect(() => {
-    console.log(
-      'completionImages state changed:',
-      completionImages.length,
-      'images'
-    );
-  }, [completionImages]);
+  React.useEffect(() => {}, [completionImages]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    console.log('handleImageChange called with files:', files.length);
-
     // Early return if no files selected
     if (files.length === 0) {
-      console.log('No files selected');
       return;
     }
 
     // Check total image count limit (max 10 images)
     const totalImages = completionImages.length + files.length;
     if (totalImages > 10) {
-      console.log('Too many images:', totalImages);
       toast.error(t('Maximum 10 images allowed'));
       e.target.value = ''; // Clear input on error
       return;
@@ -78,19 +68,10 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
       return;
     }
 
-    console.log('Adding files to state:', files.length, 'files');
-
     // Add files to state using functional update
     setCompletionImages(prev => {
       const newImages = [...prev, ...files];
-      console.log(
-        'State updated - Previous:',
-        prev.length,
-        'New:',
-        files.length,
-        'Total:',
-        newImages.length
-      );
+
       return newImages;
     });
 
@@ -99,7 +80,6 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
     requestAnimationFrame(() => {
       if (e.target) {
         e.target.value = '';
-        console.log('Input cleared');
       }
     });
   };
@@ -263,7 +243,6 @@ const JobCompletionRequestModal: React.FC<JobCompletionRequestModalProps> = ({
                 onChange={handleImageChange}
                 onClick={e => {
                   // Ensure the input is properly focused and ready
-                  console.log('File input clicked');
                 }}
                 className="w-full p-2 sm:p-3 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 cursor-pointer transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />

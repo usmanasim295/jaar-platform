@@ -74,7 +74,7 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
   return (
     <div className="bg-[#FFFFFF] shadow-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 font-jakarta leading-[100%]">
       <div className="flex justify-between items-start gap-3 sm:gap-0 mb-3">
-        <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black) leading-tight">
+        <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black) leading-tight capitalize">
           {jobTitle}
         </h3>
         <span

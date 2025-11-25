@@ -88,12 +88,10 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
         },
         lang: i18n.language as Language,
       }).unwrap();
-      console.log('Step 3 success:', res);
       setData('third', { serviceIds: selectedServices });
       toast.success(t('Services selected successfully!'));
       return true;
     } catch (err) {
-      console.error('Step 3 failed:', err);
       toast.error(t('Failed to save services. Please try again.'));
       return false;
     }

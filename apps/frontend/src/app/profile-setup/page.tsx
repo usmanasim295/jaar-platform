@@ -183,9 +183,6 @@ const Page = () => {
                 else setCurrentStep(s => Math.max(s - 1, 0));
               }}
             >
-              {/* <div className={`flex items-center justify-center gap-1 sm:gap-[5px] sm:py-[19px] font-semibold font-anevir text-sm sm:text-base ${
-                isClient && isRTL ? 'flex-row-reverse' : ''
-              }`}> */}
               <CaretLeft
                 className={`w-5 hidden lg:inline ${
                   isClient && isRTL ? '' : ''
@@ -194,9 +191,6 @@ const Page = () => {
               <span className="text-center text-[#2d6a87]">
                 {t('Previous')}
               </span>
-              {/* </div> */}
-
-              {/* <span className="xs:hidden">{t('Prev')}</span> */}
             </Button>
 
             <Button

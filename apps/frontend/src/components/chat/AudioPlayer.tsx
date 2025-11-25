@@ -1,5 +1,3 @@
-// v 1.0
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -30,12 +28,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log(
-      'AudioPlayer: Setting up audio with src:',
-      src,
-      'mimeType:',
-      mimeType
-    );
     audio.src = src;
     // audio.currentTime = 0; // Ensure we start at the beginning
     // setCurrentTime(0);
@@ -43,19 +35,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
     const applyDurationWorkaround = () => {
       if (audio.duration === Infinity && retryCount.current < maxRetries) {
-        console.log('Applying WebM duration workaround: Seeking to large time');
         const largeTime = 999999; // Arbitrary large value to trigger file end probe
         audio.currentTime = largeTime;
         retryCount.current++;
 
         // Listen for 'seeked' event to capture updated duration
         const handleSeeked = () => {
-          console.log(
-            'Seeked for workaround, new duration:',
-            audio.duration,
-            'currentTime:',
-            audio.currentTime
-          );
           if (
             isFinite(audio.duration) &&
             audio.duration > 0 &&
@@ -63,7 +48,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           ) {
             setDuration(audio.duration);
             setIsLoaded(true);
-            console.log('Duration fixed via workaround:', audio.duration);
           } else {
             // Retry workaround if still Infinity
             setTimeout(applyDurationWorkaround, 100);
@@ -85,17 +69,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
     const checkDuration = setInterval(() => {
       const currentDur = audio.duration;
-      console.log(
-        'Interval check - duration:',
-        currentDur,
-        'readyState:',
-        audio.readyState
-      );
 
       if (isFinite(currentDur) && currentDur > 0 && currentDur !== Infinity) {
         setDuration(currentDur);
         setIsLoaded(true);
-        console.log('Duration loaded via interval:', currentDur);
         clearInterval(checkDuration);
         retryCount.current = 0; // Reset retries
       } else if (currentDur === Infinity) {
@@ -105,17 +82,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }, 500); // Check every 500ms
 
     const handleLoadedMetadata = () => {
-      console.log(
-        'Audio metadata loaded, duration:',
-        audio.duration,
-        'readyState:',
-        audio.readyState
-      );
       const dur = audio.duration;
       if (isFinite(dur) && dur > 0 && dur !== Infinity) {
         setDuration(dur);
         setIsLoaded(true);
-        console.log('Audio loaded successfully with duration:', dur);
         clearInterval(checkDuration);
         retryCount.current = 0;
       } else if (dur === Infinity) {
@@ -125,24 +95,20 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     };
 
     const handleLoadedData = () => {
-      console.log('Audio data loaded, duration:', audio.duration);
       const dur = audio.duration;
       if (!isLoaded && isFinite(dur) && dur > 0 && dur !== Infinity) {
         setDuration(dur);
         setIsLoaded(true);
-        console.log('Audio loaded via loadeddata event');
         clearInterval(checkDuration);
         retryCount.current = 0;
       }
     };
 
     const handleCanPlay = () => {
-      console.log('Audio can play, duration:', audio.duration);
       const dur = audio.duration;
       if (!isLoaded && isFinite(dur) && dur > 0 && dur !== Infinity) {
         setDuration(dur);
         setIsLoaded(true);
-        console.log('Audio loaded via canplay event');
         // clearInterval(checkDuration);
         // Don't reset currentTime here as it might interfere with user seeking
         retryCount.current = 0;
@@ -155,7 +121,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         setCurrentTime(currentTime);
         // Debug: Log when time updates (only occasionally to avoid spam)
         if (Math.floor(currentTime) % 5 === 0 && currentTime > 0) {
-          console.log('Time update:', currentTime.toFixed(1), 'seconds');
         }
       }
     };
@@ -170,13 +135,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     };
 
     const handleError = (e: Event) => {
-      console.error('Audio loading error:', {
-        error: e,
-        errorCode: audio?.error?.code,
-        errorMessage: audio?.error?.message,
-        src,
-        mimeType,
-      });
       setIsLoaded(false);
       clearInterval(checkDuration);
     };
@@ -214,36 +172,23 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log(
-      'Toggle play/pause - currentTime:',
-      audio.currentTime,
-      'duration:',
-      audio.duration,
-      'isPlaying:',
-      isPlaying
-    );
-
     if (!isPlaying) {
       // Only reset to start if we're at the end (finished playing)
       if (audio.currentTime >= audio.duration) {
-        console.log('Audio finished, resetting to start');
         audio.currentTime = 0;
         setCurrentTime(0);
       } else {
-        console.log('Playing from current position:', audio.currentTime);
       }
     }
 
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
-      console.log('Audio paused at:', audio.currentTime);
     } else {
       audio
         .play()
         .then(() => {
           setIsPlaying(true);
-          console.log('Audio started playing from:', audio.currentTime);
         })
         .catch(error => {
           console.error('Error playing audio:', error);
@@ -265,7 +210,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const newTime = parseFloat(e.target.value);
     audio.currentTime = newTime;
     setCurrentTime(newTime);
-    console.log('Audio seeked to:', newTime, 'seconds');
   };
 
   if (!src) {

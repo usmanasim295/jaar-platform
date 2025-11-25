@@ -158,16 +158,9 @@ export const useChat = (
 
     // Listen for new messages to update chat list and unread counts
     socketService.onNewMessage((message: ChatMessage) => {
-      // console.log('🔄 Real-time message received:', message);
       setChats(prevChats => {
         const updatedChats = prevChats.map(chat => {
           if (chat.id === message.chatId) {
-            // console.log(
-            //   '✅ Updating chat:',
-            //   chat.id,
-            //   'with message:',
-            //   message.content
-            // );
             // For chat list, we only keep the most recent message for display
             // Replace the existing last message with the new one
             return {
@@ -178,7 +171,6 @@ export const useChat = (
           }
           return chat;
         });
-        // console.log('📝 All chats after update:', updatedChats);
         return updatedChats;
       });
 
@@ -187,48 +179,21 @@ export const useChat = (
         message.senderServiceProviderId === user?.id ||
         message.senderId === user?.id;
 
-      // console.log(
-      //   '👤 Message from current user?',
-      //   isFromCurrentUser,
-      //   'User ID:',
-      //   user?.id,
-      //   'Sender ID:',
-      //   message.senderId,
-      //   'Sender SP ID:',
-      //   message.senderServiceProviderId
-      // );
-
       // Check if user is currently viewing this chat
       const isViewingThisChat = selectedChatId === message.chatId;
-      // console.log(
-      //   '👁️ User viewing this chat?',
-      //   isViewingThisChat,
-      //   'Selected chat:',
-      //   selectedChatId,
-      //   'Message chat:',
-      //   message.chatId
-      // );
 
       // If user is viewing this chat, call the callback to update messages
       if (isViewingThisChat && onMessageForViewedChat) {
-        // console.log(
-        //   '🎯 Calling callback to update messages for viewed chat:',
-        //   message.chatId
-        // );
         onMessageForViewedChat(message);
       }
 
       if (!isFromCurrentUser) {
         if (isViewingThisChat) {
           // User is viewing this chat, automatically mark as read
-          // console.log(
-          //   '✅ Auto-marking message as read for viewed chat:',
-          //   message.chatId
-          // );
+
           markMessagesAsRead(message.chatId);
         } else {
           // User is not viewing this chat, update unread count
-          // console.log('🔢 Updating unread count for chat:', message.chatId);
           setUnreadCount(prev => {
             const newUnreadCount = {
               ...prev,
@@ -239,7 +204,6 @@ export const useChat = (
               },
               totalUnread: prev.totalUnread + 1,
             };
-            // console.log('📊 New unread count:', newUnreadCount);
             return newUnreadCount;
           });
         }
@@ -406,8 +370,6 @@ export const useChatMessages = (chatId: string | null) => {
     ) => {
       if (!chatId || !token || !content.trim() || !user) return;
 
-      // console.log('📤 Sending message:', { chatId, content, type, replyToId });
-
       const messageData: CreateMessageRequest = {
         chatId,
         content: content.trim(),
@@ -430,7 +392,6 @@ export const useChatMessages = (chatId: string | null) => {
         }
 
         const data = await response.json();
-        // console.log('📥 Send message response:', data);
 
         // Don't manually add to state - let the real-time event handle it
         // This prevents duplicate messages

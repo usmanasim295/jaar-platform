@@ -59,11 +59,9 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
       }).unwrap();
 
       setData('fifth', { location, landmark });
-      console.log('Step 5 success:', res);
       toast.success(t('Location information saved successfully!'));
       return true;
     } catch (err: any) {
-      console.error('Step 5 failed:', err);
       const errorMessage =
         err?.data?.message ||
         err?.message ||

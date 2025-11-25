@@ -64,9 +64,7 @@ const page = () => {
           </div>
 
           {/* Image - Hidden on mobile and tablet */}
-          <div
-            className="hidden lg:block sticky top-0 w-1/2 h-[100vh]"
-          >
+          <div className="hidden lg:block sticky top-0 w-1/2 h-[100vh]">
             <div className="relative w-full h-full">
               {isRTL ? (
                 <Image

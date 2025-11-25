@@ -90,7 +90,7 @@ const JobCard: FC<JobCardProps> = ({
   return (
     <div className="bg-[#FFFFFF] shadow-dark rounded-xl lg:rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 font-jakarta leading-[100%]">
       <div className="flex flex-col sm:flex-row lg:justify-between lg:items-start gap-2 sm:gap-0">
-        <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black)">
+        <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black) capitalize">
           {title}
         </h3>
         {acceptedBidsCount > 0 && (

@@ -37,8 +37,6 @@ export class AuthService {
     document: Express.Multer.File,
     language: 'en' | 'ar' = 'en',
   ) {
-    console.log('🚀 ~ AuthService ~ signup ~ document:', document);
-    console.log('🚀 ~ AuthService ~ signup ~ dto:', dto);
     // Only allow HOME_OWNER and LEADER roles for signup
     if (dto.role === Role.ADMIN) {
       throw new ForbiddenException(

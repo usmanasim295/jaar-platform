@@ -893,9 +893,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     const waitForMedia = async () => {
       const c = container();
       if (!c) return;
-      const media = Array.from(
-        c.querySelectorAll('img, video')
-      ) as (HTMLImageElement | HTMLVideoElement)[];
+      const media = Array.from(c.querySelectorAll('img, video')) as (
+        | HTMLImageElement
+        | HTMLVideoElement
+      )[];
       if (media.length === 0) return;
 
       return new Promise<void>(resolve => {
@@ -1098,10 +1099,39 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             <button
               onClick={() => fileInputRef.current?.click()}
               className="cursor-pointer p-1 hover:bg-gray-200 rounded flex-shrink-0"
-              disabled={isUploading || isUploadingAudio}
+              disabled={isUploading || isRecording || isUploadingAudio}
             >
               <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
+            <div className="relative flex-shrink-0">
+              <button
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onMouseLeave={stopRecording}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
+                className={`cursor-pointer p-1 sm:p-2 rounded-full transition-all duration-200 ${
+                  isRecording
+                    ? 'bg-red-500 text-white animate-pulse'
+                    : 'hover:bg-gray-200 text-gray-600'
+                }`}
+                disabled={isUploading}
+                title={
+                  isRecording
+                    ? `${t('Recording...')} ${formatRecordingTime(recordingTime)} - ${t('Click Stop to finish')}`
+                    : t('Hold to record voice note')
+                }
+              >
+                <Mic
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${isRecording ? 'animate-pulse' : ''}`}
+                />
+              </button>
+              {isRecording && (
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap z-10">
+                  {formatRecordingTime(recordingTime)}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={handleSendMessage}
@@ -1113,7 +1143,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             }
             className="bg-(--primary) p-2 sm:p-2.5 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
-            {isSending || isUploadingAudio ? (
+            {isUploading || isSending || isUploadingAudio ? (
               <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -1180,9 +1210,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 <React.Fragment key={`group-${firstMessage.id}`}>
                   {separator}
                   <div
-                    className={`flex items-start gap-1.5 sm:gap-2 ${
-                      isCurrentUser ? 'justify-end' : 'justify-start'
-                    }`}
+                    className="flex items-start gap-1.5 sm:gap-2"
+                    dir="ltr"
+                    style={{
+                      justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
+                    }}
                   >
                     {!isCurrentUser && (
                       <img
@@ -1227,11 +1259,13 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
               <React.Fragment key={message.id}>
                 {separator}
                 <div
-                  className={`flex items-start gap-1.5 sm:gap-2 ${
-                    isCurrentUserMessage(message)
-                      ? 'justify-end'
-                      : 'justify-start'
-                  }`}
+                  className="flex items-start gap-1.5 sm:gap-2"
+                  dir="ltr"
+                  style={{
+                    justifyContent: isCurrentUserMessage(message)
+                      ? 'flex-end'
+                      : 'flex-start',
+                  }}
                 >
                   {!isCurrentUserMessage(message) && (
                     <img
@@ -1268,7 +1302,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
         {/* Recording indicator - aligned with chat messages */}
         {isRecording && (
-          <div className="flex items-start gap-1.5 sm:gap-2 justify-end">
+          <div
+            className="flex items-start gap-1.5 sm:gap-2"
+            dir="ltr"
+            style={{ justifyContent: 'flex-end' }}
+          >
             <div className="max-w-[90%] sm:max-w-[85%] p-2 sm:p-3 rounded-xl bg-red-100 border border-red-200">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full animate-pulse" />
@@ -1288,7 +1326,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
         {/* Audio uploading indicator - aligned with chat messages */}
         {isUploadingAudio && (
-          <div className="flex items-start gap-1.5 sm:gap-2 justify-end">
+          <div
+            className="flex items-start gap-1.5 sm:gap-2"
+            dir="ltr"
+            style={{ justifyContent: 'flex-end' }}
+          >
             <div className="max-w-[90%] sm:max-w-[85%] p-2 sm:p-3 rounded-xl bg-blue-100 border border-blue-200">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -1302,7 +1344,11 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
         {/* Sending indicator - aligned with chat messages */}
         {isSending && pendingMessage && (
-          <div className="flex items-start gap-1.5 sm:gap-2 justify-end">
+          <div
+            className="flex items-start gap-1.5 sm:gap-2"
+            dir="ltr"
+            style={{ justifyContent: 'flex-end' }}
+          >
             <div className="max-w-[90%] sm:max-w-[85%] p-2 sm:p-2.5 md:p-3 rounded-xl bg-[#2d6a87]">
               <div className="space-y-1.5 sm:space-y-2">
                 <p className="text-white text-xs sm:text-sm break-words">

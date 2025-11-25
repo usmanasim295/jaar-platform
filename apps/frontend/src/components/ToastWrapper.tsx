@@ -27,7 +27,7 @@ const ToastWrapper = () => {
   if (!isClient) {
     return null;
   }
-  
+
   return (
     <ToastContainer
       position="top-right"

@@ -83,11 +83,9 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
       }).unwrap();
 
       setData('fourth', { serviceRates: rates });
-      console.log('Step 4 success:', res);
       toast.success(t('Service rates saved successfully!'));
       return true;
     } catch (err) {
-      console.error('Step 4 failed:', err);
       toast.error(t('Failed to save service rates. Please try again.'));
       return false;
     }
@@ -127,6 +125,17 @@ const FourthStep = forwardRef(({ data, setData }: StepProps, ref) => {
                 onChange={e =>
                   handleRateChange(rateObj.serviceName, e.target.value)
                 }
+                onKeyDown={e => {
+                  if (e.key === '+' || e.key === '-') {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={e => {
+                  const pastedText = e.clipboardData.getData('text');
+                  if (pastedText.includes('+') || pastedText.includes('-')) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
           </div>
