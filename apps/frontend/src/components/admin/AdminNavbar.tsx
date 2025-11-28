@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Menu, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -27,10 +27,30 @@ export function AdminNavbar({
 }: AdminNavbarProps) {
   const { t } = useTranslation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   const handleProfileToggle = () => {
     setIsProfileOpen(prev => !prev);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    if (isProfileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileOpen]);
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -82,7 +102,7 @@ export function AdminNavbar({
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative" ref={profileDropdownRef}>
             <button
               onClick={handleProfileToggle}
               className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100"
