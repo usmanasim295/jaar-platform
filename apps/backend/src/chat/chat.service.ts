@@ -28,7 +28,7 @@ export class ChatService {
   ) {}
 
   // Community Management - These methods are used internally during signup
-  async createOrGetCommunity(hoaNumber: string, apartmentId: string) {
+  async createOrGetCommunity(hoaNumber: string, hoaId: string) {
     let community = await this.prisma.community.findUnique({
       where: { hoaNumber },
       include: {
@@ -43,7 +43,7 @@ export class ChatService {
             },
           },
         },
-        apartment: true,
+        hoa: true,
       },
     });
 
@@ -58,7 +58,7 @@ export class ChatService {
         data: {
           hoaNumber,
           name: communityName,
-          apartmentId,
+          hoaId,
         },
         include: {
           members: {
@@ -72,7 +72,7 @@ export class ChatService {
               },
             },
           },
-          apartment: true,
+          hoa: true,
         },
       });
     }
@@ -352,8 +352,15 @@ export class ChatService {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
-        apartment: {
-          include: { leader: true },
+        hoa: {
+          include: {
+            userHOAs: {
+              where: { isLeader: true },
+              include: {
+                user: true,
+              },
+            },
+          },
         },
         creator: true,
       },
@@ -391,8 +398,9 @@ export class ChatService {
           ),
         );
       }
-      // Verify the leader is the apartment leader
-      if (job.apartment.leaderId !== requestingUserId) {
+      // Verify the leader is the HOA leader
+      const leaderUserHOA = job.hoa.userHOAs?.find((uh) => uh.isLeader);
+      if (!leaderUserHOA || leaderUserHOA.userId !== requestingUserId) {
         throw new ForbiddenException(
           this.messageService.getErrorMessage(
             'chat.only_apartment_leader_can_create_community_chats',
@@ -413,17 +421,17 @@ export class ChatService {
           ),
         );
       }
-      // Leaders can also create chats for home services in their apartment
-      if (
-        requestingUser.role === 'LEADER' &&
-        job.apartment.leaderId !== requestingUserId
-      ) {
-        throw new ForbiddenException(
-          this.messageService.getErrorMessage(
-            'chat.only_apartment_leader_can_create_home_chats',
-            language,
-          ),
-        );
+      // Leaders can also create chats for home services in their HOA
+      if (requestingUser.role === 'LEADER') {
+        const leaderUserHOA = job.hoa.userHOAs?.find((uh) => uh.isLeader);
+        if (!leaderUserHOA || leaderUserHOA.userId !== requestingUserId) {
+          throw new ForbiddenException(
+            this.messageService.getErrorMessage(
+              'chat.only_apartment_leader_can_create_home_chats',
+              language,
+            ),
+          );
+        }
       }
     }
 
@@ -481,8 +489,12 @@ export class ChatService {
 
     if (job.jobType === 'COMMUNITY_SERVICE') {
       // Only leader can chat for community service
-      if (job.apartment.leader) {
-        participants.push({ chatId: chat.id, userId: job.apartment.leader.id });
+      const leaderUserHOA = job.hoa.userHOAs?.find((uh) => uh.isLeader);
+      if (leaderUserHOA && leaderUserHOA.user) {
+        participants.push({
+          chatId: chat.id,
+          userId: leaderUserHOA.user.id,
+        });
       }
     } else {
       // Home service - only job creator can chat
@@ -505,8 +517,15 @@ export class ChatService {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
-        apartment: {
-          include: { leader: true },
+        hoa: {
+          include: {
+            userHOAs: {
+              where: { isLeader: true },
+              include: {
+                user: true,
+              },
+            },
+          },
         },
         creator: true,
         bids: {
@@ -610,14 +629,18 @@ export class ChatService {
 
     if (job.jobType === 'COMMUNITY_SERVICE') {
       // For community service, chat with the leader
-      if (!job.apartment.leader) {
+      const leaderUserHOA = job.hoa.userHOAs?.find((uh) => uh.isLeader);
+      if (!leaderUserHOA || !leaderUserHOA.user) {
         // Cleanup if no leader found
         await this.prisma.chat.delete({ where: { id: chat.id } });
         throw new NotFoundException(
           'Leader not found for this community service job',
         );
       }
-      participants.push({ chatId: chat.id, userId: job.apartment.leader.id });
+      participants.push({
+        chatId: chat.id,
+        userId: leaderUserHOA.user.id,
+      });
     } else if (job.jobType === 'HOME_SERVICE') {
       // For home service, chat with the job creator (home owner)
       if (!job.creator) {
@@ -1330,39 +1353,32 @@ export class ChatService {
     }
   }
 
-  // Get apartment home owners for leader
-  async getApartmentHomeOwners(
-    apartmentId: string,
-    language: 'en' | 'ar' = 'en',
-  ) {
-    const apartment = await this.prisma.apartment.findUnique({
-      where: { id: apartmentId },
-      include: {
-        owners: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+  // Get HOA home owners for leader
+  async getApartmentHomeOwners(hoaId: string, language: 'en' | 'ar' = 'en') {
+    const hoa = await this.prisma.hoa.findUnique({
+      where: { id: hoaId },
     });
 
-    if (!apartment) {
+    if (!hoa) {
       throw new NotFoundException(
         this.messageService.getErrorMessage('apartment.not_found', language),
       );
     }
 
-    return apartment.owners;
+    // Get all users who are members of this HOA
+    const userHOAs = await this.prisma.userHOA.findMany({
+      where: { hoaId },
+      include: { user: true },
+    });
+    return userHOAs.map((uh) => uh.user);
   }
 
-  // Get apartment leader for home owner
-  async getApartmentLeader(apartmentId: string, language: 'en' | 'ar' = 'en') {
-    const apartment = await this.prisma.apartment.findUnique({
-      where: { id: apartmentId },
+  // Get HOA leader for home owner
+  async getApartmentLeader(hoaId: string, language: 'en' | 'ar' = 'en') {
+    const userHOA = await this.prisma.userHOA.findFirst({
+      where: { hoaId, isLeader: true },
       include: {
-        leader: {
+        user: {
           select: {
             id: true,
             nationalId: true,
@@ -1372,13 +1388,13 @@ export class ChatService {
       },
     });
 
-    if (!apartment) {
+    if (!userHOA) {
       throw new NotFoundException(
         this.messageService.getErrorMessage('apartment.not_found', language),
       );
     }
 
-    if (!apartment.leader) {
+    if (!userHOA.user) {
       throw new NotFoundException(
         this.messageService.getErrorMessage(
           'apartment.no_leader_assigned',
@@ -1387,7 +1403,7 @@ export class ChatService {
       );
     }
 
-    return apartment.leader;
+    return userHOA.user;
   }
 
   // Get user's community
@@ -1395,17 +1411,21 @@ export class ChatService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        apartment: {
+        userHOAs: {
           include: {
-            community: {
+            hoa: {
               include: {
-                members: {
+                community: {
                   include: {
-                    user: {
-                      select: {
-                        id: true,
-                        nationalId: true,
-                        role: true,
+                    members: {
+                      include: {
+                        user: {
+                          select: {
+                            id: true,
+                            nationalId: true,
+                            role: true,
+                          },
+                        },
                       },
                     },
                   },
@@ -1417,7 +1437,7 @@ export class ChatService {
       },
     });
 
-    if (!user || !user.apartment || !user.apartment.community) {
+    if (!user || !user.userHOAs || user.userHOAs.length === 0) {
       throw new NotFoundException(
         this.messageService.getErrorMessage(
           'chat.user_community_not_found',
@@ -1426,7 +1446,18 @@ export class ChatService {
       );
     }
 
-    return user.apartment.community;
+    // Get the first HOA's community (user can belong to multiple HOAs)
+    const firstHoa = user.userHOAs[0]?.hoa;
+    if (!firstHoa || !firstHoa.community) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'chat.user_community_not_found',
+          language,
+        ),
+      );
+    }
+
+    return firstHoa.community;
   }
 
   // Mark messages as read

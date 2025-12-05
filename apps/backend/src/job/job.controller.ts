@@ -38,14 +38,13 @@ export class JobController {
         ['title', 'description', 'timeSlot', 'experienceLevel'],
       );
 
-      // Transform apartment data
-      if (transformedJob.apartment) {
-        transformedJob.apartment =
-          this.languageService.transformObjectForLanguage(
-            transformedJob.apartment,
-            language,
-            ['name', 'address', 'city', 'state', 'country'],
-          );
+      // Transform HOA data
+      if (transformedJob.hoa) {
+        transformedJob.hoa = this.languageService.transformObjectForLanguage(
+          transformedJob.apartment,
+          language,
+          ['name', 'address', 'city', 'state', 'country'],
+        );
       }
 
       // Transform services array
@@ -110,7 +109,7 @@ export class JobController {
             language,
             {
               services: ['service'],
-              apartment: [],
+              hoa: [],
               leader: [],
               creator: [],
               bids: ['serviceProvider'],
@@ -313,7 +312,7 @@ export class JobController {
             language,
             {
               services: ['service'],
-              apartment: [],
+              hoa: [],
               leader: [],
             },
           )

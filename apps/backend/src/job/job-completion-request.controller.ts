@@ -108,7 +108,7 @@ export class JobCompletionRequestController {
         result.completionRequest,
         language,
         {
-          job: ['services', 'apartment', 'leader', 'creator'],
+          job: ['services', 'hoa', 'leader', 'creator'],
           serviceProvider: [],
           reviewer: [],
         },
@@ -148,7 +148,7 @@ export class JobCompletionRequestController {
       requests,
       language,
       {
-        job: ['services', 'apartment', 'leader', 'creator'],
+        job: ['services', 'hoa', 'leader', 'creator'],
         serviceProvider: [],
         reviewer: [],
       },
@@ -187,7 +187,7 @@ export class JobCompletionRequestController {
       language,
       {
         services: ['service'],
-        apartment: [],
+        hoa: [],
         leader: [],
         creator: [],
         bids: ['serviceProvider'],
@@ -211,7 +211,7 @@ export class JobCompletionRequestController {
       requests,
       language,
       {
-        job: ['services', 'apartment', 'leader', 'creator'],
+        job: ['services', 'hoa', 'leader', 'creator'],
         serviceProvider: [],
       },
     );
@@ -229,7 +229,7 @@ export class JobCompletionRequestController {
       request,
       language,
       {
-        job: ['services', 'apartment', 'leader', 'creator'],
+        job: ['services', 'hoa', 'leader', 'creator'],
         serviceProvider: [],
         reviewer: [],
       },
@@ -260,7 +260,7 @@ export class JobCompletionRequestController {
         result.completionRequest,
         language,
         {
-          job: ['services', 'apartment', 'leader', 'creator'],
+          job: ['services', 'hoa', 'leader', 'creator'],
           serviceProvider: [],
           reviewer: [],
         },

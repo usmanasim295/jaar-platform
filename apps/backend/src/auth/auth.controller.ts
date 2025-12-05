@@ -54,7 +54,7 @@ export class AuthController {
         ? this.languageService.transformObjectForLanguage(
             result.apartment,
             language,
-            ['name', 'address', 'city', 'state', 'country'],
+            ['name', 'address', 'city', 'state'],
           )
         : null,
     };
@@ -66,27 +66,16 @@ export class AuthController {
     const language = this.languageService.validateLanguage(lang);
     const result = await this.authService.login(loginDto, language);
 
-    // Transform the user object with proper handling of apartment field
+    // Transform the user object with proper handling of HOA fields
     const transformedUser =
       this.languageService.transformNestedObjectForLanguage(
         result.user,
         language,
         {
-          managedApartments: ['houses', 'jobs', 'leader', '_count'],
-          ownedHouses: ['apartment'],
-          postedJobs: ['services', 'apartment', 'bids'],
+          userHOAs: ['hoa'],
+          postedJobs: ['services', 'hoa', 'bids'],
         },
       );
-
-    // Manually transform the apartment field if it exists
-    if (transformedUser.apartment) {
-      transformedUser.apartment =
-        this.languageService.transformObjectForLanguage(
-          transformedUser.apartment,
-          language,
-          ['name', 'address', 'city', 'state', 'country'],
-        );
-    }
 
     return {
       ...result,

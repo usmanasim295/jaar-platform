@@ -39,12 +39,17 @@ export class ApartmentService {
     }
 
     // Check if HOA number already exists
-    const existingApartment = await this.prisma.apartment.findUnique({
+    const existingHoa = await this.prisma.hoa.findUnique({
       where: { hoaNumber: createApartmentDto.hoaNumber },
+      include: {
+        userHOAs: {
+          where: { isLeader: true },
+        },
+      },
     });
 
-    if (existingApartment) {
-      if (existingApartment.leaderId) {
+    if (existingHoa) {
+      if (existingHoa.userHOAs.length > 0) {
         throw new ConflictException(
           this.messageService.getErrorMessage(
             'apartment.hoa_has_leader',
@@ -52,45 +57,56 @@ export class ApartmentService {
           ),
         );
       } else {
-        // Update existing apartment to assign this leader
-        const updatedApartment = await this.prisma.apartment.update({
-          where: { hoaNumber: createApartmentDto.hoaNumber },
-          data: {
-            leaderId: leaderId,
-            name: createApartmentDto.name,
-            address: createApartmentDto.address,
-            city: createApartmentDto.city,
-            state: createApartmentDto.state,
-            country: createApartmentDto.country || 'Saudi Arabia',
-          },
-          include: {
-            leader: {
-              select: {
-                id: true,
-                nationalId: true,
-                role: true,
+        // Update existing HOA and create UserHOA relationship
+        const [updatedHoa] = await Promise.all([
+          this.prisma.hoa.update({
+            where: { hoaNumber: createApartmentDto.hoaNumber },
+            data: {
+              name: createApartmentDto.name,
+              address: createApartmentDto.address,
+              city: createApartmentDto.city,
+              state: createApartmentDto.state,
+            },
+            include: {
+              userHOAs: {
+                where: { isLeader: true },
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      nationalId: true,
+                      role: true,
+                    },
+                  },
+                },
               },
             },
-          },
-        });
+          }),
+          this.prisma.userHOA.create({
+            data: {
+              userId: leaderId,
+              hoaId: existingHoa.id,
+              isLeader: true,
+            },
+          }),
+        ]);
 
         return {
           message: this.messageService.getSuccessMessage(
             'apartment.updated_and_leader_assigned',
             language,
           ),
-          apartment: updatedApartment,
+          apartment: updatedHoa,
         };
       }
     }
 
-    // Translate apartment details
+    // Translate HOA details
     const [
       nameTranslations,
       addressTranslations,
       cityTranslations,
       stateTranslations,
-      countryTranslations,
     ] = await Promise.all([
       this.translationService.createTranslationObject(createApartmentDto.name),
       this.translationService.createTranslationObject(
@@ -102,28 +118,34 @@ export class ApartmentService {
             createApartmentDto.state,
           )
         : { en: '', ar: '' },
-      this.translationService.createTranslationObject(
-        createApartmentDto.country || 'Saudi Arabia',
-      ),
     ]);
 
-    // Create new apartment
-    const apartment = await this.prisma.apartment.create({
+    // Create new HOA and UserHOA relationship
+    const apartment = await this.prisma.hoa.create({
       data: {
         name: nameTranslations,
         hoaNumber: createApartmentDto.hoaNumber,
         address: addressTranslations,
         city: cityTranslations,
         state: createApartmentDto.state ? stateTranslations : undefined,
-        country: countryTranslations,
-        leaderId: leaderId,
+        userHOAs: {
+          create: {
+            userId: leaderId,
+            isLeader: true,
+          },
+        },
       },
       include: {
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
+        userHOAs: {
+          where: { isLeader: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
           },
         },
       },
@@ -139,18 +161,12 @@ export class ApartmentService {
   }
 
   async findAll() {
-    return this.prisma.apartment.findMany({
+    return this.prisma.hoa.findMany({
       include: {
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        houses: {
+        userHOAs: {
+          where: { isLeader: true },
           include: {
-            owner: {
+            user: {
               select: {
                 id: true,
                 nationalId: true,
@@ -161,7 +177,6 @@ export class ApartmentService {
         },
         _count: {
           select: {
-            houses: true,
             jobs: true,
           },
         },
@@ -170,19 +185,13 @@ export class ApartmentService {
   }
 
   async findOne(id: string, language: 'en' | 'ar' = 'en') {
-    const apartment = await this.prisma.apartment.findUnique({
+    const hoa = await this.prisma.hoa.findUnique({
       where: { id },
       include: {
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        houses: {
+        userHOAs: {
+          where: { isLeader: true },
           include: {
-            owner: {
+            user: {
               select: {
                 id: true,
                 nationalId: true,
@@ -217,43 +226,134 @@ export class ApartmentService {
         },
         _count: {
           select: {
-            houses: true,
             jobs: true,
           },
         },
       },
     });
 
-    if (!apartment) {
+    if (!hoa) {
       throw new NotFoundException(
         this.messageService.getErrorMessage('apartment.not_found', language),
       );
     }
 
-    return apartment;
+    return hoa;
   }
 
-  async findByLeader(leaderId: string, language: 'en' | 'ar' = 'en') {
-    // Verify the user is a leader
-    const leader = await this.prisma.user.findUnique({
-      where: { id: leaderId },
+  // async findByLeader(leaderId: string, language: 'en' | 'ar' = 'en') {
+  //   // Verify the user is a leader
+  //   const leader = await this.prisma.user.findUnique({
+  //     where: { id: leaderId },
+  //   });
+
+  //   if (!leader || leader.role !== 'LEADER') {
+  //     throw new ForbiddenException(
+  //       this.messageService.getErrorMessage(
+  //         'apartment.only_leaders_can_view',
+  //         language,
+  //       ),
+  //     );
+  //   }
+
+  //   // Get HOAs where user is a leader
+  //   const userHOAs = await this.prisma.userHOA.findMany({
+  //     where: {
+  //       userId: leaderId,
+  //       isLeader: true,
+  //     },
+  //     select: {
+  //       hoaId: true,
+  //     },
+  //   });
+
+  //   const hoaIds = userHOAs.map((uh) => uh.hoaId);
+
+  //   return this.prisma.hoa.findMany({
+  //     where: { id: { in: hoaIds } },
+  //     include: {
+  //       userHOAs: {
+  //         where: { isLeader: true },
+  //         include: {
+  //           user: {
+  //             select: {
+  //               id: true,
+  //               nationalId: true,
+  //               role: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //       jobs: {
+  //         include: {
+  //           services: {
+  //             include: {
+  //               service: true,
+  //             },
+  //           },
+  //           bids: {
+  //             include: {
+  //               serviceProvider: {
+  //                 select: {
+  //                   id: true,
+  //                   name: true,
+  //                   rating: true,
+  //                   totalJobs: true,
+  //                 },
+  //               },
+  //             },
+  //           },
+  //         },
+  //         orderBy: {
+  //           createdAt: 'desc',
+  //         },
+  //       },
+  //       _count: {
+  //         select: {
+  //           jobs: true,
+  //         },
+  //       },
+  //     },
+  //   });
+  // }
+
+  // Get all HOAs for a user (both as leader and as member)
+  async getApartments(userId: string, language: 'en' | 'ar' = 'en') {
+    // Verify the user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
     });
 
-    if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException(
-        this.messageService.getErrorMessage(
-          'apartment.only_leaders_can_view',
-          language,
-        ),
+    if (!user) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('auth.user_not_found', language),
       );
     }
 
-    return this.prisma.apartment.findMany({
-      where: { leaderId },
+    // Get all UserHOA relationships for this user
+    const userHOAs = await this.prisma.userHOA.findMany({
+      where: {
+        userId: userId,
+      },
+      select: {
+        hoaId: true,
+        isLeader: true,
+      },
+    });
+
+    const hoaIds = userHOAs.map((uh) => uh.hoaId);
+
+    if (hoaIds.length === 0) {
+      return [];
+    }
+
+    // Get all HOAs with their details
+    const hoas = await this.prisma.hoa.findMany({
+      where: { id: { in: hoaIds } },
       include: {
-        houses: {
+        userHOAs: {
           include: {
-            owner: {
+            user: {
               select: {
                 id: true,
                 nationalId: true,
@@ -288,11 +388,19 @@ export class ApartmentService {
         },
         _count: {
           select: {
-            houses: true,
             jobs: true,
           },
         },
       },
+    });
+
+    // Add isLeader flag to each HOA based on the user's relationship
+    return hoas.map((hoa) => {
+      const userHOA = userHOAs.find((uh) => uh.hoaId === hoa.id);
+      return {
+        ...hoa,
+        isLeader: userHOA?.isLeader || false,
+      };
     });
   }
 
@@ -302,15 +410,16 @@ export class ApartmentService {
     leaderId: string,
     language: 'en' | 'ar' = 'en',
   ) {
-    // Verify the apartment exists and belongs to this leader
-    const existingApartment = await this.prisma.apartment.findFirst({
+    // Verify the HOA exists and user is a leader
+    const userHOA = await this.prisma.userHOA.findFirst({
       where: {
-        id,
-        leaderId,
+        hoaId: id,
+        userId: leaderId,
+        isLeader: true,
       },
     });
 
-    if (!existingApartment) {
+    if (!userHOA) {
       throw new NotFoundException(
         this.messageService.getErrorMessage(
           'apartment.not_found_or_unauthorized',
@@ -319,15 +428,20 @@ export class ApartmentService {
       );
     }
 
-    const updatedApartment = await this.prisma.apartment.update({
+    const updatedHoa = await this.prisma.hoa.update({
       where: { id },
       data: updateApartmentDto,
       include: {
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
+        userHOAs: {
+          where: { isLeader: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
           },
         },
       },
@@ -338,20 +452,21 @@ export class ApartmentService {
         'apartment.updated',
         language,
       ),
-      apartment: updatedApartment,
+      apartment: updatedHoa,
     };
   }
 
   async remove(id: string, leaderId: string, language: 'en' | 'ar' = 'en') {
-    // Verify the apartment exists and belongs to this leader
-    const existingApartment = await this.prisma.apartment.findFirst({
+    // Verify the HOA exists and user is a leader
+    const userHOA = await this.prisma.userHOA.findFirst({
       where: {
-        id,
-        leaderId,
+        hoaId: id,
+        userId: leaderId,
+        isLeader: true,
       },
     });
 
-    if (!existingApartment) {
+    if (!userHOA) {
       throw new NotFoundException(
         this.messageService.getErrorMessage(
           'apartment.not_found_or_unauthorized_delete',
@@ -360,35 +475,25 @@ export class ApartmentService {
       );
     }
 
-    // Check if apartment has houses or jobs
-    const apartmentWithRelations = await this.prisma.apartment.findUnique({
+    // Check if HOA has jobs
+    const hoaWithRelations = await this.prisma.hoa.findUnique({
       where: { id },
       include: {
         _count: {
           select: {
-            houses: true,
             jobs: true,
           },
         },
       },
     });
 
-    if (!apartmentWithRelations) {
+    if (!hoaWithRelations) {
       throw new NotFoundException(
         this.messageService.getErrorMessage('apartment.not_found', language),
       );
     }
 
-    if (apartmentWithRelations._count.houses > 0) {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage(
-          'apartment.cannot_delete_with_houses',
-          language,
-        ),
-      );
-    }
-
-    if (apartmentWithRelations._count.jobs > 0) {
+    if (hoaWithRelations._count.jobs > 0) {
       throw new BadRequestException(
         this.messageService.getErrorMessage(
           'apartment.cannot_delete_with_jobs',
@@ -397,7 +502,7 @@ export class ApartmentService {
       );
     }
 
-    await this.prisma.apartment.delete({
+    await this.prisma.hoa.delete({
       where: { id },
     });
 
@@ -409,117 +514,34 @@ export class ApartmentService {
     };
   }
 
-  async addHouse(
-    apartmentId: string,
-    houseData: AddHouseDto,
-    leaderId: string,
-    language: 'en' | 'ar' = 'en',
-  ) {
-    // Verify the apartment exists and belongs to this leader
-    const apartment = await this.prisma.apartment.findFirst({
-      where: {
-        id: apartmentId,
-        leaderId,
-      },
-    });
+  // async addHouse(
+  //   apartmentId: string,
+  //   houseData: AddHouseDto,
+  //   leaderId: string,
+  //   language: 'en' | 'ar' = 'en',
+  // ) {
+  //   throw new BadRequestException(
+  //     this.messageService.getErrorMessage(
+  //       'apartment.house_feature_disabled',
+  //       language,
+  //     ),
+  //   );
+  // }
 
-    if (!apartment) {
-      throw new NotFoundException(
-        this.messageService.getErrorMessage(
-          'apartment.not_found_or_unauthorized_add_houses',
-          language,
-        ),
-      );
-    }
+  // async removeHouse(
+  //   houseId: string,
+  //   leaderId: string,
+  //   language: 'en' | 'ar' = 'en',
+  // ) {
+  //   throw new BadRequestException(
+  //     this.messageService.getErrorMessage(
+  //       'apartment.house_feature_disabled',
+  //       language,
+  //     ),
+  //   );
+  // }
 
-    // Verify the house owner exists and is a home owner
-    const houseOwner = await this.prisma.user.findUnique({
-      where: { id: houseData.ownerId },
-    });
-
-    if (!houseOwner || houseOwner.role !== 'HOME_OWNER') {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage(
-          'apartment.house_owner_must_be_home_owner',
-          language,
-        ),
-      );
-    }
-
-    // Create the house
-    const house = await this.prisma.house.create({
-      data: {
-        houseNumber: houseData.houseNumber,
-        apartmentId: apartmentId,
-        ownerId: houseData.ownerId,
-      },
-      include: {
-        apartment: {
-          select: {
-            id: true,
-            name: true,
-            city: true,
-          },
-        },
-        owner: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
-    });
-
-    return {
-      message: this.messageService.getSuccessMessage(
-        'apartment.house_added',
-        language,
-      ),
-      house,
-    };
-  }
-
-  async removeHouse(
-    houseId: string,
-    leaderId: string,
-    language: 'en' | 'ar' = 'en',
-  ) {
-    // Verify the house exists and belongs to an apartment managed by this leader
-    const house = await this.prisma.house.findFirst({
-      where: {
-        id: houseId,
-        apartment: {
-          leaderId: leaderId,
-        },
-      },
-      include: {
-        apartment: true,
-      },
-    });
-
-    if (!house) {
-      throw new NotFoundException(
-        this.messageService.getErrorMessage(
-          'apartment.house_not_found_or_unauthorized_remove',
-          language,
-        ),
-      );
-    }
-
-    await this.prisma.house.delete({
-      where: { id: houseId },
-    });
-
-    return {
-      message: this.messageService.getSuccessMessage(
-        'apartment.house_removed',
-        language,
-      ),
-    };
-  }
-
-  // Create apartment without leader (for home owners who sign up first)
+  // Create HOA without leader (for home owners who sign up first)
   async createWithoutLeader(hoaNumber: string, language: 'en' | 'ar' = 'en') {
     // Use translation service to translate default values
     const nameTranslations =
@@ -532,21 +554,18 @@ export class ApartmentService {
       await this.translationService.createTranslationObject(
         'City to be updated by leader',
       );
-    const countryTranslations =
-      await this.translationService.createTranslationObject('Saudi Arabia');
 
-    return this.prisma.apartment.create({
+    return this.prisma.hoa.create({
       data: {
-        hoaNumber,
+        hoaNumber: hoaNumber,
         name: nameTranslations,
         address: addressTranslations,
         city: cityTranslations,
-        country: countryTranslations,
       },
     });
   }
 
-  // Assign leader to existing apartment
+  // Assign leader to existing HOA
   async assignLeader(
     hoaNumber: string,
     leaderId: string,
@@ -566,18 +585,23 @@ export class ApartmentService {
       );
     }
 
-    // Check if apartment exists
-    const apartment = await this.prisma.apartment.findUnique({
-      where: { hoaNumber },
+    // Check if HOA exists
+    const hoa = await this.prisma.hoa.findUnique({
+      where: { hoaNumber: hoaNumber },
+      include: {
+        userHOAs: {
+          where: { isLeader: true },
+        },
+      },
     });
 
-    if (!apartment) {
+    if (!hoa) {
       throw new NotFoundException(
         this.messageService.getErrorMessage('apartment.not_found', language),
       );
     }
 
-    if (apartment.leaderId) {
+    if (hoa.userHOAs.length > 0) {
       throw new ConflictException(
         this.messageService.getErrorMessage(
           'apartment.already_has_leader',
@@ -586,16 +610,29 @@ export class ApartmentService {
       );
     }
 
-    // Assign leader to apartment
-    const updatedApartment = await this.prisma.apartment.update({
-      where: { hoaNumber },
-      data: { leaderId },
+    // Create UserHOA relationship for leader
+    await this.prisma.userHOA.create({
+      data: {
+        userId: leaderId,
+        hoaId: hoa.id,
+        isLeader: true,
+      },
+    });
+
+    // Fetch updated HOA
+    const updatedHoa = await this.prisma.hoa.findUnique({
+      where: { hoaNumber: hoaNumber },
       include: {
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
+        userHOAs: {
+          where: { isLeader: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                nationalId: true,
+                role: true,
+              },
+            },
           },
         },
       },
@@ -606,7 +643,7 @@ export class ApartmentService {
         'apartment.leader_assigned',
         language,
       ),
-      apartment: updatedApartment,
+      apartment: updatedHoa,
     };
   }
 }

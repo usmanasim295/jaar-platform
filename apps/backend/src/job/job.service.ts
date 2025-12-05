@@ -25,9 +25,16 @@ export class JobService {
     userRole: string,
     language: 'en' | 'ar' = 'en',
   ) {
-    // Verify the user exists
+    // Verify the user exists and get their HOA relationships
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        userHOAs: {
+          include: {
+            hoa: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -49,14 +56,15 @@ export class JobService {
       );
     }
 
-    let apartmentId: string;
+    let hoaId: string;
     let leaderId: string | undefined;
     let initialStatus: JobStatus;
 
     if (createJobDto.jobType === JobType.HOME_SERVICE) {
       if (userRole === 'HOME_OWNER') {
-        // Home service: use the home owner's assigned apartment
-        if (!user.apartmentId) {
+        // Home service: use the home owner's HOA
+        const userHOA = user.userHOAs.find((uh) => !uh.isLeader);
+        if (!userHOA) {
           throw new BadRequestException(
             this.messageService.getErrorMessage(
               'job.apartment_not_linked',
@@ -65,10 +73,10 @@ export class JobService {
           );
         }
 
-        // If payload provides apartmentId, ensure it matches the user's apartment
+        // If payload provides hoaId, ensure it matches the user's HOA
         if (
           createJobDto.apartmentId &&
-          createJobDto.apartmentId !== user.apartmentId
+          createJobDto.apartmentId !== userHOA.hoaId
         ) {
           throw new ForbiddenException(
             this.messageService.getErrorMessage(
@@ -78,11 +86,11 @@ export class JobService {
           );
         }
 
-        apartmentId = user.apartmentId;
+        hoaId = userHOA.hoaId;
         leaderId = undefined;
         initialStatus = JobStatus.OPEN; // Visible to service providers immediately
       } else if (userRole === 'LEADER') {
-        // Leader posting a home service job (allowed): require apartment they lead
+        // Leader posting a home service job (allowed): require HOA they lead
         if (!createJobDto.apartmentId) {
           throw new BadRequestException(
             this.messageService.getErrorMessage(
@@ -92,10 +100,15 @@ export class JobService {
           );
         }
 
-        const apartment = await this.prisma.apartment.findFirst({
-          where: { id: createJobDto.apartmentId, leaderId: userId },
+        const userHOA = await this.prisma.userHOA.findFirst({
+          where: {
+            hoaId: createJobDto.apartmentId,
+            userId: userId,
+            isLeader: true,
+          },
         });
-        if (!apartment) {
+
+        if (!userHOA) {
           throw new ForbiddenException(
             this.messageService.getErrorMessage(
               'job.not_authorized_apartment',
@@ -104,7 +117,7 @@ export class JobService {
           );
         }
 
-        apartmentId = apartment.id;
+        hoaId = userHOA.hoaId;
         leaderId = userId;
         initialStatus = JobStatus.OPEN;
       } else {
@@ -116,7 +129,7 @@ export class JobService {
         );
       }
     } else if (createJobDto.jobType === JobType.COMMUNITY_SERVICE) {
-      // For community service, apartmentId is required
+      // For community service, hoaId is required
       if (!createJobDto.apartmentId) {
         throw new BadRequestException(
           this.messageService.getErrorMessage(
@@ -126,12 +139,19 @@ export class JobService {
         );
       }
 
-      const apartment = await this.prisma.apartment.findUnique({
+      const hoa = await this.prisma.hoa.findUnique({
         where: { id: createJobDto.apartmentId },
-        include: { leader: true },
+        include: {
+          userHOAs: {
+            where: { isLeader: true },
+            include: {
+              user: true,
+            },
+          },
+        },
       });
 
-      if (!apartment) {
+      if (!hoa) {
         throw new NotFoundException(
           this.messageService.getErrorMessage(
             'job.apartment_not_found',
@@ -140,15 +160,19 @@ export class JobService {
         );
       }
 
-      if (!apartment.leaderId) {
+      const leaderUserHOA = hoa.userHOAs.find((uh) => uh.isLeader);
+      if (!leaderUserHOA) {
         throw new BadRequestException(
           this.messageService.getErrorMessage('apartment.no_leader', language),
         );
       }
 
       if (userRole === 'HOME_OWNER') {
-        // Home owner can only target their own apartment
-        if (!user.apartmentId || user.apartmentId !== apartment.id) {
+        // Home owner can only target their own HOA
+        const userHOA = user.userHOAs.find(
+          (uh) => uh.hoaId === hoa.id && !uh.isLeader,
+        );
+        if (!userHOA) {
           throw new ForbiddenException(
             this.messageService.getErrorMessage(
               'job.not_authorized_community',
@@ -157,12 +181,12 @@ export class JobService {
           );
         }
 
-        apartmentId = apartment.id;
-        leaderId = apartment.leaderId;
+        hoaId = hoa.id;
+        leaderId = leaderUserHOA.userId;
         initialStatus = JobStatus.SENT_TO_LEADER; // Sent to leader for approval
       } else if (userRole === 'LEADER') {
-        // Leader must be the leader of this apartment
-        if (apartment.leaderId !== userId) {
+        // Leader must be the leader of this HOA
+        if (leaderUserHOA.userId !== userId) {
           throw new ForbiddenException(
             this.messageService.getErrorMessage(
               'job.not_authorized_apartment',
@@ -171,7 +195,7 @@ export class JobService {
           );
         }
 
-        apartmentId = apartment.id;
+        hoaId = hoa.id;
         leaderId = userId;
         initialStatus = JobStatus.OPEN; // Directly open when leader posts community job
       } else {
@@ -218,7 +242,7 @@ export class JobService {
           experienceLevel: createJobDto.experienceLevel
             ? experienceLevelTranslations
             : undefined,
-          apartmentId: apartmentId,
+          hoaId: hoaId,
           leaderId: leaderId,
           createdBy: userId,
           jobType: createJobDto.jobType,
@@ -250,7 +274,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -311,7 +335,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -361,7 +385,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -405,16 +429,16 @@ export class JobService {
     return job;
   }
 
-  async findByApartment(apartmentId: string) {
+  async findByApartment(hoaId: string) {
     return this.prisma.job.findMany({
-      where: { apartmentId },
+      where: { hoaId },
       include: {
         services: {
           include: {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -471,7 +495,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -571,12 +595,12 @@ export class JobService {
       : {};
 
     if (userRole === 'LEADER') {
-      // Get apartments managed by this leader
-      const apartments = await this.prisma.apartment.findMany({
-        where: { leaderId: userId },
-        select: { id: true },
+      // Get HOAs managed by this leader
+      const userHOAs = await this.prisma.userHOA.findMany({
+        where: { userId: userId, isLeader: true },
+        select: { hoaId: true },
       });
-      const apartmentIds = apartments.map((a) => a.id);
+      const hoaIds = userHOAs.map((uh) => uh.hoaId);
 
       // Fetch jobs created by leader
       const leaderJobs = await this.prisma.job.findMany({
@@ -587,7 +611,7 @@ export class JobService {
         },
         include: {
           services: { include: { service: true } },
-          apartment: {
+          hoa: {
             select: { id: true, name: true, hoaNumber: true, city: true },
           },
           leader: { select: { id: true, nationalId: true, role: true } },
@@ -617,13 +641,13 @@ export class JobService {
       const communityJobs = shouldFetchCommunityJobs
         ? await this.prisma.job.findMany({
             where: {
-              apartmentId: { in: apartmentIds },
+              hoaId: { in: hoaIds },
               jobType: 'COMMUNITY_SERVICE',
               ...statusFilter,
             },
             include: {
               services: { include: { service: true } },
-              apartment: {
+              hoa: {
                 select: { id: true, name: true, hoaNumber: true, city: true },
               },
               leader: { select: { id: true, nationalId: true, role: true } },
@@ -660,7 +684,7 @@ export class JobService {
         },
         include: {
           services: { include: { service: true } },
-          apartment: {
+          hoa: {
             select: { id: true, name: true, hoaNumber: true, city: true },
           },
           leader: { select: { id: true, nationalId: true, role: true } },
@@ -709,8 +733,13 @@ export class JobService {
       where: {
         jobType: 'COMMUNITY_SERVICE',
         status: 'SENT_TO_LEADER',
-        apartment: {
-          leaderId: leaderId,
+        hoa: {
+          userHOAs: {
+            some: {
+              userId: leaderId,
+              isLeader: true,
+            },
+          },
         },
       },
       include: {
@@ -719,7 +748,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -843,7 +872,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -956,7 +985,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -1006,8 +1035,15 @@ export class JobService {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
-        apartment: {
-          include: { leader: true },
+        hoa: {
+          include: {
+            userHOAs: {
+              where: { isLeader: true },
+              include: {
+                user: true,
+              },
+            },
+          },
         },
       },
     });
@@ -1037,9 +1073,10 @@ export class JobService {
     }
 
     // Verify the leader is authorized to approve this job
-    if (job.apartment.leaderId !== leaderId) {
+    const leaderUserHOA = job.hoa.userHOAs.find((uh) => uh.isLeader);
+    if (!leaderUserHOA || leaderUserHOA.userId !== leaderId) {
       throw new ForbiddenException(
-        'You are not authorized to approve jobs for this apartment',
+        'You are not authorized to approve jobs for this HOA',
       );
     }
 
@@ -1056,7 +1093,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -1114,8 +1151,15 @@ export class JobService {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
-        apartment: {
-          include: { leader: true },
+        hoa: {
+          include: {
+            userHOAs: {
+              where: { isLeader: true },
+              include: {
+                user: true,
+              },
+            },
+          },
         },
       },
     });
@@ -1145,7 +1189,8 @@ export class JobService {
     }
 
     // Verify the leader is authorized to reject this job
-    if (job.apartment.leaderId !== leaderId) {
+    const leaderUserHOA = job.hoa.userHOAs.find((uh) => uh.isLeader);
+    if (!leaderUserHOA || leaderUserHOA.userId !== leaderId) {
       throw new ForbiddenException(
         this.messageService.getErrorMessage(
           'job.not_authorized_reject_apartment',
@@ -1166,7 +1211,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
@@ -1230,7 +1275,7 @@ export class JobService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,
