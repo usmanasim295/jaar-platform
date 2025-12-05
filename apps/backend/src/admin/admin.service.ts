@@ -265,21 +265,16 @@ export class AdminService {
       where: { id: userId },
       include: {
         userDoc: true,
-        ownedHouses: {
+        userHOAs: {
           include: {
-            apartment: {
+            hoa: {
               include: {
                 community: true,
-              },
-            },
-          },
-        },
-        managedApartments: {
-          include: {
-            community: true,
-            _count: {
-              select: {
-                jobs: true,
+                _count: {
+                  select: {
+                    jobs: true,
+                  },
+                },
               },
             },
           },
@@ -323,56 +318,30 @@ export class AdminService {
     // Limit to 10 most recent for display
     const createdJobs = allCreatedJobs.slice(0, 10);
 
-    const ownedHouses =
-      user.role === Role.HOME_OWNER
-        ? user.ownedHouses.map((house) => {
-            const apartment = house.apartment as any;
-            return {
-              id: house.id,
-              houseNumber: house.houseNumber,
-              apartmentName: apartment
-                ? this.languageService.extractTranslation(
-                    apartment.name,
-                    language,
-                  )
-                : '',
-              city: apartment
-                ? this.languageService.extractTranslation(
-                    apartment.city,
-                    language,
-                  )
-                : '',
-              community: apartment?.community
-                ? this.languageService.extractTranslation(
-                    apartment.community.name,
-                    language,
-                  )
-                : '',
-              createdAt: house.createdAt,
-            };
-          })
-        : [];
+    const ownedHouses = []; // House model is commented out
 
-    const managedApartments =
+    const managedHOAs =
       user.role === Role.LEADER
-        ? user.managedApartments.map((apartment) => ({
-            id: apartment.id,
-            name: this.languageService.extractTranslation(
-              apartment.name as any,
-              language,
-            ),
-            city: this.languageService.extractTranslation(
-              apartment.city as any,
-              language,
-            ),
-            community: apartment.community
-              ? this.languageService.extractTranslation(
-                  apartment.community.name as any,
-                  language,
-                )
-              : '',
-            jobsCount: apartment._count?.jobs ?? 0,
-          }))
+        ? user.userHOAs
+            .filter((uh) => uh.isLeader)
+            .map((userHOA) => ({
+              id: userHOA.hoa.id,
+              name: this.languageService.extractTranslation(
+                userHOA.hoa.name as any,
+                language,
+              ),
+              city: this.languageService.extractTranslation(
+                userHOA.hoa.city as any,
+                language,
+              ),
+              community: userHOA.hoa.community
+                ? this.languageService.extractTranslation(
+                    userHOA.hoa.community.name as any,
+                    language,
+                  )
+                : '',
+              jobsCount: userHOA.hoa._count?.jobs ?? 0,
+            }))
         : [];
 
     return {
@@ -390,7 +359,7 @@ export class AdminService {
           totalCompletedJobs,
         },
         ownedHouses,
-        managedApartments,
+        managedApartments: managedHOAs,
         createdJobs,
       },
       message: this.messageService.getSuccessMessage(
@@ -572,7 +541,7 @@ export class AdminService {
         include: {
           _count: {
             select: {
-              ownedHouses: true,
+              userHOAs: true,
             },
           },
         },
@@ -584,7 +553,7 @@ export class AdminService {
         id: user.id,
         name: user.nationalId,
         createdDate: user.createdAt,
-        apartments: user._count.ownedHouses,
+        apartments: user._count.userHOAs,
         status: user.isBlocked ? 'Blocked' : 'Active',
         isBlocked: user.isBlocked,
       })),
@@ -625,14 +594,23 @@ export class AdminService {
         include: {
           _count: {
             select: {
-              managedApartments: true,
+              userHOAs: true,
             },
           },
-          communityMemberships: {
-            select: {
-              communityId: true,
-            },
+          userHOAs: {
+            where: { isLeader: true },
             take: 1,
+            include: {
+              hoa: {
+                include: {
+                  community: {
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       }),
@@ -643,8 +621,8 @@ export class AdminService {
         id: leader.id,
         name: leader.nationalId,
         createdDate: leader.createdAt,
-        apartments: leader._count.managedApartments,
-        communityId: leader.communityMemberships[0]?.communityId || null,
+        apartments: leader._count.userHOAs,
+        communityId: leader.userHOAs[0]?.hoa.community?.id || null,
         status: leader.isBlocked ? 'Blocked' : 'Active',
         isBlocked: leader.isBlocked,
       })),

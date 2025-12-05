@@ -79,7 +79,7 @@ export class BidController {
         result.bid,
         language,
         {
-          job: ['services', 'apartment'],
+          job: ['services', 'hoa'],
           serviceProvider: [],
         },
       ),
@@ -107,7 +107,7 @@ export class BidController {
       bids,
       language,
       {
-        job: ['services', 'apartment'],
+        job: ['services', 'hoa'],
         serviceProvider: [],
       },
     );
@@ -134,7 +134,7 @@ export class BidController {
       bids,
       language,
       {
-        job: ['services', 'apartment'],
+        job: ['services', 'hoa'],
         serviceProvider: [],
       },
     );
@@ -159,7 +159,7 @@ export class BidController {
       bids,
       language,
       {
-        job: ['services', 'apartment', 'leader', 'creator'],
+        job: ['services', 'hoa', 'leader', 'creator'],
         serviceProvider: [],
       },
     );
@@ -188,7 +188,7 @@ export class BidController {
       bids,
       language,
       {
-        job: ['services', 'apartment', 'leader', 'creator'],
+        job: ['services', 'hoa', 'leader', 'creator'],
         serviceProvider: [],
       },
     );
@@ -203,7 +203,7 @@ export class BidController {
       bid,
       language,
       {
-        job: ['services', 'apartment'],
+        job: ['services', 'hoa'],
         serviceProvider: [],
       },
     );
@@ -232,7 +232,7 @@ export class BidController {
         result.bid,
         language,
         {
-          job: ['services', 'apartment'],
+          job: ['services', 'hoa'],
           serviceProvider: [],
         },
       ),

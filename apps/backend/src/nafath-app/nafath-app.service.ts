@@ -43,8 +43,8 @@ export class NafathAppService {
       .replace(/^["']|["']$/g, '')
       .trim();
 
-    console.debug(`Received APP-ID: ${this.appId}, APP-KEY: ${this.appKey}`);
-    console.debug(`NAFATH_BASE_URL: ${this.nafathBaseUrl}`);
+    // console.debug(`Received APP-ID: ${this.appId}, APP-KEY: ${this.appKey}`);
+    // console.debug(`NAFATH_BASE_URL: ${this.nafathBaseUrl}`);
 
     if (!this.appId || !this.appKey) {
       console.warn('NAFATH_APP_ID or NAFATH_APP_KEY not configured');

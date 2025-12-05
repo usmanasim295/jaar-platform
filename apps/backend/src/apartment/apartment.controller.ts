@@ -46,8 +46,7 @@ export class ApartmentController {
         result.apartment,
         language,
         {
-          houses: ['apartment'],
-          leader: [],
+          userHOAs: ['user', 'hoa'],
           _count: [],
         },
       ),
@@ -70,12 +69,33 @@ export class ApartmentController {
     );
   }
 
+  // @Get('my-apartments')
+  // @Roles('LEADER')
+  // async findMyApartments(@Req() req: Request, @Query('lang') lang?: string) {
+  //   const user = req['user'];
+  //   const language = this.languageService.validateLanguage(lang);
+  //   const apartments = await this.apartmentService.findByLeader(
+  //     user.id,
+  //     language,
+  //   );
+
+  //   return this.languageService.transformNestedArrayForLanguage(
+  //     apartments,
+  //     language,
+  //     {
+  //       userHOAs: ['user', 'hoa'],
+  //       jobs: ['services'],
+  //       _count: [],
+  //     },
+  //   );
+  // }
+
   @Get('my-apartments')
-  @Roles('LEADER')
+  @Roles('LEADER', 'HOME_OWNER')
   async findMyApartments(@Req() req: Request, @Query('lang') lang?: string) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
-    const apartments = await this.apartmentService.findByLeader(
+    const apartments = await this.apartmentService.getApartments(
       user.id,
       language,
     );
@@ -84,7 +104,7 @@ export class ApartmentController {
       apartments,
       language,
       {
-        houses: ['apartment'],
+        userHOAs: ['user', 'hoa'],
         jobs: ['services'],
         _count: [],
       },
@@ -131,8 +151,7 @@ export class ApartmentController {
         result.apartment,
         language,
         {
-          houses: ['apartment'],
-          leader: [],
+          userHOAs: ['user', 'hoa'],
           _count: [],
         },
       ),
@@ -146,39 +165,30 @@ export class ApartmentController {
     return this.apartmentService.remove(id, user.id);
   }
 
-  @Post(':id/houses')
-  @Roles('LEADER')
-  async addHouse(
-    @Param('id') apartmentId: string,
-    @Body() houseData: AddHouseDto,
-    @Req() req: Request,
-    @Query('lang') lang?: string,
-  ) {
-    const user = req['user'];
-    const language = this.languageService.validateLanguage(lang);
-    const result = await this.apartmentService.addHouse(
-      apartmentId,
-      houseData,
-      user.id,
-    );
+  // @Post(':id/houses')
+  // @Roles('LEADER')
+  // async addHouse(
+  //   @Param('id') apartmentId: string,
+  //   @Body() houseData: AddHouseDto,
+  //   @Req() req: Request,
+  //   @Query('lang') lang?: string,
+  // ) {
+  //   const user = req['user'];
+  //   const language = this.languageService.validateLanguage(lang);
+  //   const result = await this.apartmentService.addHouse(
+  //     apartmentId,
+  //     houseData,
+  //     user.id,
+  //     language,
+  //   );
 
-    return {
-      ...result,
-      house: this.languageService.transformNestedObjectForLanguage(
-        result.house,
-        language,
-        {
-          apartment: [],
-          owner: [],
-        },
-      ),
-    };
-  }
+  //   return result;
+  // }
 
-  @Delete('houses/:houseId')
-  @Roles('LEADER')
-  async removeHouse(@Param('houseId') houseId: string, @Req() req: Request) {
-    const user = req['user'];
-    return this.apartmentService.removeHouse(houseId, user.id);
-  }
+  // @Delete('houses/:houseId')
+  // @Roles('LEADER')
+  // async removeHouse(@Param('houseId') houseId: string, @Req() req: Request) {
+  //   const user = req['user'];
+  //   return this.apartmentService.removeHouse(houseId, user.id);
+  // }
 }

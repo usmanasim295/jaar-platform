@@ -65,18 +65,16 @@ export class AuthService {
     // Check HOA number logic based on role
     if (dto.role === Role.LEADER) {
       // For LEADER: Check if HOA number already has a leader
-      const existingApartmentWithLeader = await this.prisma.apartment.findFirst(
-        {
-          where: {
-            hoaNumber: dto.hoaNumber,
-            leader: {
-              role: Role.LEADER,
-            },
+      const existingHoa = await this.prisma.hoa.findUnique({
+        where: { hoaNumber: dto.hoaNumber },
+        include: {
+          userHOAs: {
+            where: { isLeader: true },
           },
         },
-      );
+      });
 
-      if (existingApartmentWithLeader) {
+      if (existingHoa && existingHoa.userHOAs.length > 0) {
         throw new ConflictException(
           this.messageService.getErrorMessage('auth.hoa_has_leader', language),
         );
@@ -111,37 +109,33 @@ export class AuthService {
       },
     });
 
-    let apartment: any = null;
+    let hoa: any = null;
 
-    // Ensure apartment exists for this HOA number
-    const existingApartment = await this.prisma.apartment.findUnique({
+    // Ensure HOA exists for this HOA number
+    let hoaRecord = await this.prisma.hoa.findUnique({
       where: { hoaNumber: dto.hoaNumber },
     });
 
-    if (!existingApartment) {
-      // Create apartment without leader for this HOA number
-      await this.apartmentService.createWithoutLeader(dto.hoaNumber);
+    if (!hoaRecord) {
+      // Create HOA without leader for this HOA number
+      hoaRecord = await this.apartmentService.createWithoutLeader(
+        dto.hoaNumber,
+      );
     }
 
-    // Fetch the apartment (it exists now)
-    const apartmentRecord = await this.prisma.apartment.findUnique({
-      where: { hoaNumber: dto.hoaNumber },
-    });
-
-    // If LEADER role and apartment details provided, update apartment with details and assign leader
+    // If LEADER role and apartment details provided, update HOA with details and create UserHOA
     if (
       dto.role === Role.LEADER &&
       dto.apartmentName &&
       dto.apartmentAddress &&
       dto.apartmentCity
     ) {
-      // Translate apartment details
+      // Translate HOA details
       const [
         nameTranslations,
         addressTranslations,
         cityTranslations,
         stateTranslations,
-        countryTranslations,
       ] = await Promise.all([
         this.translationService.createTranslationObject(dto.apartmentName),
         this.translationService.createTranslationObject(dto.apartmentAddress),
@@ -149,60 +143,87 @@ export class AuthService {
         dto.apartmentState
           ? this.translationService.createTranslationObject(dto.apartmentState)
           : { en: '', ar: '' },
-        this.translationService.createTranslationObject(
-          dto.apartmentCountry || 'Saudi Arabia',
-        ),
       ]);
 
-      apartment = await this.prisma.apartment.update({
-        where: { hoaNumber: dto.hoaNumber },
-        data: {
-          leaderId: user.id,
-          name: nameTranslations,
-          address: addressTranslations,
-          city: cityTranslations,
-          state: dto.apartmentState ? stateTranslations : undefined,
-          country: countryTranslations,
-        },
-        include: {
-          leader: {
-            select: {
-              id: true,
-              nationalId: true,
-              role: true,
+      // Update HOA and create UserHOA relationship
+      const [updatedHoa] = await Promise.all([
+        this.prisma.hoa.update({
+          where: { hoaNumber: dto.hoaNumber },
+          data: {
+            name: nameTranslations,
+            address: addressTranslations,
+            city: cityTranslations,
+            state: dto.apartmentState ? stateTranslations : undefined,
+          },
+          include: {
+            userHOAs: {
+              where: { isLeader: true },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    nationalId: true,
+                    role: true,
+                  },
+                },
+              },
             },
           },
-        },
-      });
+        }),
+        this.prisma.userHOA.create({
+          data: {
+            userId: user.id,
+            hoaId: hoaRecord.id,
+            isLeader: true,
+          },
+        }),
+      ]);
+
+      hoa = updatedHoa;
     } else if (dto.role === Role.LEADER) {
-      // Leader without apartment details - assign to existing apartment
-      apartment = await this.prisma.apartment.update({
+      // Leader without apartment details - create UserHOA relationship
+      await this.prisma.userHOA.create({
+        data: {
+          userId: user.id,
+          hoaId: hoaRecord.id,
+          isLeader: true,
+        },
+      });
+
+      hoa = await this.prisma.hoa.findUnique({
         where: { hoaNumber: dto.hoaNumber },
-        data: { leaderId: user.id },
         include: {
-          leader: {
-            select: {
-              id: true,
-              nationalId: true,
-              role: true,
+          userHOAs: {
+            where: { isLeader: true },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  nationalId: true,
+                  role: true,
+                },
+              },
             },
           },
         },
       });
-    } else if (dto.role === Role.HOME_OWNER && apartmentRecord) {
-      // Assign home owner to this apartment
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { apartmentId: apartmentRecord.id },
+    } else if (dto.role === Role.HOME_OWNER && hoaRecord) {
+      // Assign home owner to this HOA via UserHOA
+      await this.prisma.userHOA.create({
+        data: {
+          userId: user.id,
+          hoaId: hoaRecord.id,
+          isLeader: false,
+        },
       });
     }
 
     // Create or get community and add user to it
     let community: any = null;
-    if (apartmentRecord) {
+    if (hoaRecord) {
       community = await this.chatService.createOrGetCommunity(
         dto.hoaNumber,
-        apartmentRecord.id,
+        hoaRecord.id,
       );
       await this.chatService.addUserToCommunity(user.id, dto.hoaNumber);
 
@@ -227,7 +248,7 @@ export class AuthService {
       ),
       user: userWithoutPassword,
       documentUrl: s3Url,
-      apartment: apartment || apartmentRecord,
+      apartment: hoa || hoaRecord,
       community,
     };
   }
@@ -237,69 +258,50 @@ export class AuthService {
       where: { nationalId: loginDto.nationalId },
       include: {
         userDoc: true,
-        // Include managed apartments if user is a leader
-        managedApartments: {
+        // Include all HOAs where user is a member (both leader and member)
+        userHOAs: {
           include: {
-            houses: {
+            hoa: {
               include: {
-                owner: {
-                  select: {
-                    id: true,
-                    nationalId: true,
-                    role: true,
-                  },
-                },
-              },
-            },
-            jobs: {
-              include: {
-                services: {
+                jobs: {
                   include: {
-                    service: true,
-                  },
-                },
-                bids: {
-                  include: {
-                    serviceProvider: {
-                      select: {
-                        id: true,
-                        name: true,
-                        rating: true,
-                        totalJobs: true,
+                    services: {
+                      include: {
+                        service: true,
+                      },
+                    },
+                    bids: {
+                      include: {
+                        serviceProvider: {
+                          select: {
+                            id: true,
+                            name: true,
+                            rating: true,
+                            totalJobs: true,
+                          },
+                        },
                       },
                     },
                   },
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
                 },
-              },
-              orderBy: {
-                createdAt: 'desc',
-              },
-            },
-            _count: {
-              select: {
-                houses: true,
-                jobs: true,
-              },
-            },
-          },
-        },
-        // Include owned houses if user is a home owner
-        ownedHouses: {
-          include: {
-            apartment: {
-              select: {
-                id: true,
-                name: true,
-                hoaNumber: true,
-                address: true,
-                city: true,
-                state: true,
-                country: true,
-                leader: {
+                _count: {
                   select: {
-                    id: true,
-                    nationalId: true,
-                    role: true,
+                    jobs: true,
+                  },
+                },
+                userHOAs: {
+                  where: { isLeader: true },
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        nationalId: true,
+                        role: true,
+                      },
+                    },
                   },
                 },
               },
@@ -314,7 +316,7 @@ export class AuthService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -341,25 +343,6 @@ export class AuthService {
           },
           orderBy: {
             createdAt: 'desc',
-          },
-        },
-        // Include the direct apartment relation for home owners
-        apartment: {
-          select: {
-            id: true,
-            hoaNumber: true,
-            name: true,
-            address: true,
-            city: true,
-            state: true,
-            country: true,
-            leader: {
-              select: {
-                id: true,
-                nationalId: true,
-                role: true,
-              },
-            },
           },
         },
       },

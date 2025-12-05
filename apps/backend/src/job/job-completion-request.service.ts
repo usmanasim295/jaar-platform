@@ -55,7 +55,7 @@ export class JobCompletionRequestService {
     const job = await this.prisma.job.findUnique({
       where: { id: createDto.jobId },
       include: {
-        apartment: true,
+        hoa: true,
         leader: true,
         creator: true,
       },
@@ -134,7 +134,7 @@ export class JobCompletionRequestService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -209,7 +209,7 @@ export class JobCompletionRequestService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -268,7 +268,7 @@ export class JobCompletionRequestService {
     if (userRole === 'LEADER') {
       // Leader can see completion requests for jobs in apartments they manage
       whereClause.job = {
-        apartment: {
+        hoa: {
           leaderId: userId,
         },
       };
@@ -296,7 +296,7 @@ export class JobCompletionRequestService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -348,7 +348,7 @@ export class JobCompletionRequestService {
                   service: true,
                 },
               },
-              apartment: {
+              hoa: {
                 select: {
                   id: true,
                   name: true,
@@ -418,7 +418,7 @@ export class JobCompletionRequestService {
         include: {
           job: {
             include: {
-              apartment: true,
+              hoa: true,
               leader: true,
               creator: true,
             },
@@ -498,7 +498,7 @@ export class JobCompletionRequestService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -591,7 +591,7 @@ export class JobCompletionRequestService {
             service: true,
           },
         },
-        apartment: {
+        hoa: {
           select: {
             id: true,
             name: true,

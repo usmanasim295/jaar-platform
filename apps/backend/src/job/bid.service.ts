@@ -75,7 +75,7 @@ export class BidService {
             service: true,
           },
         },
-        apartment: true,
+        hoa: true,
       },
     });
 
@@ -170,7 +170,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -207,7 +207,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -263,7 +263,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -290,7 +290,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -335,7 +335,7 @@ export class BidService {
           include: {
             leader: true,
             creator: true,
-            apartment: true,
+            hoa: true,
           },
         },
       },
@@ -383,7 +383,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -483,7 +483,7 @@ export class BidService {
     const job = await this.prisma.job.findUnique({
       where: { id: jobId },
       include: {
-        apartment: true,
+        hoa: true,
         leader: true,
         creator: true,
       },
@@ -539,7 +539,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,
@@ -586,7 +586,7 @@ export class BidService {
       const job = await this.prisma.job.findUnique({
         where: { id: jobId },
         include: {
-          apartment: true,
+          hoa: true,
           leader: true,
           creator: true,
         },
@@ -639,7 +639,7 @@ export class BidService {
             { leaderId: userId }, // Jobs posted by this leader
             {
               jobType: 'COMMUNITY_SERVICE',
-              apartment: {
+              hoa: {
                 leaderId: userId, // Community service jobs in apartments they manage
               },
             },
@@ -692,7 +692,7 @@ export class BidService {
                 service: true,
               },
             },
-            apartment: {
+            hoa: {
               select: {
                 id: true,
                 name: true,

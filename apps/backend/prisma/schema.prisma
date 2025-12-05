@@ -18,15 +18,10 @@ model User {
   userDoc    UserDoc?
 
   // Relations based on role
-  ownedHouses                House[]                @relation("HouseOwner")
-  managedApartments          Apartment[]            @relation("ApartmentLeader") // Optional - can be empty if no apartments managed
+  userHOAs                   UserHOA[] // Many-to-many relationship with HOAs
   postedJobs                 Job[]                  @relation("JobLeader") // Optional - can be empty if no jobs posted
   createdJobs                Job[]                  @relation("JobCreator") // Jobs created by this user (home owners)
   reviewedCompletionRequests JobCompletionRequest[] @relation("JobCompletionReviewer") // Completion requests reviewed by this user
-
-  // Home owner apartment assignment
-  apartmentId String?
-  apartment   Apartment? @relation("ApartmentOwner", fields: [apartmentId], references: [id])
 
   // Chat relations
   communityMemberships CommunityMember[]
@@ -36,36 +31,44 @@ model User {
   pollVotes            PollVote[]
 }
 
-model Apartment {
+model UserHOA {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  hoaId     String
+  hoa       Hoa      @relation(fields: [hoaId], references: [id])
+  isLeader  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, hoaId]) // One relationship per user per HOA
+}
+
+model Hoa {
   id        String     @id @default(uuid())
-  name      Json // Apartment name with translations {en: string, ar: string}
+  name      Json // HOA name with translations {en: string, ar: string}
   hoaNumber String     @unique // HOA number - unique across system
   address   Json // Full address with translations {en: string, ar: string}
   city      Json // City with translations {en: string, ar: string}
   state     Json? // State with translations {en: string, ar: string}
-  country   Json       @default("{\"en\": \"Saudi Arabia\", \"ar\": \"السعودية\"}")
-  leaderId  String? // User ID who is the leader (optional initially)
-  leader    User?      @relation("ApartmentLeader", fields: [leaderId], references: [id])
-  houses    House[] // Multiple houses in this apartment
-  jobs      Job[] // Jobs posted for this apartment
-  owners    User[]     @relation("ApartmentOwner") // Home owners belonging to this apartment
-  community Community? // One community per apartment
+  userHOAs  UserHOA[] // Many-to-many relationship with users
+  jobs      Job[] // Jobs posted for this HOA
+  community Community? // One community per HOA
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
-// TODO remove house
-model House {
-  id          String    @id @default(uuid())
-  houseNumber String // House/Flat number within apartment
-  apartmentId String
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
-  ownerId     String // User ID who owns this house
-  owner       User      @relation("HouseOwner", fields: [ownerId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 
-  @@unique([apartmentId, houseNumber]) // Unique house number within apartment
-}
+// TODO remove house
+// model House {
+//   id          String   @id @default(uuid())
+//   houseNumber String // House/Flat number within HOA
+//   hoaId       String
+//   hoa         Hoa      @relation(fields: [hoaId], references: [id])
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   @@unique([hoaId, houseNumber]) // Unique house number within HOA
+// }
 
 model ServiceProvider {
   id                    String                    @id @default(uuid())
@@ -176,8 +179,8 @@ model Job {
   endDate            DateTime
   timeSlot           Json // Time slot with translations {en: string, ar: string}
   experienceLevel    Json? // Optional experience requirement with translations {en: string, ar: string}
-  apartmentId        String // Which apartment this job is for
-  apartment          Apartment              @relation(fields: [apartmentId], references: [id])
+  hoaId              String // Which HOA this job is for
+  hoa                Hoa                    @relation(fields: [hoaId], references: [id])
   leaderId           String? // Leader who posted the job (optional initially)
   leader             User?                  @relation("JobLeader", fields: [leaderId], references: [id])
   createdBy          String // User who created the job (home owner)
@@ -272,16 +275,16 @@ enum JobCompletionRequestStatus {
 
 // Chat and Community Models
 model Community {
-  id          String            @id @default(uuid())
-  hoaNumber   String            @unique // One community per HOA number
-  name        Json // Community name with translations {en: string, ar: string}
-  apartmentId String            @unique
-  apartment   Apartment         @relation(fields: [apartmentId], references: [id])
-  members     CommunityMember[]
-  chats       Chat[]
-  polls       Poll[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id        String            @id @default(uuid())
+  hoaNumber String            @unique // One community per HOA number
+  name      Json // Community name with translations {en: string, ar: string}
+  hoaId     String            @unique
+  hoa       Hoa               @relation(fields: [hoaId], references: [id])
+  members   CommunityMember[]
+  chats     Chat[]
+  polls     Poll[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 }
 
 model CommunityMember {
