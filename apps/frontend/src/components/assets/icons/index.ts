@@ -13,7 +13,7 @@ import AlignBottom from './AlignBottom.svg';
 import Star from './Star.svg';
 import CalenderBlank from './CalendarBlank.svg';
 import File from './File.svg';
-import Plus from './Plus24*24.svg';
+import Plus from './Plus24x24.svg';
 import Airconditioner from './air-conditioner1.svg';
 import Cable from './cable1.svg';
 import Clock from './Clock.svg';
