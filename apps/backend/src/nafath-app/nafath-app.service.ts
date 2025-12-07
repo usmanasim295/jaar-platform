@@ -275,6 +275,12 @@ export class NafathAppService {
         await firstValueFrom(this.httpService.post(url, body, { headers }));
 
       console.log(`Nafath request status retrieved: ${response.data.status}`);
+      await this.prisma.nafathVerification.update({
+        where: { id: nafathVerification.id },
+        data: {
+          status: response.data.status,
+        },
+      });
       return response.data;
     } catch (error: any) {
       // Comprehensive error logging
@@ -501,6 +507,12 @@ export class NafathAppService {
         await firstValueFrom(this.httpService.post(url, body, { headers }));
 
       console.log(`Nafath request status retrieved: ${response.data.status}`);
+      await this.prisma.nafathVerification.update({
+        where: { id: nafathVerification.id },
+        data: {
+          status: response.data.status,
+        },
+      });
       return response.data;
     } catch (error: any) {
       // Comprehensive error logging
