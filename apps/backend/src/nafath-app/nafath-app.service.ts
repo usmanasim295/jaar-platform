@@ -98,7 +98,7 @@ export class NafathAppService {
         return { status: existingNafathVerification.status };
       } else if (existingNafathVerification) {
         nafathVerification = await this.prisma.nafathVerification.update({
-          where: { nationalId: createRequestDto.nationalId },
+          where: { id: existingNafathVerification.id },
           data: {
             status: 'WAITING',
           },
@@ -237,6 +237,16 @@ export class NafathAppService {
         },
       );
 
+      if (!nafathVerification) {
+        throw new HttpException(
+          {
+            message: 'Nafath verification not found for this national ID',
+            error: 'NafathVerificationNotFound',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
       const headers = {
         'APP-ID': this.appId,
         'APP-KEY': this.appKey,
@@ -244,7 +254,7 @@ export class NafathAppService {
       };
 
       console.log(
-        `Getting Nafath request status for transId: ${requestStatusDto.transId}`,
+        `Getting Nafath request status for transId: ${nafathVerification.transId}`,
       );
       console.log(`Full URL: ${url}`);
       console.log(`Headers:`, JSON.stringify(headers, null, 2));
@@ -400,7 +410,11 @@ export class NafathAppService {
 
       await this.prisma.tempNafathWebhook.create({
         data: {
-          response: webhookDto,
+          response: {
+            token: webhookDto.token,
+            transId: webhookDto.transId,
+            requestId: webhookDto.requestId,
+          },
         },
       });
       // Verify JWT token
