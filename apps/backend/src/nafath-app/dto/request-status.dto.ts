@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, Matches } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  Matches,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 
 export class RequestStatusDto {
   @IsString()
@@ -8,4 +14,8 @@ export class RequestStatusDto {
       'National ID must start with 1,2,3,4,5, or 6 and be 10 digits long',
   })
   nationalId: string;
+
+  @IsOptional()
+  @IsBoolean()
+  accept: boolean;
 }

@@ -62,4 +62,11 @@ export class NafathAppController {
     );
     return this.nafathAppService.handleWebhook(webhookDto);
   }
+
+  @Public()
+  @Post('update')
+  @HttpCode(HttpStatus.OK)
+  async statusUpdate(@Body() body: RequestStatusDto): Promise<any> {
+    return this.nafathAppService.statusUpdate(body);
+  }
 }

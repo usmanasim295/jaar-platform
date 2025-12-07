@@ -20,6 +20,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class NafathAppService {
   private readonly logger = new Logger(NafathAppService.name);
   private readonly nafathBaseUrl: string;
+  private readonly nafathUpdateBaseUrl: string;
   private readonly appId: string;
   private readonly appKey: string;
 
@@ -32,6 +33,11 @@ export class NafathAppService {
     // Remove quotes and whitespace from env variables
     this.nafathBaseUrl = (
       process.env.NAFATH_BASE_URL || 'https://nafath.api.elm.sa'
+    )
+      .replace(/^["']|["']$/g, '')
+      .trim();
+    this.nafathUpdateBaseUrl = (
+      process.env.NAFATH_UPDATE_BASE_URL || 'https://nafath.api.elm.sa'
     )
       .replace(/^["']|["']$/g, '')
       .trim();
@@ -447,6 +453,105 @@ export class NafathAppService {
           'en',
         ),
       };
+    }
+  }
+
+  async statusUpdate(requestStatusDto: RequestStatusDto) {
+    try {
+      // Ensure base URL doesn't have trailing slash
+      const baseUrl = this.nafathUpdateBaseUrl.replace(/\/$/, '');
+      const url = `${baseUrl}/api/v1/mfa/request/update`;
+
+      const nafathVerification = await this.prisma.nafathVerification.findFirst(
+        {
+          where: {
+            nationalId: requestStatusDto.nationalId,
+          },
+        },
+      );
+
+      if (!nafathVerification) {
+        throw new HttpException(
+          {
+            message: 'Nafath verification not found for this national ID',
+            error: 'NafathVerificationNotFound',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const headers = {
+        'APP-ID': this.appId,
+        'APP-KEY': this.appKey,
+        'Content-Type': 'application/json',
+      };
+
+      console.log(
+        `Getting Nafath request status for transId: ${nafathVerification.transId}`,
+      );
+      console.log(`Full URL: ${url}`);
+      console.log(`Headers:`, JSON.stringify(headers, null, 2));
+
+      const body = {
+        transId: nafathVerification.transId,
+        random: nafathVerification.random,
+        accept: requestStatusDto.accept,
+      };
+      const response: AxiosResponse<NafathStatusResponseDto> =
+        await firstValueFrom(this.httpService.post(url, body, { headers }));
+
+      console.log(`Nafath request status retrieved: ${response.data.status}`);
+      return response.data;
+    } catch (error: any) {
+      // Comprehensive error logging
+      console.error('========== NAFATH GET STATUS ERROR ==========');
+      console.error('Error Type:', error?.constructor?.name || typeof error);
+      console.error('Error Message:', error?.message);
+      console.error('Error Stack:', error?.stack);
+
+      if (error?.response) {
+        console.error('HTTP Status:', error.response.status);
+        console.error('HTTP Status Text:', error.response.statusText);
+        console.error(
+          'Response Headers:',
+          JSON.stringify(error.response.headers, null, 2),
+        );
+        console.error(
+          'Response Data:',
+          JSON.stringify(error.response.data, null, 2),
+        );
+      }
+
+      if (error?.config) {
+        console.error(
+          'Axios Config:',
+          JSON.stringify(
+            {
+              url: error.config.url,
+              method: error.config.method,
+              baseURL: error.config.baseURL,
+              headers: error.config.headers,
+              data: error.config.data,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
+      console.error(
+        'Full Error Object:',
+        JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
+      );
+      console.error('=============================================');
+
+      throw new HttpException(
+        {
+          message: error.message || 'Failed to get Nafath request status',
+          error: 'NafathStatusError',
+        },
+        error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
