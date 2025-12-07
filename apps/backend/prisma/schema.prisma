@@ -29,7 +29,6 @@ model User {
   sentMessages         Message[]
   createdPolls         Poll[]
   pollVotes            PollVote[]
-  nafathVerifications  NafathVerification[]
 }
 
 model UserHOA {
@@ -62,7 +61,7 @@ model Hoa {
 model NafathVerification {
   id         String                   @id @default(uuid())
   nationalId String
-  user       User?                    @relation(fields: [nationalId], references: [nationalId])
+  // user       User?                    @relation(fields: [nationalId], references: [nationalId])
   status     NafathVerificationStatus @default(WAITING)
   details    Json?
   transId    String?
