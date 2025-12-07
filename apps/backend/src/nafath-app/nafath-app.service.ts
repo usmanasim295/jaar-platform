@@ -137,9 +137,7 @@ export class NafathAppService {
       console.log('[NAFATH CURL] Create Request:', curlCreate);
 
       const response: AxiosResponse<NafathCreateRequestResponseDto> =
-        await firstValueFrom(
-          this.httpService.post(fullUrl, createRequestDto, { headers }),
-        );
+        await firstValueFrom(this.httpService.post(fullUrl, body, { headers }));
 
       console.log(
         `Nafath request created successfully: ${response.data.transId}`,
