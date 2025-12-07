@@ -3,21 +3,17 @@ import {
   Post,
   Get,
   Body,
-  Query,
+  // Query,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  // UseGuards,
   Logger,
 } from '@nestjs/common';
 import { NafathAppService } from './nafath-app.service';
-import {
-  CreateRequestDto,
-  CreateRequestQueryDto,
-} from './dto/create-request.dto';
+import { CreateRequestDto } from './dto/create-request.dto';
 import { RequestStatusDto } from './dto/request-status.dto';
 import { WebhookDto, WebhookResponseDto } from './dto/webhook.dto';
 import {
-  NafathCreateRequestResponseDto,
   NafathStatusResponseDto,
   NafathJwkResponseDto,
 } from './dto/nafath-response.dto';
@@ -34,12 +30,8 @@ export class NafathAppController {
   @HttpCode(HttpStatus.OK)
   async createRequest(
     @Body() createRequestDto: CreateRequestDto,
-    @Query() queryDto: CreateRequestQueryDto,
-  ): Promise<NafathCreateRequestResponseDto> {
-    console.log(
-      `Creating Nafath request for nationalId: ${createRequestDto.nationalId}`,
-    );
-    return this.nafathAppService.createRequest(createRequestDto, queryDto);
+  ): Promise<NafathStatusResponseDto> {
+    return this.nafathAppService.createRequest(createRequestDto);
   }
 
   @Public()
@@ -48,9 +40,6 @@ export class NafathAppController {
   async getRequestStatus(
     @Body() requestStatusDto: RequestStatusDto,
   ): Promise<NafathStatusResponseDto> {
-    this.logger.log(
-      `Getting Nafath request status for transId: ${requestStatusDto.transId}`,
-    );
     return this.nafathAppService.getRequestStatus(requestStatusDto);
   }
 

@@ -29,6 +29,7 @@ model User {
   sentMessages         Message[]
   createdPolls         Poll[]
   pollVotes            PollVote[]
+  nafathVerifications  NafathVerification[]
 }
 
 model UserHOA {
@@ -56,6 +57,32 @@ model Hoa {
   community Community? // One community per HOA
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+}
+
+model NafathVerification {
+  id         String                   @id @default(uuid())
+  nationalId String
+  user       User?                    @relation(fields: [nationalId], references: [nationalId])
+  status     NafathVerificationStatus @default(WAITING)
+  details    Json?
+  transId    String?
+  random     String?
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+}
+
+enum NafathVerificationStatus {
+  WAITING
+  EXPIRED
+  REJECTED
+  COMPLETED
+}
+
+model TempNafathWebhook {
+  id        String   @id @default(uuid())
+  response  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // TODO remove house

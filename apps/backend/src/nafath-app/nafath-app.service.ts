@@ -1,22 +1,20 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+// import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { JwtService } from '@nestjs/jwt';
 import { MessageService } from 'src/common/services/message.service';
 import { firstValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import {
-  CreateRequestDto,
-  CreateRequestQueryDto,
-} from './dto/create-request.dto';
+import { CreateRequestDto } from './dto/create-request.dto';
 import { RequestStatusDto } from './dto/request-status.dto';
 import { WebhookDto } from './dto/webhook.dto';
 import {
   NafathCreateRequestResponseDto,
   NafathStatusResponseDto,
   NafathJwkResponseDto,
-  NafathErrorResponseDto,
+  // NafathErrorResponseDto,
 } from './dto/nafath-response.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class NafathAppService {
@@ -29,6 +27,7 @@ export class NafathAppService {
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
     private readonly messageService: MessageService,
+    private readonly prisma: PrismaService,
   ) {
     // Remove quotes and whitespace from env variables
     this.nafathBaseUrl = (
@@ -79,15 +78,42 @@ export class NafathAppService {
 
   async createRequest(
     createRequestDto: CreateRequestDto,
-    queryDto: CreateRequestQueryDto,
-  ): Promise<NafathCreateRequestResponseDto> {
+  ): Promise<NafathStatusResponseDto> {
     try {
       // Ensure base URL doesn't have trailing slash and construct full URL
       const baseUrl = this.nafathBaseUrl.replace(/\/$/, '');
       const url = `${baseUrl}/api/v1/mfa/request`;
+
+      const existingNafathVerification =
+        await this.prisma.nafathVerification.findFirst({
+          where: {
+            nationalId: createRequestDto.nationalId,
+          },
+        });
+      let nafathVerification = existingNafathVerification;
+      if (
+        existingNafathVerification &&
+        existingNafathVerification.status === 'COMPLETED'
+      ) {
+        return { status: existingNafathVerification.status };
+      } else if (existingNafathVerification) {
+        nafathVerification = await this.prisma.nafathVerification.update({
+          where: { nationalId: createRequestDto.nationalId },
+          data: {
+            status: 'WAITING',
+          },
+        });
+      } else {
+        nafathVerification = await this.prisma.nafathVerification.create({
+          data: {
+            nationalId: createRequestDto.nationalId,
+            status: 'WAITING',
+          },
+        });
+      }
       const params = new URLSearchParams({
-        local: queryDto.local,
-        requestId: queryDto.requestId,
+        local: 'en',
+        requestId: nafathVerification.id,
       });
       const fullUrl = `${url}?${params.toString()}`;
 
@@ -102,14 +128,12 @@ export class NafathAppService {
       );
       console.log(`Full URL: ${fullUrl}`);
       console.log(`Headers:`, JSON.stringify(headers, null, 2));
-
+      const body = {
+        service: 'Login',
+        ...createRequestDto,
+      };
       // Log curl equivalent
-      const curlCreate = this.buildCurl(
-        'POST',
-        fullUrl,
-        headers,
-        createRequestDto,
-      );
+      const curlCreate = this.buildCurl('POST', fullUrl, headers, body);
       console.log('[NAFATH CURL] Create Request:', curlCreate);
 
       const response: AxiosResponse<NafathCreateRequestResponseDto> =
@@ -120,7 +144,14 @@ export class NafathAppService {
       console.log(
         `Nafath request created successfully: ${response.data.transId}`,
       );
-      return response.data;
+      nafathVerification = await this.prisma.nafathVerification.update({
+        where: { id: nafathVerification.id },
+        data: {
+          transId: response.data.transId,
+          random: response.data.random,
+        },
+      });
+      return { status: nafathVerification.status };
     } catch (error: any) {
       // Comprehensive error logging
       console.error('========== NAFATH CREATE REQUEST ERROR ==========');
@@ -198,6 +229,14 @@ export class NafathAppService {
       const baseUrl = this.nafathBaseUrl.replace(/\/$/, '');
       const url = `${baseUrl}/api/v1/mfa/request/status`;
 
+      const nafathVerification = await this.prisma.nafathVerification.findFirst(
+        {
+          where: {
+            nationalId: requestStatusDto.nationalId,
+          },
+        },
+      );
+
       const headers = {
         'APP-ID': this.appId,
         'APP-KEY': this.appKey,
@@ -213,11 +252,13 @@ export class NafathAppService {
       // Log curl equivalent
       const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
       console.log('[NAFATH CURL] Get Status:', curlStatus);
-
+      const body = {
+        transId: nafathVerification.transId,
+        random: nafathVerification.random,
+        nationalId: nafathVerification.nationalId,
+      };
       const response: AxiosResponse<NafathStatusResponseDto> =
-        await firstValueFrom(
-          this.httpService.post(url, requestStatusDto, { headers }),
-        );
+        await firstValueFrom(this.httpService.post(url, body, { headers }));
 
       console.log(`Nafath request status retrieved: ${response.data.status}`);
       return response.data;
@@ -357,13 +398,17 @@ export class NafathAppService {
     try {
       console.log(`Received Nafath webhook for transId: ${webhookDto.transId}`);
 
+      await this.prisma.tempNafathWebhook.create({
+        data: {
+          response: webhookDto,
+        },
+      });
       // Verify JWT token
       const decodedToken = await this.verifyJwtToken(webhookDto.token);
 
       console.log(
         `Webhook JWT verified successfully. Status: ${decodedToken.status}`,
       );
-
       // Process the webhook based on status
       if (decodedToken.status === 'COMPLETED') {
         console.log('User accepted the Nafath request');

@@ -1,10 +1,12 @@
+import { NafathVerificationStatus } from '@prisma/client';
+
 export class NafathCreateRequestResponseDto {
   transId: string;
   random: string;
 }
 
 export class NafathStatusResponseDto {
-  status: 'WAITING' | 'EXPIRED' | 'REJECTED' | 'COMPLETED';
+  status: NafathVerificationStatus;
 }
 
 export class NafathJwkResponseDto {
