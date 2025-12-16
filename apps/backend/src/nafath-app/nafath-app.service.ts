@@ -433,6 +433,7 @@ export class NafathAppService {
       console.log(
         `Webhook JWT verified successfully. Status: ${decodedToken.status}`,
       );
+      console.log('Decoded Token:', JSON.stringify(decodedToken, null, 2));
       // Process the webhook based on status
       if (decodedToken.status === 'COMPLETED') {
         console.log('User accepted the Nafath request');
