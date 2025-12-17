@@ -155,7 +155,10 @@ export class NafathAppService {
           random: response.data.random,
         },
       });
-      return { status: nafathVerification.status };
+      return {
+        status: nafathVerification.status,
+        random: nafathVerification.random || '',
+      };
     } catch (error: any) {
       // Comprehensive error logging
       console.error('========== NAFATH CREATE REQUEST ERROR ==========');
@@ -466,6 +469,7 @@ export class NafathAppService {
   async statusUpdate(requestStatusDto: RequestStatusDto) {
     try {
       // Ensure base URL doesn't have trailing slash
+      if (!this.nafathUpdateBaseUrl) return;
       const baseUrl = this.nafathUpdateBaseUrl.replace(/\/$/, '');
       const url = `${baseUrl}/api/v1/mfa/request/update`;
 

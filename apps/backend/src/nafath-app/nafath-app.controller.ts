@@ -43,13 +43,13 @@ export class NafathAppController {
     return this.nafathAppService.getRequestStatus(requestStatusDto);
   }
 
-  @Public()
-  @Get('jwk')
-  @HttpCode(HttpStatus.OK)
-  async getJwk(): Promise<NafathJwkResponseDto> {
-    this.logger.log('Retrieving Nafath JWK');
-    return this.nafathAppService.getJwk();
-  }
+  // @Public()
+  // @Get('jwk')
+  // @HttpCode(HttpStatus.OK)
+  // async getJwk(): Promise<NafathJwkResponseDto> {
+  //   this.logger.log('Retrieving Nafath JWK');
+  //   return this.nafathAppService.getJwk();
+  // }
 
   @Public()
   @Post('webhook')
