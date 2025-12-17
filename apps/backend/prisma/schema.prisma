@@ -17,6 +17,20 @@ model User {
   updatedAt  DateTime @updatedAt
   userDoc    UserDoc?
 
+  firstName   Json?
+  lastName    Json?
+  fatherName  Json?
+  gender      String?
+  dateOfBirth DateTime?
+  nationality String?
+
+  street         Json?
+  buildingNumber String?
+  postalCode     String?
+  city           Json?
+  region         Json?
+  district       Json?
+
   // Relations based on role
   userHOAs                   UserHOA[] // Many-to-many relationship with HOAs
   postedJobs                 Job[]                  @relation("JobLeader") // Optional - can be empty if no jobs posted

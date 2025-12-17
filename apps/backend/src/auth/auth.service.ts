@@ -85,7 +85,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     // Create user first
-    const user = await this.prisma.user.create({
+    let user = await this.prisma.user.create({
       data: {
         nationalId: dto.nationalId,
         password: hashedPassword,
@@ -239,7 +239,37 @@ export class AuthService {
         );
       }
     }
-
+    const nafathVerification = await this.prisma.nafathVerification.findFirst({
+      where: {
+        nationalId: dto.nationalId,
+      },
+    });
+    if (
+      nafathVerification &&
+      nafathVerification.status === 'COMPLETED' &&
+      nafathVerification.details &&
+      typeof nafathVerification.details === 'object' &&
+      !Array.isArray(nafathVerification.details)
+    ) {
+      const details = nafathVerification.details as Record<string, any>;
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          firstName: details.firstName,
+          lastName: details.lastName,
+          fatherName: details.fatherName,
+          gender: details.gender,
+          dateOfBirth: details.dateOfBirth,
+          nationality: details.nationality,
+          street: details.street,
+          buildingNumber: details.buildingNumber,
+          postalCode: details.postalCode,
+          city: details.city,
+          region: details.region,
+          district: details.district,
+        },
+      });
+    }
     const { password, ...userWithoutPassword } = user;
     return {
       message: this.messageService.getSuccessMessage(

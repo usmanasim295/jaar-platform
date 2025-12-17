@@ -254,37 +254,37 @@ export class NafathAppService {
         );
       }
 
-      const headers = {
-        'APP-ID': this.appId,
-        'APP-KEY': this.appKey,
-        'Content-Type': 'application/json',
-      };
+      // const headers = {
+      //   'APP-ID': this.appId,
+      //   'APP-KEY': this.appKey,
+      //   'Content-Type': 'application/json',
+      // };
 
-      console.log(
-        `Getting Nafath request status for transId: ${nafathVerification.transId}`,
-      );
-      console.log(`Full URL: ${url}`);
-      console.log(`Headers:`, JSON.stringify(headers, null, 2));
+      // console.log(
+      //   `Getting Nafath request status for transId: ${nafathVerification.transId}`,
+      // );
+      // console.log(`Full URL: ${url}`);
+      // console.log(`Headers:`, JSON.stringify(headers, null, 2));
 
       // Log curl equivalent
-      const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
-      console.log('[NAFATH CURL] Get Status:', curlStatus);
-      const body = {
-        transId: nafathVerification.transId,
-        random: nafathVerification.random,
-        nationalId: nafathVerification.nationalId,
-      };
-      const response: AxiosResponse<NafathStatusResponseDto> =
-        await firstValueFrom(this.httpService.post(url, body, { headers }));
+      // const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
+      // console.log('[NAFATH CURL] Get Status:', curlStatus);
+      // const body = {
+      //   transId: nafathVerification.transId,
+      //   random: nafathVerification.random,
+      //   nationalId: nafathVerification.nationalId,
+      // };
+      // const response: AxiosResponse<NafathStatusResponseDto> =
+      //   await firstValueFrom(this.httpService.post(url, body, { headers }));
 
-      console.log(`Nafath request status retrieved: ${response.data.status}`);
-      await this.prisma.nafathVerification.update({
-        where: { id: nafathVerification.id },
-        data: {
-          status: response.data.status,
-        },
-      });
-      return response.data;
+      // console.log(`Nafath request status retrieved: ${response.data.status}`);
+      // await this.prisma.nafathVerification.update({
+      //   where: { id: nafathVerification.id },
+      //   data: {
+      //     status: response.data.status,
+      //   },
+      // });
+      return { status: nafathVerification.status };
     } catch (error: any) {
       // Comprehensive error logging
       console.error('========== NAFATH GET STATUS ERROR ==========');
@@ -438,13 +438,38 @@ export class NafathAppService {
       );
       console.log('Decoded Token:', JSON.stringify(decodedToken, null, 2));
       // Process the webhook based on status
+      const nafathVerification = await this.prisma.nafathVerification.findFirst(
+        {
+          where: {
+            transId: webhookDto.transId,
+          },
+        },
+      );
       if (decodedToken.status === 'COMPLETED') {
         console.log('User accepted the Nafath request');
-        // Here you can add your business logic for completed requests
-        // For example, update user status, send notifications, etc.
+        const parsedData = this.filterObject(decodedToken);
+        if (nafathVerification) {
+          await this.prisma.nafathVerification.update({
+            where: { id: nafathVerification.id },
+            data: { status: 'COMPLETED', details: parsedData },
+          });
+        }
       } else if (decodedToken.status === 'REJECTED') {
         console.log('User rejected the Nafath request');
-        // Here you can add your business logic for rejected requests
+        if (nafathVerification) {
+          await this.prisma.nafathVerification.update({
+            where: { id: nafathVerification.id },
+            data: { status: 'REJECTED' },
+          });
+        }
+      } else if (decodedToken.status === 'EXPIRED') {
+        console.log('Nafath request expired');
+        if (nafathVerification) {
+          await this.prisma.nafathVerification.update({
+            where: { id: nafathVerification.id },
+            data: { status: 'EXPIRED' },
+          });
+        }
       }
 
       return {
@@ -590,5 +615,45 @@ export class NafathAppService {
       console.error('Error verifying JWT token:', error.message);
       throw new Error('JWT verification failed');
     }
+  }
+  private filterObject(obj: any): {} {
+    const new_obj = {};
+    const addr = obj.nationalAddress[0];
+    new_obj['firstName'] = {
+      ar: obj.firstName,
+      en: obj.englishFirstName,
+    };
+    new_obj['lastName'] = {
+      ar: obj.lastName,
+      en: obj.englishLastName,
+    };
+    new_obj['fatherName'] = {
+      ar: obj.fatherName,
+      en: obj.englishSecondName,
+    };
+    new_obj['gender'] = obj.gender;
+    new_obj['dateOfBirth'] = obj.dateOfBirthG;
+    new_obj['nationality'] = obj.nationality;
+    if (addr) {
+      new_obj['street'] = {
+        ar: addr['streetName'],
+        en: addr['streetL2'],
+      };
+      new_obj['buildingNumber'] = addr['buildingNumber'];
+      new_obj['postalCode'] = addr['postCode'];
+      new_obj['city'] = {
+        ar: addr['city'],
+        en: addr['cityL2'],
+      };
+      new_obj['region'] = {
+        ar: addr['regionName'],
+        en: addr['regionNameL2'],
+      };
+      new_obj['district'] = {
+        ar: addr['district'],
+        en: addr['districtL2'],
+      };
+    }
+    return new_obj;
   }
 }
