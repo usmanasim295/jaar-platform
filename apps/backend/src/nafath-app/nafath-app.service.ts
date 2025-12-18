@@ -624,7 +624,7 @@ export class NafathAppService {
       en: obj.englishFirstName,
     };
     new_obj['lastName'] = {
-      ar: obj.lastName,
+      ar: obj.familyName,
       en: obj.englishLastName,
     };
     new_obj['fatherName'] = {

@@ -50,6 +50,25 @@ export class AuthController {
 
     return {
       ...result,
+      user: result.user
+        ? this.languageService.transformObjectForLanguage(
+            result.user,
+            language,
+            [
+              'firstName',
+              'lastName',
+              'fatherName',
+              'dateOfBirth',
+              'nationality',
+              'street',
+              'buildingNumber',
+              'postalCode',
+              'city',
+              'region',
+              'district',
+            ],
+          )
+        : null,
       apartment: result.apartment
         ? this.languageService.transformObjectForLanguage(
             result.apartment,
