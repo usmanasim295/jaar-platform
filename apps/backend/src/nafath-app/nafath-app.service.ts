@@ -25,6 +25,7 @@ export class NafathAppService {
   private readonly nafathUpdateBaseUrl: string;
   private readonly appId: string;
   private readonly appKey: string;
+  private readonly service: string;
 
   constructor(
     private readonly httpService: HttpService,
@@ -47,6 +48,10 @@ export class NafathAppService {
       .replace(/^["']|["']$/g, '')
       .trim();
     this.appKey = (process.env.NAFATH_APP_KEY || '')
+      .replace(/^["']|["']$/g, '')
+      .trim();
+
+    this.service = (process.env.NAFATH_SERVICE || 'Login')
       .replace(/^["']|["']$/g, '')
       .trim();
 
@@ -137,7 +142,7 @@ export class NafathAppService {
       console.log(`Full URL: ${fullUrl}`);
       console.log(`Headers:`, JSON.stringify(headers, null, 2));
       const body = {
-        service: 'Login',
+        service: this.service,
         ...createRequestDto,
       };
       // Log curl equivalent
