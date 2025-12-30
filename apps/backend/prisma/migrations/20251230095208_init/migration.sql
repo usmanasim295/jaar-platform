@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "public"."NafathVerificationStatus" AS ENUM ('WAITING', 'EXPIRED', 'REJECTED', 'COMPLETED');
+
+-- CreateEnum
 CREATE TYPE "public"."Role" AS ENUM ('HOME_OWNER', 'LEADER', 'ADMIN');
 
 -- CreateEnum
@@ -31,6 +34,18 @@ CREATE TABLE "public"."User" (
     "isBlocked" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "firstName" JSONB,
+    "lastName" JSONB,
+    "fatherName" JSONB,
+    "gender" TEXT,
+    "dateOfBirth" TIMESTAMP(3),
+    "nationality" TEXT,
+    "street" JSONB,
+    "buildingNumber" TEXT,
+    "postalCode" TEXT,
+    "city" JSONB,
+    "region" JSONB,
+    "district" JSONB,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -51,15 +66,38 @@ CREATE TABLE "public"."UserHOA" (
 CREATE TABLE "public"."Hoa" (
     "id" TEXT NOT NULL,
     "name" JSONB NOT NULL,
-    "number" TEXT NOT NULL,
+    "hoaNumber" TEXT NOT NULL,
     "address" JSONB NOT NULL,
     "city" JSONB NOT NULL,
     "state" JSONB,
-    "userId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Hoa_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."NafathVerification" (
+    "id" TEXT NOT NULL,
+    "nationalId" TEXT NOT NULL,
+    "status" "public"."NafathVerificationStatus" NOT NULL DEFAULT 'WAITING',
+    "details" JSONB,
+    "transId" TEXT,
+    "random" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "NafathVerification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."TempNafathWebhook" (
+    "id" TEXT NOT NULL,
+    "response" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TempNafathWebhook_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -338,7 +376,7 @@ CREATE UNIQUE INDEX "User_nationalId_key" ON "public"."User"("nationalId");
 CREATE UNIQUE INDEX "UserHOA_userId_hoaId_key" ON "public"."UserHOA"("userId", "hoaId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Hoa_number_key" ON "public"."Hoa"("number");
+CREATE UNIQUE INDEX "Hoa_hoaNumber_key" ON "public"."Hoa"("hoaNumber");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ServiceProvider_email_key" ON "public"."ServiceProvider"("email");
@@ -390,9 +428,6 @@ ALTER TABLE "public"."UserHOA" ADD CONSTRAINT "UserHOA_userId_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "public"."UserHOA" ADD CONSTRAINT "UserHOA_hoaId_fkey" FOREIGN KEY ("hoaId") REFERENCES "public"."Hoa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."Hoa" ADD CONSTRAINT "Hoa_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."ServiceProviderService" ADD CONSTRAINT "ServiceProviderService_serviceProviderId_fkey" FOREIGN KEY ("serviceProviderId") REFERENCES "public"."ServiceProvider"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
