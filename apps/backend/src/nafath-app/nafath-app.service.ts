@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { MessageService } from 'src/common/services/message.service';
 import { firstValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
+import * as jwt from 'jsonwebtoken';
+import * as crypto from 'crypto';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { RequestStatusDto } from './dto/request-status.dto';
 import { WebhookDto } from './dto/webhook.dto';
@@ -602,9 +604,34 @@ export class NafathAppService {
       // Get JWK from Nafath
       const jwkResponse = await this.getJwk();
 
-      // For now, we'll decode without verification
-      // In production, you should implement proper JWT verification using the JWK
-      const decoded = this.jwtService.decode(token);
+      // Decode JWT header to get the key ID (kid)
+      const decodedHeader = jwt.decode(token, { complete: true });
+      if (!decodedHeader || typeof decodedHeader === 'string') {
+        throw new Error('Invalid JWT token format');
+      }
+
+      const kid = decodedHeader.header.kid;
+      console.log('=========>>>>KID:', kid);
+      if (!kid) {
+        throw new Error('JWT token missing key ID (kid) in header');
+      }
+
+      // Find the matching JWK by kid
+      const jwk = jwkResponse.keys.find((key) => key.kid === kid);
+      console.log('=========>>>>JWK:', jwk);
+      if (!jwk) {
+        throw new Error(`JWK not found for kid: ${kid}`);
+      }
+
+      // Convert JWK to PEM format
+      const publicKeyPem = this.jwkToPem(jwk);
+      console.log('=========>>>>PUBLIC KEY PEM:', publicKeyPem);
+
+      // Verify the JWT token
+      const algorithm = (jwk.alg || 'RS256') as jwt.Algorithm;
+      const decoded = jwt.verify(token, publicKeyPem, {
+        algorithms: [algorithm],
+      });
 
       if (!decoded) {
         throw new Error('Invalid JWT token');
@@ -613,8 +640,40 @@ export class NafathAppService {
       return decoded;
     } catch (error) {
       console.error('Error verifying JWT token:', error.message);
-      throw new Error('JWT verification failed');
+      throw new Error(`JWT verification failed: ${error.message}`);
     }
+  }
+
+  /**
+   * Converts a JWK (JSON Web Key) to PEM format
+   * @param jwk - The JWK object containing RSA public key parameters
+   * @returns PEM formatted public key
+   */
+  private jwkToPem(jwk: {
+    kty: string;
+    n: string;
+    e: string;
+    alg?: string;
+  }): string {
+    if (jwk.kty !== 'RSA') {
+      throw new Error(`Unsupported key type: ${jwk.kty}`);
+    }
+
+    // Create RSA public key from JWK
+    const publicKey = crypto.createPublicKey({
+      key: {
+        kty: jwk.kty,
+        n: jwk.n,
+        e: jwk.e,
+      },
+      format: 'jwk',
+    });
+
+    // Export to PEM format
+    return publicKey.export({
+      type: 'spki',
+      format: 'pem',
+    }) as string;
   }
   private filterObject(obj: any): {} {
     const new_obj = {};
