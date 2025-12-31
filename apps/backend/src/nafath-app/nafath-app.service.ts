@@ -261,37 +261,37 @@ export class NafathAppService {
         );
       }
 
-      // const headers = {
-      //   'APP-ID': this.appId,
-      //   'APP-KEY': this.appKey,
-      //   'Content-Type': 'application/json',
-      // };
+      const headers = {
+        'APP-ID': this.appId,
+        'APP-KEY': this.appKey,
+        'Content-Type': 'application/json',
+      };
 
-      // console.log(
-      //   `Getting Nafath request status for transId: ${nafathVerification.transId}`,
-      // );
-      // console.log(`Full URL: ${url}`);
-      // console.log(`Headers:`, JSON.stringify(headers, null, 2));
+      console.log(
+        `Getting Nafath request status for transId: ${nafathVerification.transId}`,
+      );
+      console.log(`Full URL: ${url}`);
+      console.log(`Headers:`, JSON.stringify(headers, null, 2));
 
       // Log curl equivalent
-      // const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
-      // console.log('[NAFATH CURL] Get Status:', curlStatus);
-      // const body = {
-      //   transId: nafathVerification.transId,
-      //   random: nafathVerification.random,
-      //   nationalId: nafathVerification.nationalId,
-      // };
-      // const response: AxiosResponse<NafathStatusResponseDto> =
-      //   await firstValueFrom(this.httpService.post(url, body, { headers }));
+      const curlStatus = this.buildCurl('POST', url, headers, requestStatusDto);
+      console.log('[NAFATH CURL] Get Status:', curlStatus);
+      const body = {
+        transId: nafathVerification.transId,
+        random: nafathVerification.random,
+        nationalId: nafathVerification.nationalId,
+      };
+      const response: AxiosResponse<NafathStatusResponseDto> =
+        await firstValueFrom(this.httpService.post(url, body, { headers }));
 
-      // console.log(`Nafath request status retrieved: ${response.data.status}`);
-      // await this.prisma.nafathVerification.update({
-      //   where: { id: nafathVerification.id },
-      //   data: {
-      //     status: response.data.status,
-      //   },
-      // });
-      return { status: nafathVerification.status };
+      console.log(`Nafath request status retrieved: ${response.data.status}`);
+      await this.prisma.nafathVerification.update({
+        where: { id: nafathVerification.id },
+        data: {
+          status: response.data.status,
+        },
+      });
+      return { status: response.data.status };
     } catch (error: any) {
       // Comprehensive error logging
       console.error('========== NAFATH GET STATUS ERROR ==========');

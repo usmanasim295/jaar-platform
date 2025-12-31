@@ -112,4 +112,25 @@ export class AuthController {
     const language = this.languageService.validateLanguage(lang);
     return this.authService.changePassword(user.id, dto, language);
   }
+
+  @Get('details')
+  async details(@Req() req: Request, @Query('lang') lang?: string) {
+    const nationalId = req['user'].nationalId;
+    const language = this.languageService.validateLanguage(lang);
+    const result = await this.authService.details(nationalId, language);
+
+    const transformedUser =
+      this.languageService.transformNestedObjectForLanguage(
+        result.user,
+        language,
+        {
+          userHOAs: ['hoa'],
+          postedJobs: ['services', 'hoa', 'bids'],
+        },
+      );
+
+    return {
+      user: transformedUser,
+    };
+  }
 }

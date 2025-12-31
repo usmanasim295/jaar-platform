@@ -277,11 +277,19 @@ export class AuthService {
       });
     }
     const { password, ...userWithoutPassword } = user;
+    const payload = {
+      id: user.id,
+      nationalId: user.nationalId,
+      role: user.role,
+    };
+
+    const token = this.jwtService.sign(payload);
     return {
       message: this.messageService.getSuccessMessage(
         'auth.signup_success',
         language,
       ),
+      access_token: token,
       user: userWithoutPassword,
       documentUrl: s3Url,
       apartment: hoa || hoaRecord,
@@ -289,100 +297,22 @@ export class AuthService {
     };
   }
 
+  async details(nationalId: string, language: 'en' | 'ar' = 'en') {
+    const user = await this.userDetails(nationalId);
+
+    if (!user) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('auth.user_not_found', language),
+      );
+    }
+    const { password, ...userWithoutPassword } = user;
+    return {
+      user: userWithoutPassword,
+    };
+  }
+
   async login(loginDto: LoginDto, language: 'en' | 'ar' = 'en') {
-    const user = await this.prisma.user.findUnique({
-      where: { nationalId: loginDto.nationalId },
-      include: {
-        userDoc: true,
-        // Include all HOAs where user is a member (both leader and member)
-        userHOAs: {
-          include: {
-            hoa: {
-              include: {
-                jobs: {
-                  include: {
-                    services: {
-                      include: {
-                        service: true,
-                      },
-                    },
-                    bids: {
-                      include: {
-                        serviceProvider: {
-                          select: {
-                            id: true,
-                            name: true,
-                            rating: true,
-                            totalJobs: true,
-                          },
-                        },
-                      },
-                    },
-                  },
-                  orderBy: {
-                    createdAt: 'desc',
-                  },
-                },
-                _count: {
-                  select: {
-                    jobs: true,
-                  },
-                },
-                userHOAs: {
-                  where: { isLeader: true },
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        nationalId: true,
-                        role: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        // Include posted jobs if user is a leader
-        postedJobs: {
-          include: {
-            services: {
-              include: {
-                service: true,
-              },
-            },
-            hoa: {
-              select: {
-                id: true,
-                name: true,
-                hoaNumber: true,
-                city: true,
-              },
-            },
-            bids: {
-              include: {
-                serviceProvider: {
-                  select: {
-                    id: true,
-                    name: true,
-                    rating: true,
-                    totalJobs: true,
-                    totalEarnings: true,
-                  },
-                },
-              },
-              orderBy: {
-                totalPrice: 'asc',
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-      },
-    });
+    const user = await this.userDetails(loginDto.nationalId);
 
     if (!user) {
       throw new UnauthorizedException(
@@ -483,5 +413,101 @@ export class AuthService {
         language,
       ),
     };
+  }
+
+  async userDetails(nationalId: string) {
+    return await this.prisma.user.findUnique({
+      where: { nationalId: nationalId },
+      include: {
+        userDoc: true,
+        // Include all HOAs where user is a member (both leader and member)
+        userHOAs: {
+          include: {
+            hoa: {
+              include: {
+                jobs: {
+                  include: {
+                    services: {
+                      include: {
+                        service: true,
+                      },
+                    },
+                    bids: {
+                      include: {
+                        serviceProvider: {
+                          select: {
+                            id: true,
+                            name: true,
+                            rating: true,
+                            totalJobs: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                },
+                _count: {
+                  select: {
+                    jobs: true,
+                  },
+                },
+                userHOAs: {
+                  where: { isLeader: true },
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        nationalId: true,
+                        role: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        // Include posted jobs if user is a leader
+        postedJobs: {
+          include: {
+            services: {
+              include: {
+                service: true,
+              },
+            },
+            hoa: {
+              select: {
+                id: true,
+                name: true,
+                hoaNumber: true,
+                city: true,
+              },
+            },
+            bids: {
+              include: {
+                serviceProvider: {
+                  select: {
+                    id: true,
+                    name: true,
+                    rating: true,
+                    totalJobs: true,
+                    totalEarnings: true,
+                  },
+                },
+              },
+              orderBy: {
+                totalPrice: 'asc',
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+    });
   }
 }
