@@ -48,34 +48,19 @@ export class AuthController {
     const language = this.languageService.validateLanguage(lang);
     const result = await this.authService.signup(signupDto, document, language);
 
+    const transformedUser =
+      this.languageService.transformNestedObjectForLanguage(
+        result.user as Record<string, any>,
+        language,
+        {
+          userHOAs: ['hoa'],
+          postedJobs: ['services', 'hoa', 'bids'],
+        },
+      );
+
     return {
       ...result,
-      user: result.user
-        ? this.languageService.transformObjectForLanguage(
-            result.user,
-            language,
-            [
-              'firstName',
-              'lastName',
-              'fatherName',
-              'dateOfBirth',
-              'nationality',
-              'street',
-              'buildingNumber',
-              'postalCode',
-              'city',
-              'region',
-              'district',
-            ],
-          )
-        : null,
-      apartment: result.apartment
-        ? this.languageService.transformObjectForLanguage(
-            result.apartment,
-            language,
-            ['name', 'address', 'city', 'state'],
-          )
-        : null,
+      user: transformedUser,
     };
   }
 

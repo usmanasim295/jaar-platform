@@ -276,7 +276,7 @@ export class AuthService {
         },
       });
     }
-    const { password, ...userWithoutPassword } = user;
+    // const { password, ...userWithoutPassword } = user;
     const payload = {
       id: user.id,
       nationalId: user.nationalId,
@@ -284,6 +284,13 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload);
+    const updatedUser = await this.userDetails(user.nationalId);
+    if (!updatedUser) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('auth.user_not_found', language),
+      );
+    }
+    const { password: _password, ...userWithoutPassword } = updatedUser;
     return {
       message: this.messageService.getSuccessMessage(
         'auth.signup_success',
@@ -291,10 +298,18 @@ export class AuthService {
       ),
       access_token: token,
       user: userWithoutPassword,
-      documentUrl: s3Url,
-      apartment: hoa || hoaRecord,
-      community,
     };
+    // return {
+    //   message: this.messageService.getSuccessMessage(
+    //     'auth.signup_success',
+    //     language,
+    //   ),
+    //   access_token: token,
+    //   user: userWithoutPassword,
+    //   documentUrl: s3Url,
+    //   apartment: hoa || hoaRecord,
+    //   community,
+    // };
   }
 
   async details(nationalId: string, language: 'en' | 'ar' = 'en') {
@@ -305,7 +320,7 @@ export class AuthService {
         this.messageService.getErrorMessage('auth.user_not_found', language),
       );
     }
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
     };
@@ -357,7 +372,7 @@ export class AuthService {
 
     const token = this.jwtService.sign(payload);
 
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
 
     return {
       access_token: token,
