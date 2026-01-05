@@ -695,16 +695,40 @@ export class NafathAppService {
       ar: obj.fatherName,
       en: obj.englishSecondName,
     };
-    new_obj['gender'] = obj.gender;
-    new_obj['dateOfBirth'] = obj.dateOfBirthG;
-    new_obj['nationality'] = obj.nationality;
+    let gender = '';
+    let genderAr = '';
+    if (obj.gender === 'M') {
+      gender = 'Male';
+      genderAr = 'ذكر';
+    } else if (obj.gender === 'F') {
+      gender = 'Female';
+      genderAr = 'أنثى';
+    }
+    new_obj['gender'] = {
+      ar: genderAr,
+      en: gender,
+    };
+    new_obj['dateOfBirth'] = {
+      ar: obj.dateOfBirthH,
+      en: obj.dateOfBirthG,
+    };
+    new_obj['nationality'] = {
+      ar: obj.nationality,
+      en: obj.nationality,
+    };
     if (addr) {
       new_obj['street'] = {
         ar: addr['streetName'],
         en: addr['streetL2'],
       };
-      new_obj['buildingNumber'] = addr['buildingNumber'];
-      new_obj['postalCode'] = addr['postCode'];
+      new_obj['buildingNumber'] = {
+        ar: addr['buildingNumber'],
+        en: addr['buildingNumber'],
+      };
+      new_obj['postalCode'] = {
+        ar: addr['postCode'],
+        en: addr['postCode'],
+      };
       new_obj['city'] = {
         ar: addr['city'],
         en: addr['cityL2'],

@@ -252,12 +252,6 @@ export class AuthService {
       !Array.isArray(nafathVerification.details)
     ) {
       const details = nafathVerification.details as Record<string, any>;
-      const dateOfBirth = details.dateOfBirth
-        ? (() => {
-            const date = new Date(details.dateOfBirth);
-            return isNaN(date.getTime()) ? undefined : date;
-          })()
-        : undefined;
       user = await this.prisma.user.update({
         where: { id: user.id },
         data: {
@@ -265,7 +259,7 @@ export class AuthService {
           lastName: details.lastName,
           fatherName: details.fatherName,
           gender: details.gender,
-          dateOfBirth: dateOfBirth,
+          dateOfBirth: details.dateOfBirth,
           nationality: details.nationality,
           street: details.street,
           buildingNumber: details.buildingNumber,

@@ -20,13 +20,13 @@ model User {
   firstName   Json?
   lastName    Json?
   fatherName  Json?
-  gender      String?
-  dateOfBirth DateTime?
-  nationality String?
+  gender      Json?
+  dateOfBirth Json?
+  nationality Json?
 
   street         Json?
-  buildingNumber String?
-  postalCode     String?
+  buildingNumber Json?
+  postalCode     Json?
   city           Json?
   region         Json?
   district       Json?
