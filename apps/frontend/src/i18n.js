@@ -5,9 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import HttpBackend from 'i18next-http-backend';
 import { CONFIG } from './lib/config';
 
-// Only initialize in browser environment
-if (typeof window !== 'undefined' && !i18n.isInitialized) {
-  // Get default language from config or fallback to Arabic
+if (!i18n.isInitialized) {
   const defaultLang = CONFIG.DEFAULT_LANGUAGE || 'ar';
 
   i18n
@@ -15,7 +13,7 @@ if (typeof window !== 'undefined' && !i18n.isInitialized) {
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
-      lng: defaultLang, // Explicitly set initial language
+      lng: defaultLang,
       fallbackLng: defaultLang,
       supportedLngs: ['en', 'ar'],
       interpolation: { escapeValue: false },
@@ -23,7 +21,7 @@ if (typeof window !== 'undefined' && !i18n.isInitialized) {
         loadPath: '/locales/{{lng}}/translation.json',
       },
       detection: {
-        order: ['localStorage', 'querystring', 'cookie', 'navigator'], // Check localStorage first
+        order: ['localStorage', 'querystring', 'cookie', 'navigator'],
         lookupLocalStorage: 'i18nextLng',
         caches: ['localStorage'],
       },
