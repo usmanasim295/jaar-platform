@@ -35,6 +35,10 @@ export class MessageService {
       en: 'User not found',
       ar: 'المستخدم غير موجود',
     },
+    'user.deleted_success': {
+      en: 'User deleted successfully',
+      ar: 'تم حذف المستخدم بنجاح',
+    },
     'auth.password_not_set': {
       en: 'Password not set. Please complete your registration.',
       ar: 'كلمة المرور غير محددة. يرجى إكمال التسجيل.',

@@ -632,6 +632,18 @@ export const api = createApi({
         'AdminServiceProviderDetail',
       ],
     }),
+
+    deleteAdminUser: builder.mutation<
+      { message: string },
+      { id: string; lang: Language }
+    >({
+      query: ({ id, lang }) => ({
+        url: `${API_ENDPOINTS.ADMIN_USERS}/${id}${getLanguageParam(lang)}`,
+        method: 'DELETE',
+        headers: getHeaders(),
+      }),
+      invalidatesTags: ['AdminHomeowners', 'AdminLeaders'],
+    }),
   }),
 });
 
@@ -667,4 +679,5 @@ export const {
   useUpdateAdminUserBlockStatusMutation,
   useUpdateAdminServiceProviderBlockStatusMutation,
   useUpdateAdminServiceProviderVerificationStatusMutation,
+  useDeleteAdminUserMutation,
 } = api;

@@ -13,6 +13,7 @@ import { AdminRouteProtection } from '@/components/admin/AdminRouteProtection';
 import {
   useGetAdminLeadersQuery,
   useUpdateAdminUserBlockStatusMutation,
+  useDeleteAdminUserMutation,
 } from '@/store/api';
 import type { AdminLeaderRow, Language } from '@/types/api';
 import i18n from '@/i18n';
@@ -34,6 +35,8 @@ export default function AdminHoaLeadersPage() {
 
   const [updateUserBlockStatus, { isLoading: isUpdating }] =
     useUpdateAdminUserBlockStatusMutation();
+
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteAdminUserMutation();
 
   const leaders = data?.data ?? [];
   const totalItems = data?.meta.total ?? 0;
@@ -105,6 +108,21 @@ export default function AdminHoaLeadersPage() {
     }
   };
 
+  const handleDelete = async (row: AdminLeaderRow) => {
+    try {
+      await deleteUser({
+        id: row.id,
+        lang: currentLang,
+      }).unwrap();
+      toast.success(t('User deleted successfully'));
+      refetch();
+    } catch (error: any) {
+      const message =
+        error?.data?.message || error?.message || t('Something went wrong');
+      toast.error(message);
+    }
+  };
+
   return (
     <AdminRouteProtection>
       <AdminPageLayout
@@ -129,7 +147,8 @@ export default function AdminHoaLeadersPage() {
           statusActiveValue={t('Active')}
           statusBlockedValue={t('Blocked')}
           onToggleBlockStatus={handleToggleBlockStatus}
-          isLoading={isLoading || isFetching || isUpdating}
+          onDelete={handleDelete}
+          isLoading={isLoading || isFetching || isUpdating || isDeleting}
         />
       </AdminPageLayout>
     </AdminRouteProtection>

@@ -7,6 +7,7 @@ import {
   Query,
   Param,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { AdminService } from './admin.service';
@@ -88,6 +89,12 @@ export class AdminController {
   @Roles(Role.ADMIN)
   getUserDetail(@Param('id') id: string, @Query('lang') lang?: string) {
     return this.adminService.getUserDetail(id, lang);
+  }
+
+  @Delete('users/:id')
+  @Roles(Role.ADMIN)
+  deleteUser(@Param('id') id: string, @Query('lang') lang?: string) {
+    return this.adminService.deleteUser(id, lang);
   }
 
   @Get('service-providers/:id')

@@ -36,6 +36,7 @@ type AdminDataTableProps<T extends AdminDataRow> = {
   searchTerm: string;
   onToggleBlockStatus?: (row: T) => void;
   onToggleVerificationStatus?: (row: T) => void;
+  onDelete?: (row: T) => void;
   statusActiveValue?: string;
   statusBlockedValue?: string;
   itemsPerPageOptions?: number[];
@@ -59,6 +60,7 @@ export function AdminDataTable<T extends AdminDataRow>({
   searchTerm,
   onToggleBlockStatus,
   onToggleVerificationStatus,
+  onDelete,
   statusActiveValue = 'Active',
   statusBlockedValue = 'Blocked',
   itemsPerPageOptions = DEFAULT_ITEMS_PER_PAGE,
@@ -68,6 +70,7 @@ export function AdminDataTable<T extends AdminDataRow>({
   const [searchValue, setSearchValue] = useState(searchTerm);
   const [openRowId, setOpenRowId] = useState<string | number | null>(null);
   const [isRTL, setIsRTL] = useState(i18n.language === 'ar');
+  const [deleteConfirmRow, setDeleteConfirmRow] = useState<T | null>(null);
 
   useEffect(() => {
     setIsRTL(i18n.language === 'ar');
@@ -213,7 +216,9 @@ export function AdminDataTable<T extends AdminDataRow>({
                   </th>
                 );
               })}
-              {(onToggleBlockStatus || onToggleVerificationStatus) && (
+              {(onToggleBlockStatus ||
+                onToggleVerificationStatus ||
+                onDelete) && (
                 <th
                   className={`px-4 py-3 font-semibold text-slate-500 ${
                     isRTL ? 'text-left' : 'text-right'
@@ -261,7 +266,9 @@ export function AdminDataTable<T extends AdminDataRow>({
                       </td>
                     );
                   })}
-                  {(onToggleBlockStatus || onToggleVerificationStatus) && (
+                  {(onToggleBlockStatus ||
+                    onToggleVerificationStatus ||
+                    onDelete) && (
                     <td
                       className={`relative px-4 py-4 ${
                         isRTL ? 'text-left' : 'text-right'
@@ -320,6 +327,22 @@ export function AdminDataTable<T extends AdminDataRow>({
                                 : t('Unblock')}
                             </button>
                           )}
+                          {onDelete && (
+                            <button
+                              type="button"
+                              className={`flex w-full items-center px-4 py-2 text-red-600 transition hover:bg-red-50 ${
+                                isRTL
+                                  ? 'justify-end text-right'
+                                  : 'justify-start text-left'
+                              }`}
+                              onClick={() => {
+                                setOpenRowId(null);
+                                setDeleteConfirmRow(row);
+                              }}
+                            >
+                              {t('Delete')}
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>
@@ -331,7 +354,11 @@ export function AdminDataTable<T extends AdminDataRow>({
                 <td
                   colSpan={
                     columns.length +
-                    (onToggleBlockStatus || onToggleVerificationStatus ? 1 : 0)
+                    (onToggleBlockStatus ||
+                    onToggleVerificationStatus ||
+                    onDelete
+                      ? 1
+                      : 0)
                   }
                   className="px-4 py-6 text-center text-sm text-slate-400"
                 >
@@ -428,6 +455,52 @@ export function AdminDataTable<T extends AdminDataRow>({
           </p>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmRow && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
+          onClick={() => setDeleteConfirmRow(null)}
+        >
+          <div
+            className={`w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-lg ${
+              isRTL ? 'text-right' : 'text-left'
+            }`}
+            onClick={e => e.stopPropagation()}
+            dir={isRTL ? 'rtl' : 'ltr'}
+          >
+            <h3 className="mb-4 text-lg font-semibold text-slate-800">
+              {t('Confirm Delete')}
+            </h3>
+            <p className="mb-6 text-sm text-slate-600">
+              {t(
+                'Are you sure you want to delete this user? This action cannot be undone.'
+              )}
+            </p>
+            <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmRow(null)}
+                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                {t('Cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onDelete && deleteConfirmRow) {
+                    onDelete(deleteConfirmRow);
+                    setDeleteConfirmRow(null);
+                  }
+                }}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                {t('Delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
