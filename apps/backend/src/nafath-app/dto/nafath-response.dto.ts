@@ -8,6 +8,7 @@ export class NafathCreateRequestResponseDto {
 export class NafathStatusResponseDto {
   status: NafathVerificationStatus;
   random?: string;
+  userId?: string;
 }
 
 export class NafathJwkResponseDto {
