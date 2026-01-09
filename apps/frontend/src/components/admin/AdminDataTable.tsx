@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 
 type AdminDataRow = {
-  deletedAt: string | undefined;
+  deletedAt?: string;
   id: string | number;
   name: string;
   status: string;

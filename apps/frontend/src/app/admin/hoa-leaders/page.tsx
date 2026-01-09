@@ -39,7 +39,7 @@ export default function AdminHoaLeadersPage() {
   const [deleteUser, { isLoading: isDeleting }] = useDeleteAdminUserMutation();
 
   const leaders = data?.data ?? [];
-  const totalItems = data?.meta.total ?? 0;
+  const totalItems = data?.meta?.total ?? 0;
 
   const columns: AdminDataTableColumn<AdminLeaderRow>[] = useMemo(
     () => [

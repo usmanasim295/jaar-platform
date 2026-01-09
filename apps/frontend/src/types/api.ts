@@ -721,6 +721,7 @@ export interface AdminHomeownerRow {
   apartments: number;
   status: string;
   isBlocked: boolean;
+  deletedAt?: string;
 }
 
 export interface AdminLeaderRow {
@@ -731,6 +732,7 @@ export interface AdminLeaderRow {
   communityId: string | null;
   status: string;
   isBlocked: boolean;
+  deletedAt?: string;
 }
 
 export interface AdminUpdateBlockStatusRequest {
