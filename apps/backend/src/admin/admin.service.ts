@@ -270,128 +270,19 @@ export class AdminService {
       );
     }
 
-    // Delete all user associations before deleting the user
     await this.prisma.$transaction(async (tx) => {
-      await tx.pollVote.deleteMany({
-        where: { voterId: userId },
+      await tx.nafathVerification.updateMany({
+        where: { nationalId: user.nationalId },
+        data: { nationalId: `${user.nationalId}-deleted` },
       });
 
-      await tx.message.updateMany({
-        where: { senderId: userId },
-        data: {
-          isDeleted: true,
-          deletedAt: new Date(),
-        },
-      });
-
-      await tx.chatParticipant.deleteMany({
-        where: { userId: userId },
-      });
-
-      await tx.communityMember.deleteMany({
-        where: { userId: userId },
-      });
-
-      await tx.jobCompletionRequest.updateMany({
-        where: { reviewedBy: userId },
-        data: { reviewedBy: null },
-      });
-
-      await tx.job.updateMany({
-        where: { leaderId: userId },
-        data: { leaderId: null },
-      });
-
-      const jobsCreatedByUser = await tx.job.findMany({
-        where: { createdBy: userId },
-        select: { id: true },
-      });
-      const jobIdsCreatedByUser = jobsCreatedByUser.map((j) => j.id);
-
-      await tx.userHOA.deleteMany({
-        where: { userId: userId },
-      });
-
-      await tx.userDoc.deleteMany({
-        where: { userId: userId },
-      });
-
-      const pollsCreatedByUser = await tx.poll.findMany({
-        where: { createdBy: userId },
-        select: { id: true },
-      });
-      const pollIdsCreatedByUser = pollsCreatedByUser.map((p) => p.id);
-
-      if (pollIdsCreatedByUser.length > 0) {
-        await tx.pollVote.deleteMany({
-          where: { pollId: { in: pollIdsCreatedByUser } },
-        });
-        await tx.pollOption.deleteMany({
-          where: { pollId: { in: pollIdsCreatedByUser } },
-        });
-        await tx.poll.deleteMany({
-          where: { id: { in: pollIdsCreatedByUser } },
-        });
-      }
-
-      if (jobIdsCreatedByUser.length > 0) {
-        const chatsRelatedToJobs = await tx.chat.findMany({
-          where: { jobId: { in: jobIdsCreatedByUser } },
-          select: { id: true },
-        });
-        const chatIdsRelatedToJobs = chatsRelatedToJobs.map((c) => c.id);
-
-        if (chatIdsRelatedToJobs.length > 0) {
-          const pollsInChats = await tx.poll.findMany({
-            where: { chatId: { in: chatIdsRelatedToJobs } },
-            select: { id: true },
-          });
-          const pollIdsInChats = pollsInChats.map((p) => p.id);
-
-          if (pollIdsInChats.length > 0) {
-            await tx.pollVote.deleteMany({
-              where: { pollId: { in: pollIdsInChats } },
-            });
-            await tx.pollOption.deleteMany({
-              where: { pollId: { in: pollIdsInChats } },
-            });
-            await tx.poll.deleteMany({
-              where: { id: { in: pollIdsInChats } },
-            });
-          }
-
-          await tx.message.deleteMany({
-            where: { chatId: { in: chatIdsRelatedToJobs } },
-          });
-
-          await tx.chatParticipant.deleteMany({
-            where: { chatId: { in: chatIdsRelatedToJobs } },
-          });
-
-          await tx.chat.deleteMany({
-            where: { id: { in: chatIdsRelatedToJobs } },
-          });
-        }
-
-        await tx.jobCompletionRequest.deleteMany({
-          where: { jobId: { in: jobIdsCreatedByUser } },
-        });
-
-        await tx.bid.deleteMany({
-          where: { jobId: { in: jobIdsCreatedByUser } },
-        });
-
-        await tx.jobService.deleteMany({
-          where: { jobId: { in: jobIdsCreatedByUser } },
-        });
-
-        await tx.job.deleteMany({
-          where: { id: { in: jobIdsCreatedByUser } },
-        });
-      }
-
-      await tx.user.delete({
+      await tx.user.update({
         where: { id: userId },
+        data: {
+          deletedAt: new Date(),
+          isBlocked: true,
+          nationalId: `${user.nationalId}-deleted`,
+        },
       });
     });
 
