@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState, useRef } from 'react';
 import { MoreVertical, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
@@ -71,6 +71,12 @@ export function AdminDataTable<T extends AdminDataRow>({
   const [openRowId, setOpenRowId] = useState<string | number | null>(null);
   const [isRTL, setIsRTL] = useState(i18n.language === 'ar');
   const [deleteConfirmRow, setDeleteConfirmRow] = useState<T | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    top: number;
+    right?: number;
+    left?: number;
+  } | null>(null);
+  const buttonRefs = useRef<Map<string | number, HTMLButtonElement>>(new Map());
 
   useEffect(() => {
     setIsRTL(i18n.language === 'ar');
@@ -94,6 +100,47 @@ export function AdminDataTable<T extends AdminDataRow>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
+  // Handle click outside, scroll, and resize to close dropdown
+  useEffect(() => {
+    if (openRowId === null) {
+      setDropdownPosition(null);
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const button = buttonRefs.current.get(openRowId);
+      if (
+        button &&
+        !button.contains(target) &&
+        !target.closest('.dropdown-menu')
+      ) {
+        setOpenRowId(null);
+        setDropdownPosition(null);
+      }
+    };
+
+    const handleScroll = () => {
+      setOpenRowId(null);
+      setDropdownPosition(null);
+    };
+
+    const handleResize = () => {
+      setOpenRowId(null);
+      setDropdownPosition(null);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [openRowId]);
+
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage || 1));
   const startNumber =
     totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
@@ -116,6 +163,7 @@ export function AdminDataTable<T extends AdminDataRow>({
     event.preventDefault();
     onSearch(searchValue.trim());
     setOpenRowId(null);
+    setDropdownPosition(null);
   };
 
   const handleItemsPerPageChange = (
@@ -123,12 +171,14 @@ export function AdminDataTable<T extends AdminDataRow>({
   ) => {
     onItemsPerPageChange(Number(event.target.value));
     setOpenRowId(null);
+    setDropdownPosition(null);
   };
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     onPageChange(page);
     setOpenRowId(null);
+    setDropdownPosition(null);
   };
 
   const pageNumbers = useMemo(() => {
@@ -275,22 +325,54 @@ export function AdminDataTable<T extends AdminDataRow>({
                       }`}
                     >
                       <button
+                        ref={el => {
+                          if (el) {
+                            buttonRefs.current.set(row.id, el);
+                          } else {
+                            buttonRefs.current.delete(row.id);
+                          }
+                        }}
                         type="button"
-                        onClick={() =>
-                          setOpenRowId(prev =>
-                            prev === row.id ? null : row.id
-                          )
-                        }
+                        onClick={e => {
+                          const button = e.currentTarget;
+                          const rect = button.getBoundingClientRect();
+
+                          if (openRowId === row.id) {
+                            setOpenRowId(null);
+                            setDropdownPosition(null);
+                          } else {
+                            setOpenRowId(row.id);
+                            if (isRTL) {
+                              setDropdownPosition({
+                                top: rect.bottom + window.scrollY + 8,
+                                left: rect.left + window.scrollX - 4,
+                              });
+                            } else {
+                              setDropdownPosition({
+                                top: rect.bottom + window.scrollY + 8,
+                                right:
+                                  window.innerWidth -
+                                  rect.right -
+                                  window.scrollX -
+                                  4,
+                              });
+                            }
+                          }
+                        }}
                         className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0E7490]/20"
                         aria-label={t('Actions')}
                       >
                         <MoreVertical className="h-4 w-4" />
                       </button>
-                      {openRowId === row.id && (
+                      {openRowId === row.id && dropdownPosition && (
                         <div
-                          className={`absolute top-12 z-20 w-36 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-lg ${
-                            isRTL ? 'left-4' : 'right-4'
-                          }`}
+                          className="dropdown-menu fixed z-[9999] w-36 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-lg"
+                          style={{
+                            top: `${dropdownPosition.top}px`,
+                            ...(isRTL
+                              ? { left: `${dropdownPosition.left}px` }
+                              : { right: `${dropdownPosition.right}px` }),
+                          }}
                         >
                           {onToggleVerificationStatus &&
                             'isVerified' in row && (
@@ -303,6 +385,7 @@ export function AdminDataTable<T extends AdminDataRow>({
                                 }`}
                                 onClick={() => {
                                   setOpenRowId(null);
+                                  setDropdownPosition(null);
                                   onToggleVerificationStatus(row);
                                 }}
                               >
@@ -319,6 +402,7 @@ export function AdminDataTable<T extends AdminDataRow>({
                               }`}
                               onClick={() => {
                                 setOpenRowId(null);
+                                setDropdownPosition(null);
                                 onToggleBlockStatus(row);
                               }}
                             >
@@ -337,6 +421,7 @@ export function AdminDataTable<T extends AdminDataRow>({
                               }`}
                               onClick={() => {
                                 setOpenRowId(null);
+                                setDropdownPosition(null);
                                 setDeleteConfirmRow(row);
                               }}
                             >
