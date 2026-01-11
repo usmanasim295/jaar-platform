@@ -3,7 +3,6 @@ import Script from 'next/script';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NavbarWrapper from './NavbarWrapper';
-import '../i18n'; // import i18n config
 import { headers } from 'next/headers';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AdminAuthProvider } from '@/contexts/AdminAuthContext';
@@ -29,6 +28,8 @@ export const metadata: Metadata = {
   icons: '/assets/icons/SiteLogo.svg',
 };
 
+import { cookies } from 'next/headers';
+
 export default async function RootLayout({
   children,
 }: {
@@ -38,8 +39,11 @@ export default async function RootLayout({
   const pathname = headersList.get('x-invoke-path') || '';
   const isAdminRoute = pathname.startsWith('/admin');
 
+  const cookieStore = await cookies();
+  const lang = cookieStore.get('i18nextLng')?.value || defaultLang;
+
   return (
-    <html lang={defaultLang} dir={defaultLang === 'ar' ? 'rtl' : 'ltr'}>
+    <html lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

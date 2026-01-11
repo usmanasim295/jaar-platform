@@ -22,8 +22,8 @@ if (!i18n.isInitialized) {
       },
       detection: {
         order: ['localStorage', 'querystring', 'cookie', 'navigator'],
-        lookupLocalStorage: 'i18nextLng',
-        caches: ['localStorage'],
+        lookupCookie: 'i18nextLng',
+        caches: ['localStorage', 'cookie'],
       },
       react: {
         useSuspense: false,
