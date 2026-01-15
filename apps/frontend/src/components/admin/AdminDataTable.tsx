@@ -253,7 +253,7 @@ export function AdminDataTable<T extends AdminDataRow>({
                 return (
                   <th
                     key={String(column.key)}
-                    className={`px-4 py-3 font-semibold min-w-[150px] ${
+                    className={`px-4 py-3 font-semibold whitespace-nowrap ${
                       column.className ?? ''
                     } ${
                       align === 'right'
@@ -360,7 +360,7 @@ export function AdminDataTable<T extends AdminDataRow>({
                             }
                           }
                         }}
-                        disabled={!!row.deletedAt}
+                        // disabled={!!row.deletedAt}
                         className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0E7490]/20"
                         aria-label={t('Actions')}
                       >
