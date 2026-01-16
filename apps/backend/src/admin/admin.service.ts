@@ -270,10 +270,12 @@ export class AdminService {
       );
     }
 
+    const deletedNationalId = `${user.nationalId}-deleted-${Date.now()}`;
+
     await this.prisma.$transaction(async (tx) => {
       await tx.nafathVerification.updateMany({
         where: { nationalId: user.nationalId },
-        data: { nationalId: `${user.nationalId}-deleted` },
+        data: { nationalId: deletedNationalId },
       });
 
       await tx.user.update({
@@ -281,7 +283,7 @@ export class AdminService {
         data: {
           deletedAt: new Date(),
           isBlocked: true,
-          nationalId: `${user.nationalId}-deleted`,
+          nationalId: deletedNationalId,
         },
       });
     });
