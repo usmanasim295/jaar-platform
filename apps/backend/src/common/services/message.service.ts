@@ -521,6 +521,28 @@ export class MessageService {
       en: 'At least one file is required',
       ar: 'مطلوب ملف واحد على الأقل',
     },
+
+    // File Validation Errors
+    'file.required': {
+      en: 'Document is required',
+      ar: 'الوثيقة مطلوبة',
+    },
+    'file.invalid_type': {
+      en: 'Invalid file type. Allowed types: pdf, jpg, jpeg, png, gif, doc, docx, xls, xlsx, ppt, pptx',
+      ar: 'نوع ملف غير صحيح. الأنواع المسموحة: pdf, jpg, jpeg, png, gif, doc, docx, xls, xlsx, ppt, pptx',
+    },
+    'file.too_large': {
+      en: 'File size exceeds the maximum limit of 10MB',
+      ar: 'حجم الملف يتجاوز الحد الأقصى 10 ميجابايت',
+    },
+    'file.invalid_type_bid': {
+      en: 'Invalid file type. Allowed types: pdf, doc, docx, jpg, jpeg, png',
+      ar: 'نوع ملف غير صحيح. الأنواع المسموحة: pdf, doc, docx, jpg, jpeg, png',
+    },
+    'file.too_large_bid': {
+      en: 'File size exceeds the maximum limit of 5MB',
+      ar: 'حجم الملف يتجاوز الحد الأقصى 5 ميجابايت',
+    },
   };
 
   // Success Messages
