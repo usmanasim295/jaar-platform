@@ -23,6 +23,13 @@ import { ChangePasswordDto } from './dtos/change-password.dto';
 import { LanguageService } from '../common/services/language.service';
 import { FileValidationFilter } from '../common/filters/file-validation.filter';
 
+/**
+ * MIME type regex for allowed document uploads.
+ * FileTypeValidator matches against MIME types (e.g. application/msword for .doc), not extensions.
+ */
+const ALLOWED_DOCUMENT_MIME_TYPE =
+  /^(application\/pdf|image\/(jpeg|jpg|png|gif)|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document|application\/vnd\.ms-excel|application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|application\/vnd\.ms-powerpoint|application\/vnd\.openxmlformats-officedocument\.presentationml\.presentation)$/;
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -41,7 +48,8 @@ export class AuthController {
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
           new FileTypeValidator({
-            fileType: '.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|ppt|pptx)',
+            fileType: ALLOWED_DOCUMENT_MIME_TYPE,
+            fallbackToMimetype: true,
           }),
         ],
         fileIsRequired: true,
