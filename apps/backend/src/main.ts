@@ -7,6 +7,22 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ✅ REQUEST LOGGER
+  app.use((req: any, res: any, next: () => void) => {
+    const start = Date.now();
+
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      console.log(
+        `[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${
+          res.statusCode
+        } - ${duration}ms`,
+      );
+    });
+
+    next();
+  });
+
   app.use(
     json({
       verify: (req: any, res, buf, encoding) => {
@@ -18,6 +34,7 @@ async function bootstrap() {
       },
     }),
   );
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -25,8 +42,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
   app.setGlobalPrefix('api/v1');
   app.enableCors({ origin: '*', allowedHeaders: '*', methods: '*' });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

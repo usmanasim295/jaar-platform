@@ -311,6 +311,29 @@ export class NafathAppService {
     return created;
   }
 
+  async testRequest(
+    createRequestDto: CreateRequestDto,
+    status: any,
+  ): Promise<NafathStatusResponseDto> {
+    const nafathVerification = await this.prisma.nafathVerification.findFirst({
+      where: { nationalId: createRequestDto.nationalId },
+    });
+    if (!nafathVerification) {
+      throw new NotFoundException('Nafath verification not found');
+    }
+    if (status == 'delete') {
+      await this.prisma.nafathVerification.update({
+        where: { id: nafathVerification.id },
+        data: {
+          nationalId: `${nafathVerification.nationalId}-deleted-${Date.now()}`,
+        },
+      });
+    }
+    return {
+      status: nafathVerification.status,
+    };
+  }
+
   /**
    * Creates a new Nafath authentication request
    */

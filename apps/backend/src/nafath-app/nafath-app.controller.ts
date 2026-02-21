@@ -8,6 +8,7 @@ import {
   HttpStatus,
   // UseGuards,
   Logger,
+  Query,
 } from '@nestjs/common';
 import { NafathAppService } from './nafath-app.service';
 import { CreateRequestDto } from './dto/create-request.dto';
@@ -32,6 +33,16 @@ export class NafathAppController {
     @Body() createRequestDto: CreateRequestDto,
   ): Promise<NafathStatusResponseDto> {
     return this.nafathAppService.createRequest(createRequestDto);
+  }
+
+  @Public()
+  @Post('test')
+  @HttpCode(HttpStatus.OK)
+  async testRequest(
+    @Body() createRequestDto: CreateRequestDto,
+    @Query('status') status: any,
+  ): Promise<NafathStatusResponseDto> {
+    return this.nafathAppService.testRequest(createRequestDto, status);
   }
 
   @Public()
