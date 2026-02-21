@@ -3,14 +3,12 @@ import {
   Controller,
   Post,
   Get,
-  UseGuards,
   Req,
   Patch,
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
-  FileTypeValidator,
   Query,
   UseFilters,
 } from '@nestjs/common';
@@ -22,6 +20,7 @@ import { Public } from './auth.guard';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { LanguageService } from '../common/services/language.service';
 import { FileValidationFilter } from '../common/filters/file-validation.filter';
+import { DocumentFileTypeValidator } from '../common/validators/document-file-type.validator';
 
 @Controller('auth')
 export class AuthController {
@@ -40,9 +39,7 @@ export class AuthController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({
-            fileType: '.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|ppt|pptx)',
-          }),
+          new DocumentFileTypeValidator({}),
         ],
         fileIsRequired: true,
       }),
