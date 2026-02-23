@@ -11,6 +11,7 @@ import { AdminPageLayout } from '@/components/admin/AdminPageLayout';
 import { AdminRouteProtection } from '@/components/admin/AdminRouteProtection';
 import { useGetAdminServiceProviderDetailQuery } from '@/store/api';
 import type { Language } from '@/types/api';
+import { formatPhoneForDisplay } from '@/utils/format';
 
 const formatDate = (value?: string, lang: Language = 'en') => {
   if (!value) return '—';
@@ -150,7 +151,9 @@ export function AdminServiceProviderDetailView() {
                         {t('Phone Number')}
                       </p>
                       <p className="mt-1 font-semibold text-slate-800">
-                        {detail.phoneNumber || '—'}
+                        <span dir="ltr">
+                          {formatPhoneForDisplay(detail.phoneNumber)}
+                        </span>
                       </p>
                     </div>
                     <div>

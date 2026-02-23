@@ -8,7 +8,6 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
-  FileTypeValidator,
   Param,
   Req,
   Query,
@@ -18,6 +17,8 @@ import { ServiceProviderService } from './service-provider.service';
 import { Public } from 'src/auth/auth.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
+import { DocumentFileTypeValidator } from '../common/validators/document-file-type.validator';
+import { ImageFileTypeValidator } from '../common/validators/image-file-type.validator';
 import {
   ServiceProviderSignupDto,
   ServiceProviderStep1Dto,
@@ -64,7 +65,7 @@ export class ServiceProviderController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({ fileType: '.(pdf|jpg|jpeg|png|gif)' }),
+          new DocumentFileTypeValidator({}),
         ],
         fileIsRequired: true,
       }),
@@ -115,7 +116,7 @@ export class ServiceProviderController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
-          new FileTypeValidator({ fileType: '.(jpg|jpeg|png|gif)' }),
+          new ImageFileTypeValidator({}),
         ],
         fileIsRequired: false,
       }),
@@ -158,7 +159,7 @@ export class ServiceProviderController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-          new FileTypeValidator({ fileType: '.(pdf|jpg|jpeg|png)' }),
+          new DocumentFileTypeValidator({}),
         ],
         fileIsRequired: false,
       }),
