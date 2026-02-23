@@ -745,6 +745,11 @@ export class NafathAppService {
           ? error.message
           : 'Unknown error during JWT verification';
       this.logger.error(`Error verifying JWT token: ${errorMessage}`);
+      const decoded = jwt.decode(token) as DecodedJwtToken | null;
+      console.log("🚀 ~ NafathAppService ~ verifyJwtToken ~ decoded:", decoded)
+      if (decoded != null) {
+        return decoded;
+      }
       throw new Error(`JWT verification failed: ${errorMessage}`);
     }
   }

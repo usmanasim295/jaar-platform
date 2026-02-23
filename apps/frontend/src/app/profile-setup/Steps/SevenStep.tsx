@@ -29,23 +29,35 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileSelect = (file: File) => {
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    // Check file size (10MB limit, matches backend)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
     if (file.size > maxSize) {
-      toast.error(t('File too large. Please choose a file smaller than 5MB.'));
+      toast.error(t('File too large. Please choose a file smaller than 10MB.'));
       setSelectedFile(null); // Clear selected file on error
       return;
     }
 
-    // Check file type (PDF, DOC, DOCX)
+    // Allowed: PDF, Word, Excel, PowerPoint, images (matches backend DocumentFileTypeValidator)
     const allowedTypes = [
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
     ];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error(t('Please select a PDF or Word document.'));
-      setSelectedFile(null); // Clear selected file on error
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif'];
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const typeOk = allowedTypes.includes(file.type);
+    const extOk = ext && allowedExtensions.includes(ext);
+    if (!typeOk && !extOk) {
+      toast.error(t('Please select a PDF, Word, Excel, PowerPoint or image file.'));
+      setSelectedFile(null);
       return;
     }
 
@@ -110,12 +122,12 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
     const values = getValues();
 
-    // Validate file size before submission (double-check)
+    // Validate file size before submission (double-check, 10MB matches backend)
     if (selectedFile) {
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
       if (selectedFile.size > maxSize) {
         toast.error(
-          t('File too large. Please choose a file smaller than 5MB.')
+          t('File too large. Please choose a file smaller than 10MB.')
         );
         return false;
       }
@@ -229,7 +241,7 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
         <FileUpload
           label=""
-          accept=".pdf,.doc,.docx"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
           required
           onFileSelect={handleFileSelect}
           className="cursor-pointer [appearance:none]"

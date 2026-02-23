@@ -43,11 +43,11 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
       return false;
     }
     if (selectedFile) {
-      // Validate file size before submission (double-check)
-      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      // Validate file size before submission (double-check, 10MB matches backend)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
       if (selectedFile.size > maxSize) {
         const errorMessage = t(
-          'File too large. Please choose a file smaller than 5MB.'
+          'File too large. Please choose a file smaller than 10MB.'
         );
         setValidationError(errorMessage);
         toast.error(errorMessage);
@@ -94,17 +94,17 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
       <FileUpload
         label=""
-        accept=".pdf,.jpg,.jpeg,.png,.gif"
+        accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
         required
         onFileSelect={file => {
           // Clear previous validation errors
           setValidationError(null);
 
-          // Check file size (5MB limit)
-          const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+          // Check file size (10MB limit, matches backend)
+          const maxSize = 10 * 1024 * 1024; // 10MB in bytes
           if (file.size > maxSize) {
             const errorMessage = t(
-              'File too large. Please choose a file smaller than 5MB.'
+              'File too large. Please choose a file smaller than 10MB.'
             );
             setValidationError(errorMessage);
             toast.error(errorMessage);
