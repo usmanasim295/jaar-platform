@@ -79,8 +79,10 @@ const baseQueryWithErrorHandling = async (
 
   // Transform error for better handling
   if (result.error) {
+    const status = result.error.status;
+
     // Handle specific HTTP status codes
-    if (result.error.status === 413) {
+    if (status === 413) {
       return {
         ...result,
         error: {
@@ -96,7 +98,7 @@ const baseQueryWithErrorHandling = async (
       };
     }
 
-    if (result.error.status === 400) {
+    if (status === 400) {
       return {
         ...result,
         error: {
@@ -110,6 +112,33 @@ const baseQueryWithErrorHandling = async (
           },
         },
       };
+    }
+
+    // For admin APIs, automatically log out on 401 to keep state clean
+    if (status === 401 && typeof window !== 'undefined') {
+      const url =
+        typeof args === 'string'
+          ? args
+          : args && typeof args === 'object'
+            ? args.url
+            : '';
+
+      const isAdminRequest =
+        typeof url === 'string' && url.toString().includes('/admin/');
+
+      if (isAdminRequest) {
+        try {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminInfo');
+        } catch {
+          // Ignore storage errors
+        }
+
+        // If the user is currently on an admin route, send them to the admin login
+        if (window.location.pathname.startsWith('/admin')) {
+          window.location.href = '/admin';
+        }
+      }
     }
   }
 
