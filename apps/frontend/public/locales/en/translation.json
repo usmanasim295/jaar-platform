@@ -424,5 +424,6 @@
   "Community Chat": "Community Chat",
   "Direct Message": "Direct Message",
   "User deleted successfully": "User deleted successfully",
-  "Something went wrong": "Something went wrong"
+  "Something went wrong": "Something went wrong",
+  "PageNotFoundMessage": "The page you are looking for does not exist."
 }

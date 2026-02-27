@@ -425,5 +425,6 @@
   "Community Chat": "محادثة المجتمع",
   "Direct Message": "رسالة مباشرة",
   "User deleted successfully": "تم حذف المستخدم بنجاح",
-  "Something went wrong": "حدث خطأ ما"
+  "Something went wrong": "حدث خطأ ما",
+  "PageNotFoundMessage": "الصفحة التي تبحث عنها غير موجودة."
 }
