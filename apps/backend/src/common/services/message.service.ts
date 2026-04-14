@@ -69,6 +69,18 @@ export class MessageService {
       en: 'One or more services not found',
       ar: 'خدمة أو أكثر غير موجودة',
     },
+    'job.duplicate_service_in_job': {
+      en: 'Each service can only appear once in services',
+      ar: 'لا يمكن تكرار نفس الخدمة في القائمة',
+    },
+    'job.invalid_service_questions': {
+      en: 'One or more service questions are invalid or do not exist',
+      ar: 'سؤال خدمة واحد أو أكثر غير صالح أو غير موجود',
+    },
+    'job.service_question_not_in_job_services': {
+      en: 'Each service question must belong to one of the services selected for this job',
+      ar: 'يجب أن ينتمي كل سؤال خدمة إلى إحدى الخدمات المختارة لهذه الوظيفة',
+    },
     'job.apartment_not_linked': {
       en: 'Your account is not linked to any apartment',
       ar: 'حسابك غير مرتبط بأي شقة',

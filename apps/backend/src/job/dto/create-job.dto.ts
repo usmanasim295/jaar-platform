@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -7,11 +8,14 @@ import {
   IsArray,
   ArrayMinSize,
   IsEnum,
+  ValidateNested,
 } from 'class-validator';
+import { CreateJobServiceWithQuestionsDto } from './job-service-questions.dto';
 
 export enum JobType {
   HOME_SERVICE = 'HOME_SERVICE',
   COMMUNITY_SERVICE = 'COMMUNITY_SERVICE',
+  RFQ = 'RFQ',
 }
 
 export class CreateJobDto {
@@ -25,9 +29,9 @@ export class CreateJobDto {
 
   @IsArray()
   @ArrayMinSize(1, { message: 'At least one service is required' })
-  @IsUUID('4', { each: true, message: 'Each service ID must be a valid UUID' })
-  @IsNotEmpty({ message: 'Service IDs are required' })
-  serviceIds: string[];
+  @ValidateNested({ each: true })
+  @Type(() => CreateJobServiceWithQuestionsDto)
+  services: CreateJobServiceWithQuestionsDto[];
 
   @IsDateString()
   @IsNotEmpty({ message: 'Start date is required' })

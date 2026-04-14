@@ -11,7 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { ServiceService } from './service.service';
-import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Public } from 'src/auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
@@ -35,10 +34,13 @@ export class ServiceController {
     const language = this.languageService.validateLanguage(lang);
     const services = await this.serviceService.getAvailableServices();
 
-    return this.languageService.transformArrayForLanguage(services, language, [
-      'name',
-      'description',
-    ]);
+    return this.languageService.transformNestedArrayForLanguage(
+      services,
+      language,
+      {
+        serviceQuestions: ['question'],
+      },
+    );
   }
 
   @Get(':id')

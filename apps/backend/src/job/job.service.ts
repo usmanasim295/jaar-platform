@@ -7,9 +7,36 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateJobDto, JobType } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { JobStatus } from '@prisma/client';
+import { JobStatus, JobType as PrismaJobType, Prisma } from '@prisma/client';
 import { TranslationService } from '../common/services/translation.service';
 import { MessageService } from '../common/services/message.service';
+import {
+  jobCreatedInclude,
+  jobPublicListInclude,
+  jobDetailInclude,
+  jobByApartmentInclude,
+  jobByLeaderInclude,
+  jobListInclude,
+  jobPendingCommunityInclude,
+  jobWithHoaLeaderInclude,
+  jobWithFullPartiesInclude,
+  hoaWithLeadersInclude,
+  serviceProviderAcceptedJobsInclude,
+} from './job-includes';
+
+type Lang = 'en' | 'ar';
+
+type UserWithHOAsForCreate = Prisma.UserGetPayload<{
+  include: {
+    userHOAs: { include: { hoa: true } };
+  };
+}>;
+
+type CreateJobPlacement = {
+  hoaId: string;
+  leaderId: string | undefined;
+  initialStatus: JobStatus;
+};
 
 @Injectable()
 export class JobService {
@@ -23,9 +50,8 @@ export class JobService {
     createJobDto: CreateJobDto,
     userId: string,
     userRole: string,
-    language: 'en' | 'ar' = 'en',
+    language: Lang = 'en',
   ) {
-    // Verify the user exists and get their HOA relationships
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -43,176 +69,26 @@ export class JobService {
       );
     }
 
-    // Verify all services exist
-    const services = await this.prisma.service.findMany({
-      where: {
-        id: { in: createJobDto.serviceIds },
-      },
-    });
+    const serviceIds = this.getServiceIdsFromCreateJobDto(
+      createJobDto,
+      language,
+    );
+    await this.assertAllServicesExist(serviceIds, language);
+    await this.validateServiceQuestionAnswersForCreate(
+      createJobDto,
+      language,
+      serviceIds,
+    );
 
-    if (services.length !== createJobDto.serviceIds.length) {
-      throw new NotFoundException(
-        this.messageService.getErrorMessage('job.services_not_found', language),
+    const { hoaId, leaderId, initialStatus } =
+      await this.resolveCreateJobPlacement(
+        user,
+        createJobDto,
+        userId,
+        userRole,
+        language,
       );
-    }
 
-    let hoaId: string;
-    let leaderId: string | undefined;
-    let initialStatus: JobStatus;
-
-    if (createJobDto.jobType === JobType.HOME_SERVICE) {
-      if (userRole === 'HOME_OWNER') {
-        // Home service: use the home owner's HOA
-        const userHOA = user.userHOAs.find((uh) => !uh.isLeader);
-        if (!userHOA) {
-          throw new BadRequestException(
-            this.messageService.getErrorMessage(
-              'job.apartment_not_linked',
-              language,
-            ),
-          );
-        }
-
-        // If payload provides hoaId, ensure it matches the user's HOA
-        if (
-          createJobDto.apartmentId &&
-          createJobDto.apartmentId !== userHOA.hoaId
-        ) {
-          throw new ForbiddenException(
-            this.messageService.getErrorMessage(
-              'job.home_service_apartment_mismatch',
-              language,
-            ),
-          );
-        }
-
-        hoaId = userHOA.hoaId;
-        leaderId = undefined;
-        initialStatus = JobStatus.OPEN; // Visible to service providers immediately
-      } else if (userRole === 'LEADER') {
-        // Leader posting a home service job (allowed): require HOA they lead
-        if (!createJobDto.apartmentId) {
-          throw new BadRequestException(
-            this.messageService.getErrorMessage(
-              'job.apartment_id_required_leader',
-              language,
-            ),
-          );
-        }
-
-        const userHOA = await this.prisma.userHOA.findFirst({
-          where: {
-            hoaId: createJobDto.apartmentId,
-            userId: userId,
-            isLeader: true,
-          },
-        });
-
-        if (!userHOA) {
-          throw new ForbiddenException(
-            this.messageService.getErrorMessage(
-              'job.not_authorized_apartment',
-              language,
-            ),
-          );
-        }
-
-        hoaId = userHOA.hoaId;
-        leaderId = userId;
-        initialStatus = JobStatus.OPEN;
-      } else {
-        throw new ForbiddenException(
-          this.messageService.getErrorMessage(
-            'job.invalid_role_home_service',
-            language,
-          ),
-        );
-      }
-    } else if (createJobDto.jobType === JobType.COMMUNITY_SERVICE) {
-      // For community service, hoaId is required
-      if (!createJobDto.apartmentId) {
-        throw new BadRequestException(
-          this.messageService.getErrorMessage(
-            'job.apartment_id_required_community',
-            language,
-          ),
-        );
-      }
-
-      const hoa = await this.prisma.hoa.findUnique({
-        where: { id: createJobDto.apartmentId },
-        include: {
-          userHOAs: {
-            where: { isLeader: true },
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      if (!hoa) {
-        throw new NotFoundException(
-          this.messageService.getErrorMessage(
-            'job.apartment_not_found',
-            language,
-          ),
-        );
-      }
-
-      const leaderUserHOA = hoa.userHOAs.find((uh) => uh.isLeader);
-      if (!leaderUserHOA) {
-        throw new BadRequestException(
-          this.messageService.getErrorMessage('apartment.no_leader', language),
-        );
-      }
-
-      if (userRole === 'HOME_OWNER') {
-        // Home owner can only target their own HOA
-        const userHOA = user.userHOAs.find(
-          (uh) => uh.hoaId === hoa.id && !uh.isLeader,
-        );
-        if (!userHOA) {
-          throw new ForbiddenException(
-            this.messageService.getErrorMessage(
-              'job.not_authorized_community',
-              language,
-            ),
-          );
-        }
-
-        hoaId = hoa.id;
-        leaderId = leaderUserHOA.userId;
-        initialStatus = JobStatus.SENT_TO_LEADER; // Sent to leader for approval
-      } else if (userRole === 'LEADER') {
-        // Leader must be the leader of this HOA
-        if (leaderUserHOA.userId !== userId) {
-          throw new ForbiddenException(
-            this.messageService.getErrorMessage(
-              'job.not_authorized_apartment',
-              language,
-            ),
-          );
-        }
-
-        hoaId = hoa.id;
-        leaderId = userId;
-        initialStatus = JobStatus.OPEN; // Directly open when leader posts community job
-      } else {
-        throw new ForbiddenException(
-          this.messageService.getErrorMessage(
-            'job.invalid_role_community_service',
-            language,
-          ),
-        );
-      }
-    } else {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage('job.invalid_job_type', language),
-      );
-    }
-
-    // Translate fields BEFORE starting the transaction
     const [
       titleTranslations,
       descriptionTranslations,
@@ -226,77 +102,79 @@ export class JobService {
         ? this.translationService.createTranslationObject(
             createJobDto.experienceLevel,
           )
-        : { en: '', ar: '' },
+        : Promise.resolve({ en: '', ar: '' }),
     ]);
 
-    // Now start the transaction for DB operations only
-    const job = await this.prisma.$transaction(async (prisma) => {
-      // Create the job
-      const createdJob = await prisma.job.create({
-        data: {
-          title: titleTranslations,
-          description: descriptionTranslations,
-          startDate: new Date(createJobDto.startDate),
-          endDate: new Date(createJobDto.endDate),
-          timeSlot: timeSlotTranslations,
-          experienceLevel: createJobDto.experienceLevel
-            ? experienceLevelTranslations
-            : undefined,
-          hoaId: hoaId,
-          leaderId: leaderId,
-          createdBy: userId,
-          jobType: createJobDto.jobType,
-          status: initialStatus,
-        },
-      });
+    const flatAnswers = this.flattenServiceQuestionAnswersFromDto(createJobDto);
 
-      // Create job-service relationships
-      await Promise.all(
-        createJobDto.serviceIds.map((serviceId) =>
-          prisma.jobService.create({
-            data: {
-              jobId: createdJob.id,
-              serviceId: serviceId,
-            },
-          }),
-        ),
-      );
+    type ServiceQuestionAnswerRow = {
+      serviceQuestionId: string;
+      answer: { en: string; ar: string };
+    };
+    const serviceQuestionAnswerPayload: ServiceQuestionAnswerRow[] =
+      flatAnswers.length > 0
+        ? await Promise.all(
+            flatAnswers.map(async (item) => ({
+              serviceQuestionId: item.serviceQuestionId,
+              answer: await this.translationService.createTranslationObject(
+                item.answer,
+              ),
+            })),
+          )
+        : [];
 
-      return createdJob;
-    });
+    const job = await this.prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const createdJob = await tx.job.create({
+          data: {
+            title: titleTranslations,
+            description: descriptionTranslations,
+            startDate: new Date(createJobDto.startDate),
+            endDate: new Date(createJobDto.endDate),
+            timeSlot: timeSlotTranslations,
+            experienceLevel: createJobDto.experienceLevel
+              ? experienceLevelTranslations
+              : undefined,
+            hoaId: hoaId,
+            leaderId: leaderId,
+            createdBy: userId,
+            jobType: createJobDto.jobType,
+            status: initialStatus,
+          },
+        });
 
-    // Return job with services included
+        await Promise.all(
+          serviceIds.map((serviceId) =>
+            tx.jobService.create({
+              data: {
+                jobId: createdJob.id,
+                serviceId: serviceId,
+              },
+            }),
+          ),
+        );
+
+        if (serviceQuestionAnswerPayload.length > 0) {
+          await Promise.all(
+            serviceQuestionAnswerPayload.map((row) =>
+              tx.serviceQuestionAnswer.create({
+                data: {
+                  jobId: createdJob.id,
+                  serviceQuestionId: row.serviceQuestionId,
+                  answer: row.answer,
+                },
+              }),
+            ),
+          );
+        }
+
+        return createdJob;
+      },
+    );
+
     const jobWithServices = await this.prisma.job.findUnique({
       where: { id: job.id },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+      include: jobCreatedInclude,
     });
 
     const message =
@@ -324,100 +202,21 @@ export class JobService {
   async findAll() {
     return this.prisma.job.findMany({
       where: {
-        // Only show jobs that are open for bidding or posted by leader
         status: {
           in: ['OPEN', 'POSTED_BY_LEADER'],
         },
       },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        bids: {
-          include: {
-            serviceProvider: {
-              select: {
-                id: true,
-                name: true,
-                rating: true,
-                totalJobs: true,
-              },
-            },
-          },
-        },
-      },
+      include: jobPublicListInclude,
       orderBy: {
         createdAt: 'desc',
       },
     });
   }
 
-  async findOne(id: string, language: 'en' | 'ar' = 'en') {
+  async findOne(id: string, language: Lang = 'en') {
     const job = await this.prisma.job.findUnique({
       where: { id },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            address: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        bids: {
-          include: {
-            serviceProvider: {
-              select: {
-                id: true,
-                name: true,
-                rating: true,
-                totalJobs: true,
-                totalEarnings: true,
-              },
-            },
-          },
-          orderBy: {
-            totalPrice: 'asc', // Show lowest bids first
-          },
-        },
-      },
+      include: jobDetailInclude,
     });
 
     if (!job) {
@@ -432,153 +231,28 @@ export class JobService {
   async findByApartment(hoaId: string) {
     return this.prisma.job.findMany({
       where: { hoaId },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        bids: {
-          include: {
-            serviceProvider: {
-              select: {
-                id: true,
-                name: true,
-                rating: true,
-                totalJobs: true,
-              },
-            },
-          },
-        },
-      },
+      include: jobByApartmentInclude,
       orderBy: {
         createdAt: 'desc',
       },
     });
   }
 
-  async findByLeader(leaderId: string, language: 'en' | 'ar' = 'en') {
-    // Verify the user is a leader
-    const leader = await this.prisma.user.findUnique({
-      where: { id: leaderId },
-    });
-
-    if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException(
-        this.messageService.getErrorMessage(
-          'job.only_leaders_can_view_jobs',
-          language,
-        ),
-      );
-    }
+  async findByLeader(leaderId: string, language: Lang = 'en') {
+    await this.requireLeaderRole(
+      leaderId,
+      language,
+      'job.only_leaders_can_view_jobs',
+    );
 
     return this.prisma.job.findMany({
       where: { leaderId },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        bids: {
-          include: {
-            serviceProvider: {
-              select: {
-                id: true,
-                name: true,
-                rating: true,
-                totalJobs: true,
-                totalEarnings: true,
-              },
-            },
-          },
-          orderBy: {
-            totalPrice: 'asc',
-          },
-        },
-      },
+      include: jobByLeaderInclude,
       orderBy: {
         createdAt: 'desc',
       },
     });
   }
-
-  // async findByCreator(userId: string) {
-  //   return this.prisma.job.findMany({
-  //     where: { createdBy: userId },
-  //     include: {
-  //       services: {
-  //         include: {
-  //           service: true,
-  //         },
-  //       },
-  //       apartment: {
-  //         select: {
-  //           id: true,
-  //           name: true,
-  //           hoaNumber: true,
-  //           city: true,
-  //         },
-  //       },
-  //       leader: {
-  //         select: {
-  //           id: true,
-  //           nationalId: true,
-  //           role: true,
-  //         },
-  //       },
-  //       creator: {
-  //         select: {
-  //           id: true,
-  //           nationalId: true,
-  //           role: true,
-  //         },
-  //       },
-  //       bids: {
-  //         include: {
-  //           serviceProvider: {
-  //             select: {
-  //               id: true,
-  //               name: true,
-  //               rating: true,
-  //               totalJobs: true,
-  //               totalEarnings: true,
-  //             },
-  //           },
-  //         },
-  //         orderBy: {
-  //           totalPrice: 'asc',
-  //         },
-  //       },
-  //     },
-  //     orderBy: {
-  //       createdAt: 'desc',
-  //     },
-  //   });
-  // }
 
   async findByCreator(
     userId: string,
@@ -586,56 +260,28 @@ export class JobService {
     status?: JobStatus,
     jobType?: string,
   ) {
-    let jobs: any[] = [];
-
-    // Build filters if provided
     const statusFilter = status ? { status } : {};
     const jobTypeFilter = jobType
       ? { jobType: jobType as 'HOME_SERVICE' | 'COMMUNITY_SERVICE' }
       : {};
 
     if (userRole === 'LEADER') {
-      // Get HOAs managed by this leader
       const userHOAs = await this.prisma.userHOA.findMany({
         where: { userId: userId, isLeader: true },
         select: { hoaId: true },
       });
       const hoaIds = userHOAs.map((uh) => uh.hoaId);
 
-      // Fetch jobs created by leader
       const leaderJobs = await this.prisma.job.findMany({
         where: {
           createdBy: userId,
           ...statusFilter,
           ...jobTypeFilter,
         },
-        include: {
-          services: { include: { service: true } },
-          hoa: {
-            select: { id: true, name: true, hoaNumber: true, city: true },
-          },
-          leader: { select: { id: true, nationalId: true, role: true } },
-          creator: { select: { id: true, nationalId: true, role: true } },
-          bids: {
-            include: {
-              serviceProvider: {
-                select: {
-                  id: true,
-                  name: true,
-                  rating: true,
-                  totalJobs: true,
-                  totalEarnings: true,
-                },
-              },
-            },
-            orderBy: { totalPrice: 'asc' },
-          },
-        },
+        include: jobListInclude,
         orderBy: { createdAt: 'desc' },
       });
 
-      // Fetch community service jobs created by home owners for leader's apartments
-      // Only fetch if no jobType filter or if filter is COMMUNITY_SERVICE
       const shouldFetchCommunityJobs =
         !jobType || jobType === 'COMMUNITY_SERVICE';
       const communityJobs = shouldFetchCommunityJobs
@@ -645,89 +291,33 @@ export class JobService {
               jobType: 'COMMUNITY_SERVICE',
               ...statusFilter,
             },
-            include: {
-              services: { include: { service: true } },
-              hoa: {
-                select: { id: true, name: true, hoaNumber: true, city: true },
-              },
-              leader: { select: { id: true, nationalId: true, role: true } },
-              creator: { select: { id: true, nationalId: true, role: true } },
-              bids: {
-                include: {
-                  serviceProvider: {
-                    select: {
-                      id: true,
-                      name: true,
-                      rating: true,
-                      totalJobs: true,
-                      totalEarnings: true,
-                    },
-                  },
-                },
-                orderBy: { totalPrice: 'asc' },
-              },
-            },
+            include: jobListInclude,
             orderBy: { createdAt: 'desc' },
           })
         : [];
 
-      jobs = [...leaderJobs, ...communityJobs];
-      // Optionally, sort all jobs by createdAt descending
+      const jobs = [...leaderJobs, ...communityJobs];
       jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    } else {
-      // For home owners, just fetch their jobs
-      jobs = await this.prisma.job.findMany({
-        where: {
-          createdBy: userId,
-          ...statusFilter,
-          ...jobTypeFilter,
-        },
-        include: {
-          services: { include: { service: true } },
-          hoa: {
-            select: { id: true, name: true, hoaNumber: true, city: true },
-          },
-          leader: { select: { id: true, nationalId: true, role: true } },
-          creator: { select: { id: true, nationalId: true, role: true } },
-          bids: {
-            include: {
-              serviceProvider: {
-                select: {
-                  id: true,
-                  name: true,
-                  rating: true,
-                  totalJobs: true,
-                  totalEarnings: true,
-                },
-              },
-            },
-            orderBy: { totalPrice: 'asc' },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
+      return jobs;
     }
 
-    return jobs;
+    return this.prisma.job.findMany({
+      where: {
+        createdBy: userId,
+        ...statusFilter,
+        ...jobTypeFilter,
+      },
+      include: jobListInclude,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
-  async findPendingCommunityJobs(
-    leaderId: string,
-    language: 'en' | 'ar' = 'en',
-  ) {
-    // Verify the user is a leader
-    const leader = await this.prisma.user.findUnique({
-      where: { id: leaderId },
-    });
-
-    if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException(
-        this.messageService.getErrorMessage(
-          'job.only_leaders_can_view_pending_community',
-          language,
-        ),
-      );
-    }
+  async findPendingCommunityJobs(leaderId: string, language: Lang = 'en') {
+    await this.requireLeaderRole(
+      leaderId,
+      language,
+      'job.only_leaders_can_view_pending_community',
+    );
 
     return this.prisma.job.findMany({
       where: {
@@ -742,28 +332,7 @@ export class JobService {
           },
         },
       },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+      include: jobPendingCommunityInclude,
       orderBy: {
         createdAt: 'desc',
       },
@@ -774,9 +343,8 @@ export class JobService {
     id: string,
     updateJobDto: UpdateJobDto,
     leaderId: string,
-    language: 'en' | 'ar' = 'en',
+    language: Lang = 'en',
   ) {
-    // Verify the job exists and belongs to this leader
     const existingJob = await this.prisma.job.findFirst({
       where: {
         id,
@@ -793,7 +361,6 @@ export class JobService {
       );
     }
 
-    // Only allow updates if job is still open
     if (existingJob.status !== JobStatus.OPEN) {
       throw new BadRequestException(
         this.messageService.getErrorMessage(
@@ -803,28 +370,12 @@ export class JobService {
       );
     }
 
-    // If serviceIds are being updated, verify all services exist
     if (updateJobDto.serviceIds && updateJobDto.serviceIds.length > 0) {
-      const services = await this.prisma.service.findMany({
-        where: {
-          id: { in: updateJobDto.serviceIds },
-        },
-      });
-
-      if (services.length !== updateJobDto.serviceIds.length) {
-        throw new NotFoundException(
-          this.messageService.getErrorMessage(
-            'job.services_not_found',
-            language,
-          ),
-        );
-      }
+      await this.assertAllServicesExist(updateJobDto.serviceIds, language);
     }
 
-    // Update the job with transaction to handle service updates
-    const updatedJob = await this.prisma.$transaction(async (prisma) => {
-      // Update job fields
-      const job = await prisma.job.update({
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.job.update({
         where: { id },
         data: {
           title: updateJobDto.title,
@@ -840,17 +391,14 @@ export class JobService {
         },
       });
 
-      // If serviceIds are provided, update the services
       if (updateJobDto.serviceIds) {
-        // Remove existing services
-        await prisma.jobService.deleteMany({
+        await tx.jobService.deleteMany({
           where: { jobId: id },
         });
 
-        // Add new services
         await Promise.all(
           updateJobDto.serviceIds.map((serviceId) =>
-            prisma.jobService.create({
+            tx.jobService.create({
               data: {
                 jobId: id,
                 serviceId: serviceId,
@@ -859,35 +407,11 @@ export class JobService {
           ),
         );
       }
-
-      return job;
     });
 
-    // Return updated job with services included
     const jobWithServices = await this.prisma.job.findUnique({
       where: { id },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+      include: jobWithHoaLeaderInclude,
     });
 
     return {
@@ -899,8 +423,7 @@ export class JobService {
     };
   }
 
-  async remove(id: string, leaderId: string, language: 'en' | 'ar' = 'en') {
-    // Verify the job exists and belongs to this leader
+  async remove(id: string, leaderId: string, language: Lang = 'en') {
     const existingJob = await this.prisma.job.findFirst({
       where: {
         id,
@@ -917,7 +440,6 @@ export class JobService {
       );
     }
 
-    // Only allow deletion if job is still open
     if (existingJob.status !== JobStatus.OPEN) {
       throw new BadRequestException(
         this.messageService.getErrorMessage(
@@ -927,20 +449,16 @@ export class JobService {
       );
     }
 
-    // Delete the job with transaction to handle related records
-    await this.prisma.$transaction(async (prisma) => {
-      // First delete all related JobService records
-      await prisma.jobService.deleteMany({
+    await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.jobService.deleteMany({
         where: { jobId: id },
       });
 
-      // Then delete all related bids
-      await prisma.bid.deleteMany({
+      await tx.bid.deleteMany({
         where: { jobId: id },
       });
 
-      // Finally delete the job
-      await prisma.job.delete({
+      await tx.job.delete({
         where: { id },
       });
     });
@@ -957,9 +475,8 @@ export class JobService {
     id: string,
     status: JobStatus,
     leaderId: string,
-    language: 'en' | 'ar' = 'en',
+    language: Lang = 'en',
   ) {
-    // Verify the job exists and belongs to this leader
     const existingJob = await this.prisma.job.findFirst({
       where: {
         id,
@@ -979,28 +496,7 @@ export class JobService {
     const updatedJob = await this.prisma.job.update({
       where: { id },
       data: { status },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+      include: jobWithHoaLeaderInclude,
     });
 
     return {
@@ -1015,107 +511,28 @@ export class JobService {
   async approveCommunityJob(
     jobId: string,
     leaderId: string,
-    language: 'en' | 'ar' = 'en',
+    language: Lang = 'en',
   ) {
-    // Verify the user is a leader
-    const leader = await this.prisma.user.findUnique({
-      where: { id: leaderId },
-    });
+    await this.requireLeaderRole(
+      leaderId,
+      language,
+      'job.only_leaders_can_approve_community',
+    );
 
-    if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException(
-        this.messageService.getErrorMessage(
-          'job.only_leaders_can_approve_community',
-          language,
-        ),
-      );
-    }
+    await this.loadCommunityJobForLeaderActionOrThrow(
+      jobId,
+      leaderId,
+      language,
+      'approve',
+    );
 
-    // Verify the job exists and is a community service job
-    const job = await this.prisma.job.findUnique({
-      where: { id: jobId },
-      include: {
-        hoa: {
-          include: {
-            userHOAs: {
-              where: { isLeader: true },
-              include: {
-                user: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!job) {
-      throw new NotFoundException(
-        this.messageService.getErrorMessage('job.job_not_found', language),
-      );
-    }
-
-    if (job.jobType !== 'COMMUNITY_SERVICE') {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage(
-          'job.only_community_jobs_can_be_approved',
-          language,
-        ),
-      );
-    }
-
-    if (job.status !== 'SENT_TO_LEADER') {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage(
-          'job.not_sent_to_leader_status',
-          language,
-        ),
-      );
-    }
-
-    // Verify the leader is authorized to approve this job
-    const leaderUserHOA = job.hoa.userHOAs.find((uh) => uh.isLeader);
-    if (!leaderUserHOA || leaderUserHOA.userId !== leaderId) {
-      throw new ForbiddenException(
-        'You are not authorized to approve jobs for this HOA',
-      );
-    }
-
-    // Update job status to POSTED_BY_LEADER
     const updatedJob = await this.prisma.job.update({
       where: { id: jobId },
       data: {
         status: 'POSTED_BY_LEADER',
-        leaderId: leaderId, // Ensure leader is set
+        leaderId: leaderId,
       },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+      include: jobWithFullPartiesInclude,
     });
 
     return {
@@ -1131,109 +548,27 @@ export class JobService {
     jobId: string,
     leaderId: string,
     reason?: string,
-    language: 'en' | 'ar' = 'en',
+    language: Lang = 'en',
   ) {
-    // Verify the user is a leader
-    const leader = await this.prisma.user.findUnique({
-      where: { id: leaderId },
-    });
+    await this.requireLeaderRole(
+      leaderId,
+      language,
+      'job.only_leaders_can_reject_community',
+    );
 
-    if (!leader || leader.role !== 'LEADER') {
-      throw new ForbiddenException(
-        this.messageService.getErrorMessage(
-          'job.only_leaders_can_reject_community',
-          language,
-        ),
-      );
-    }
+    await this.loadCommunityJobForLeaderActionOrThrow(
+      jobId,
+      leaderId,
+      language,
+      'reject',
+    );
 
-    // Verify the job exists and is a community service job
-    const job = await this.prisma.job.findUnique({
-      where: { id: jobId },
-      include: {
-        hoa: {
-          include: {
-            userHOAs: {
-              where: { isLeader: true },
-              include: {
-                user: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!job) {
-      throw new NotFoundException(
-        this.messageService.getErrorMessage('job.job_not_found', language),
-      );
-    }
-
-    if (job.jobType !== 'COMMUNITY_SERVICE') {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage(
-          'job.only_community_jobs_can_be_rejected',
-          language,
-        ),
-      );
-    }
-
-    if (job.status !== 'SENT_TO_LEADER') {
-      throw new BadRequestException(
-        this.messageService.getErrorMessage(
-          'job.not_sent_to_leader_status',
-          language,
-        ),
-      );
-    }
-
-    // Verify the leader is authorized to reject this job
-    const leaderUserHOA = job.hoa.userHOAs.find((uh) => uh.isLeader);
-    if (!leaderUserHOA || leaderUserHOA.userId !== leaderId) {
-      throw new ForbiddenException(
-        this.messageService.getErrorMessage(
-          'job.not_authorized_reject_apartment',
-          language,
-        ),
-      );
-    }
-
-    // Update job status to CANCELLED
     const updatedJob = await this.prisma.job.update({
       where: { id: jobId },
       data: {
         status: 'CANCELLED',
       },
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-      },
+      include: jobWithFullPartiesInclude,
     });
 
     return {
@@ -1250,7 +585,7 @@ export class JobService {
     jobType?: string,
     status?: string,
   ) {
-    const whereClause: any = {
+    const whereClause: Prisma.JobWhereInput = {
       bids: {
         some: {
           serviceProviderId: serviceProviderId,
@@ -1260,78 +595,444 @@ export class JobService {
     };
 
     if (jobType) {
-      whereClause.jobType = jobType;
+      whereClause.jobType = jobType as PrismaJobType;
     }
 
     if (status) {
-      whereClause.status = status;
+      whereClause.status = status as JobStatus;
     }
 
     return this.prisma.job.findMany({
       where: whereClause,
-      include: {
-        services: {
-          include: {
-            service: true,
-          },
-        },
-        hoa: {
-          select: {
-            id: true,
-            name: true,
-            hoaNumber: true,
-            city: true,
-          },
-        },
-        leader: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        creator: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
-        bids: {
-          where: {
-            serviceProviderId: serviceProviderId,
-            status: 'ACCEPTED',
-          },
-          include: {
-            serviceProvider: {
-              select: {
-                id: true,
-                name: true,
-                rating: true,
-                totalJobs: true,
-                totalEarnings: true,
-              },
-            },
-          },
-        },
-        completionRequests: {
-          where: {
-            serviceProviderId: serviceProviderId,
-          },
-          include: {
-            reviewer: {
-              select: {
-                id: true,
-                nationalId: true,
-                role: true,
-              },
-            },
-          },
-        },
-      },
+      include: serviceProviderAcceptedJobsInclude(serviceProviderId),
       orderBy: {
         createdAt: 'desc',
       },
     });
+  }
+
+  // --- Private helpers ---
+
+  private async resolveCreateJobPlacement(
+    user: UserWithHOAsForCreate,
+    createJobDto: CreateJobDto,
+    userId: string,
+    userRole: string,
+    language: Lang,
+  ): Promise<CreateJobPlacement> {
+    switch (createJobDto.jobType) {
+      case JobType.HOME_SERVICE:
+        return this.resolveHomeServiceCreatePlacement(
+          user,
+          createJobDto,
+          userId,
+          userRole,
+          language,
+        );
+      case JobType.COMMUNITY_SERVICE:
+        return this.resolveCommunityServiceCreatePlacement(
+          user,
+          createJobDto,
+          userId,
+          userRole,
+          language,
+        );
+      case JobType.RFQ:
+        return this.resolveRfqCreatePlacement(
+          createJobDto,
+          userId,
+          userRole,
+          language,
+        );
+      default:
+        throw new BadRequestException(
+          this.messageService.getErrorMessage('job.invalid_job_type', language),
+        );
+    }
+  }
+
+  private async resolveHomeServiceCreatePlacement(
+    user: UserWithHOAsForCreate,
+    createJobDto: CreateJobDto,
+    userId: string,
+    userRole: string,
+    language: Lang,
+  ): Promise<CreateJobPlacement> {
+    if (userRole === 'HOME_OWNER') {
+      const userHOA = user.userHOAs.find((uh) => !uh.isLeader);
+      if (!userHOA) {
+        throw new BadRequestException(
+          this.messageService.getErrorMessage(
+            'job.apartment_not_linked',
+            language,
+          ),
+        );
+      }
+
+      if (
+        createJobDto.apartmentId &&
+        createJobDto.apartmentId !== userHOA.hoaId
+      ) {
+        throw new ForbiddenException(
+          this.messageService.getErrorMessage(
+            'job.home_service_apartment_mismatch',
+            language,
+          ),
+        );
+      }
+
+      return {
+        hoaId: userHOA.hoaId,
+        leaderId: undefined,
+        initialStatus: JobStatus.OPEN,
+      };
+    }
+
+    if (userRole === 'LEADER') {
+      const { hoaId } = await this.assertLeaderLeadsApartment(
+        userId,
+        createJobDto.apartmentId,
+        language,
+      );
+      return {
+        hoaId,
+        leaderId: userId,
+        initialStatus: JobStatus.OPEN,
+      };
+    }
+
+    throw new ForbiddenException(
+      this.messageService.getErrorMessage(
+        'job.invalid_role_home_service',
+        language,
+      ),
+    );
+  }
+
+  private async resolveCommunityServiceCreatePlacement(
+    user: UserWithHOAsForCreate,
+    createJobDto: CreateJobDto,
+    userId: string,
+    userRole: string,
+    language: Lang,
+  ): Promise<CreateJobPlacement> {
+    if (!createJobDto.apartmentId) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.apartment_id_required_community',
+          language,
+        ),
+      );
+    }
+
+    const hoa = await this.prisma.hoa.findUnique({
+      where: { id: createJobDto.apartmentId },
+      include: {
+        userHOAs: {
+          where: { isLeader: true },
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!hoa) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'job.apartment_not_found',
+          language,
+        ),
+      );
+    }
+
+    const leaderUserHOA = hoa.userHOAs.find((uh) => uh.isLeader);
+    if (!leaderUserHOA) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage('apartment.no_leader', language),
+      );
+    }
+
+    if (userRole === 'HOME_OWNER') {
+      const userHOA = user.userHOAs.find(
+        (uh) => uh.hoaId === hoa.id && !uh.isLeader,
+      );
+      if (!userHOA) {
+        throw new ForbiddenException(
+          this.messageService.getErrorMessage(
+            'job.not_authorized_community',
+            language,
+          ),
+        );
+      }
+
+      return {
+        hoaId: hoa.id,
+        leaderId: leaderUserHOA.userId,
+        initialStatus: JobStatus.SENT_TO_LEADER,
+      };
+    }
+
+    if (userRole === 'LEADER') {
+      if (leaderUserHOA.userId !== userId) {
+        throw new ForbiddenException(
+          this.messageService.getErrorMessage(
+            'job.not_authorized_apartment',
+            language,
+          ),
+        );
+      }
+
+      return {
+        hoaId: hoa.id,
+        leaderId: userId,
+        initialStatus: JobStatus.OPEN,
+      };
+    }
+
+    throw new ForbiddenException(
+      this.messageService.getErrorMessage(
+        'job.invalid_role_community_service',
+        language,
+      ),
+    );
+  }
+
+  private async resolveRfqCreatePlacement(
+    createJobDto: CreateJobDto,
+    userId: string,
+    userRole: string,
+    language: Lang,
+  ): Promise<CreateJobPlacement> {
+    if (userRole !== 'LEADER') {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'job.invalid_role_home_service',
+          language,
+        ),
+      );
+    }
+
+    const { hoaId } = await this.assertLeaderLeadsApartment(
+      userId,
+      createJobDto.apartmentId,
+      language,
+    );
+
+    return {
+      hoaId,
+      leaderId: userId,
+      initialStatus: JobStatus.OPEN,
+    };
+  }
+
+  private async requireLeaderRole(
+    userId: string,
+    language: Lang,
+    messageKey: string,
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || user.role !== 'LEADER') {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(messageKey, language),
+      );
+    }
+  }
+
+  private async assertAllServicesExist(
+    serviceIds: string[],
+    language: Lang,
+  ): Promise<void> {
+    const services = await this.prisma.service.findMany({
+      where: {
+        id: { in: serviceIds },
+      },
+    });
+
+    if (services.length !== serviceIds.length) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.services_not_found', language),
+      );
+    }
+  }
+
+  /** Unique service UUIDs from `services` (order preserved); rejects duplicate service ids. */
+  private getServiceIdsFromCreateJobDto(
+    createJobDto: CreateJobDto,
+    language: Lang,
+  ): string[] {
+    const ids = createJobDto.services.map((s) => s.id);
+    if (new Set(ids).size !== ids.length) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.duplicate_service_in_job',
+          language,
+        ),
+      );
+    }
+    return ids;
+  }
+
+  /** Maps nested `services[].questions` to the flat list used for validation and persistence. */
+  private flattenServiceQuestionAnswersFromDto(
+    createJobDto: CreateJobDto,
+  ): { serviceQuestionId: string; answer: string }[] {
+    const out: { serviceQuestionId: string; answer: string }[] = [];
+    for (const svc of createJobDto.services) {
+      for (const q of svc.questions) {
+        out.push({ serviceQuestionId: q.id, answer: q.answer });
+      }
+    }
+    return out;
+  }
+
+  private async validateServiceQuestionAnswersForCreate(
+    createJobDto: CreateJobDto,
+    language: Lang,
+    serviceIds: string[],
+  ): Promise<void> {
+    const flatAnswers = this.flattenServiceQuestionAnswersFromDto(createJobDto);
+    if (flatAnswers.length === 0) {
+      return;
+    }
+
+    const questionIds = [
+      ...new Set(flatAnswers.map((a) => a.serviceQuestionId)),
+    ];
+    const serviceQuestions: { id: string; serviceId: string }[] =
+      await this.prisma.serviceQuestion.findMany({
+        where: { id: { in: questionIds } },
+        select: { id: true, serviceId: true },
+      });
+
+    if (serviceQuestions.length !== questionIds.length) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.invalid_service_questions',
+          language,
+        ),
+      );
+    }
+
+    const questionById = new Map(serviceQuestions.map((q) => [q.id, q]));
+
+    for (const svc of createJobDto.services) {
+      for (const q of svc.questions) {
+        const row = questionById.get(q.id);
+        if (row && row.serviceId !== svc.id) {
+          throw new BadRequestException(
+            this.messageService.getErrorMessage(
+              'job.invalid_service_questions',
+              language,
+            ),
+          );
+        }
+      }
+    }
+
+    const serviceIdSet = new Set(serviceIds);
+    const questionNotInJobServices = serviceQuestions.some(
+      (sq) => !serviceIdSet.has(sq.serviceId),
+    );
+    if (questionNotInJobServices) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.service_question_not_in_job_services',
+          language,
+        ),
+      );
+    }
+  }
+
+  /** Leader must lead the given apartment (HOA). Used for HOME_SERVICE (leader) and RFQ. */
+  private async assertLeaderLeadsApartment(
+    userId: string,
+    apartmentId: string | undefined,
+    language: Lang,
+  ): Promise<{ hoaId: string }> {
+    if (!apartmentId) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.apartment_id_required_leader',
+          language,
+        ),
+      );
+    }
+
+    const userHOA = await this.prisma.userHOA.findFirst({
+      where: {
+        hoaId: apartmentId,
+        userId: userId,
+        isLeader: true,
+      },
+    });
+
+    if (!userHOA) {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'job.not_authorized_apartment',
+          language,
+        ),
+      );
+    }
+
+    return { hoaId: userHOA.hoaId };
+  }
+
+  private async loadCommunityJobForLeaderActionOrThrow(
+    jobId: string,
+    leaderId: string,
+    language: Lang,
+    action: 'approve' | 'reject',
+  ): Promise<void> {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        hoa: {
+          include: hoaWithLeadersInclude,
+        },
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
+    }
+
+    const wrongTypeKey =
+      action === 'approve'
+        ? 'job.only_community_jobs_can_be_approved'
+        : 'job.only_community_jobs_can_be_rejected';
+
+    if (job.jobType !== 'COMMUNITY_SERVICE') {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(wrongTypeKey, language),
+      );
+    }
+
+    if (job.status !== 'SENT_TO_LEADER') {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.not_sent_to_leader_status',
+          language,
+        ),
+      );
+    }
+
+    const leaderUserHOA = job.hoa.userHOAs.find((uh) => uh.isLeader);
+    if (!leaderUserHOA || leaderUserHOA.userId !== leaderId) {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          action === 'approve'
+            ? 'job.not_authorized_apartment'
+            : 'job.not_authorized_reject_apartment',
+          language,
+        ),
+      );
+    }
   }
 }

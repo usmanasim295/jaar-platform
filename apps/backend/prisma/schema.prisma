@@ -210,30 +210,53 @@ model Service {
   serviceRates            ServiceRate[]
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
+  serviceQuestions        ServiceQuestion[]
+}
+
+model ServiceQuestion {
+  id                     String                  @id @default(uuid())
+  serviceId              String
+  service                Service                 @relation(fields: [serviceId], references: [id])
+  question               Json // Question with translations {en: string, ar: string}
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  serviceQuestionAnswers ServiceQuestionAnswer[]
+}
+
+model ServiceQuestionAnswer {
+  id                String          @id @default(uuid())
+  serviceQuestionId String
+  serviceQuestion   ServiceQuestion @relation(fields: [serviceQuestionId], references: [id])
+  jobId             String
+  job               Job             @relation(fields: [jobId], references: [id])
+  answer            Json // Answer with translations {en: string, ar: string}
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }
 
 model Job {
-  id                 String                 @id @default(uuid())
-  title              Json // Job title with translations {en: string, ar: string}
-  description        Json // Job description with translations {en: string, ar: string}
-  startDate          DateTime
-  endDate            DateTime
-  timeSlot           Json // Time slot with translations {en: string, ar: string}
-  experienceLevel    Json? // Optional experience requirement with translations {en: string, ar: string}
-  hoaId              String // Which HOA this job is for
-  hoa                Hoa                    @relation(fields: [hoaId], references: [id])
-  leaderId           String? // Leader who posted the job (optional initially)
-  leader             User?                  @relation("JobLeader", fields: [leaderId], references: [id])
-  createdBy          String // User who created the job (home owner)
-  creator            User                   @relation("JobCreator", fields: [createdBy], references: [id])
-  jobType            JobType                @default(HOME_SERVICE) // HOME_SERVICE or COMMUNITY_SERVICE
-  status             JobStatus              @default(OPEN)
-  services           JobService[] // Multiple services for this job
-  bids               Bid[] // Bids received for this job
-  completionRequests JobCompletionRequest[] // Completion requests for this job
-  chats              Chat[] // Chats related to this job
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
+  id                     String                  @id @default(uuid())
+  title                  Json // Job title with translations {en: string, ar: string}
+  description            Json // Job description with translations {en: string, ar: string}
+  startDate              DateTime
+  endDate                DateTime
+  timeSlot               Json // Time slot with translations {en: string, ar: string}
+  experienceLevel        Json? // Optional experience requirement with translations {en: string, ar: string}
+  hoaId                  String // Which HOA this job is for
+  hoa                    Hoa                     @relation(fields: [hoaId], references: [id])
+  leaderId               String? // Leader who posted the job (optional initially)
+  leader                 User?                   @relation("JobLeader", fields: [leaderId], references: [id])
+  createdBy              String // User who created the job (home owner)
+  creator                User                    @relation("JobCreator", fields: [createdBy], references: [id])
+  jobType                JobType                 @default(HOME_SERVICE) // HOME_SERVICE or COMMUNITY_SERVICE
+  status                 JobStatus               @default(OPEN)
+  services               JobService[] // Multiple services for this job
+  bids                   Bid[] // Bids received for this job
+  completionRequests     JobCompletionRequest[] // Completion requests for this job
+  chats                  Chat[] // Chats related to this job
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  serviceQuestionAnswers ServiceQuestionAnswer[]
 }
 
 model JobService {
@@ -281,6 +304,7 @@ enum JobStatus {
 enum JobType {
   HOME_SERVICE // Direct to service providers
   COMMUNITY_SERVICE // Goes through leader approval
+  RFQ // Request for quotation
 }
 
 enum BidStatus {
