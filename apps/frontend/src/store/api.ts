@@ -138,6 +138,21 @@ const baseQueryWithErrorHandling = async (
         if (window.location.pathname.startsWith('/admin')) {
           window.location.href = '/admin';
         }
+      } else {
+        try {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('serviceProviderId');
+          localStorage.removeItem('name');
+          localStorage.removeItem('selectedServices');
+          localStorage.removeItem('selectedServicesName');
+        } catch {
+          // Ignore storage errors
+        }
+
+        if (!window.location.pathname.startsWith('/signin')) {
+          window.location.href = '/signin';
+        }
       }
     }
   }
