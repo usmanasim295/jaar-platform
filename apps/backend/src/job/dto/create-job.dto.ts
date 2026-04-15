@@ -42,8 +42,16 @@ export class CreateJobDto {
   endDate: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Time slot is required' })
-  timeSlot: string;
+  @IsOptional()
+  timeSlot?: string;
+
+  @IsString()
+  @IsOptional()
+  workDuration?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
 
   @IsString()
   @IsOptional()

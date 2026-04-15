@@ -240,7 +240,9 @@ model Job {
   description            Json // Job description with translations {en: string, ar: string}
   startDate              DateTime
   endDate                DateTime
-  timeSlot               Json // Time slot with translations {en: string, ar: string}
+  timeSlot               Json? // Time slot with translations {en: string, ar: string}
+  workDuration           Json? // Work duration with translations {en: string, ar: string}
+  location               Json? // Location with translations {en: string, ar: string}
   experienceLevel        Json? // Optional experience requirement with translations {en: string, ar: string}
   hoaId                  String // Which HOA this job is for
   hoa                    Hoa                     @relation(fields: [hoaId], references: [id])

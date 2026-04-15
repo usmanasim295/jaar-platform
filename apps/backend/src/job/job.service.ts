@@ -93,11 +93,23 @@ export class JobService {
       titleTranslations,
       descriptionTranslations,
       timeSlotTranslations,
+      workDurationTranslations,
+      locationTranslations,
       experienceLevelTranslations,
     ] = await Promise.all([
       this.translationService.createTranslationObject(createJobDto.title),
       this.translationService.createTranslationObject(createJobDto.description),
-      this.translationService.createTranslationObject(createJobDto.timeSlot),
+      createJobDto.timeSlot
+        ? this.translationService.createTranslationObject(createJobDto.timeSlot)
+        : Promise.resolve({ en: '', ar: '' }),
+      createJobDto.workDuration
+        ? this.translationService.createTranslationObject(
+            createJobDto.workDuration,
+          )
+        : Promise.resolve({ en: '', ar: '' }),
+      createJobDto.location
+        ? this.translationService.createTranslationObject(createJobDto.location)
+        : Promise.resolve({ en: '', ar: '' }),
       createJobDto.experienceLevel
         ? this.translationService.createTranslationObject(
             createJobDto.experienceLevel,
@@ -131,7 +143,11 @@ export class JobService {
             description: descriptionTranslations,
             startDate: new Date(createJobDto.startDate),
             endDate: new Date(createJobDto.endDate),
-            timeSlot: timeSlotTranslations,
+            timeSlot: createJobDto.timeSlot ? timeSlotTranslations : undefined,
+            workDuration: createJobDto.workDuration
+              ? workDurationTranslations
+              : undefined,
+            location: createJobDto.location ? locationTranslations : undefined,
             experienceLevel: createJobDto.experienceLevel
               ? experienceLevelTranslations
               : undefined,
@@ -374,20 +390,43 @@ export class JobService {
       await this.assertAllServicesExist(updateJobDto.serviceIds, language);
     }
 
+    const translateIfPresent = async (value?: string) =>
+      value
+        ? await this.translationService.createTranslationObject(value)
+        : undefined;
+
+    const [
+      titleTranslations,
+      descriptionTranslations,
+      timeSlotTranslations,
+      workDurationTranslations,
+      locationTranslations,
+      experienceLevelTranslations,
+    ] = await Promise.all([
+      translateIfPresent(updateJobDto.title),
+      translateIfPresent(updateJobDto.description),
+      translateIfPresent(updateJobDto.timeSlot),
+      translateIfPresent(updateJobDto.workDuration),
+      translateIfPresent(updateJobDto.location),
+      translateIfPresent(updateJobDto.experienceLevel),
+    ]);
+
     await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.job.update({
         where: { id },
         data: {
-          title: updateJobDto.title,
-          description: updateJobDto.description,
+          title: titleTranslations,
+          description: descriptionTranslations,
           startDate: updateJobDto.startDate
             ? new Date(updateJobDto.startDate)
             : undefined,
           endDate: updateJobDto.endDate
             ? new Date(updateJobDto.endDate)
             : undefined,
-          timeSlot: updateJobDto.timeSlot,
-          experienceLevel: updateJobDto.experienceLevel,
+          timeSlot: timeSlotTranslations,
+          workDuration: workDurationTranslations,
+          location: locationTranslations,
+          experienceLevel: experienceLevelTranslations,
         },
       });
 
