@@ -141,8 +141,12 @@ export class JobService {
           data: {
             title: titleTranslations,
             description: descriptionTranslations,
-            startDate: new Date(createJobDto.startDate),
-            endDate: new Date(createJobDto.endDate),
+            startDate: createJobDto.startDate
+              ? new Date(createJobDto.startDate)
+              : undefined,
+            endDate: createJobDto.endDate
+              ? new Date(createJobDto.endDate)
+              : undefined,
             timeSlot: createJobDto.timeSlot ? timeSlotTranslations : undefined,
             workDuration: createJobDto.workDuration
               ? workDurationTranslations
@@ -903,7 +907,7 @@ export class JobService {
     createJobDto: CreateJobDto,
     language: Lang,
   ): string[] {
-    const ids = createJobDto.services.map((s) => s.id);
+    const ids = (createJobDto.services ?? []).map((s) => s.id);
     if (new Set(ids).size !== ids.length) {
       throw new BadRequestException(
         this.messageService.getErrorMessage(
@@ -920,8 +924,8 @@ export class JobService {
     createJobDto: CreateJobDto,
   ): { serviceQuestionId: string; answer: string }[] {
     const out: { serviceQuestionId: string; answer: string }[] = [];
-    for (const svc of createJobDto.services) {
-      for (const q of svc.questions) {
+    for (const svc of createJobDto.services ?? []) {
+      for (const q of svc.questions ?? []) {
         out.push({ serviceQuestionId: q.id, answer: q.answer });
       }
     }
@@ -958,8 +962,8 @@ export class JobService {
 
     const questionById = new Map(serviceQuestions.map((q) => [q.id, q]));
 
-    for (const svc of createJobDto.services) {
-      for (const q of svc.questions) {
+    for (const svc of createJobDto.services ?? []) {
+      for (const q of svc.questions ?? []) {
         const row = questionById.get(q.id);
         if (row && row.serviceId !== svc.id) {
           throw new BadRequestException(

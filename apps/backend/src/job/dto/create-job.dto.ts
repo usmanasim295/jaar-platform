@@ -28,18 +28,18 @@ export class CreateJobDto {
   description: string;
 
   @IsArray()
-  @ArrayMinSize(1, { message: 'At least one service is required' })
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateJobServiceWithQuestionsDto)
-  services: CreateJobServiceWithQuestionsDto[];
+  services?: CreateJobServiceWithQuestionsDto[];
 
   @IsDateString()
-  @IsNotEmpty({ message: 'Start date is required' })
-  startDate: string;
+  @IsOptional()
+  startDate?: string;
 
   @IsDateString()
-  @IsNotEmpty({ message: 'End date is required' })
-  endDate: string;
+  @IsOptional()
+  endDate?: string;
 
   @IsString()
   @IsOptional()

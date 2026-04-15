@@ -238,8 +238,8 @@ model Job {
   id                     String                  @id @default(uuid())
   title                  Json // Job title with translations {en: string, ar: string}
   description            Json // Job description with translations {en: string, ar: string}
-  startDate              DateTime
-  endDate                DateTime
+  startDate              DateTime?
+  endDate                DateTime?
   timeSlot               Json? // Time slot with translations {en: string, ar: string}
   workDuration           Json? // Work duration with translations {en: string, ar: string}
   location               Json? // Location with translations {en: string, ar: string}
