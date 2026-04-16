@@ -37,6 +37,8 @@ model User {
   postedJobs                 Job[]                  @relation("JobLeader") // Optional - can be empty if no jobs posted
   createdJobs                Job[]                  @relation("JobCreator") // Jobs created by this user (home owners)
   reviewedCompletionRequests JobCompletionRequest[] @relation("JobCompletionReviewer") // Completion requests reviewed by this user
+  createdTickets             Ticket[]               @relation("TicketCreator") // Tickets created by this user
+  reviewedTickets            Ticket[]               @relation("TicketReviewer") // Tickets reviewed by this user
 
   // Chat relations
   communityMemberships CommunityMember[]
@@ -68,6 +70,7 @@ model Hoa {
   state     Json? // State with translations {en: string, ar: string}
   userHOAs  UserHOA[] // Many-to-many relationship with users
   jobs      Job[] // Jobs posted for this HOA
+  tickets   Ticket[] // Tickets created for this HOA
   community Community? // One community per HOA
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -485,4 +488,45 @@ model PollVote {
 
   @@unique([pollId, voterId])
   @@unique([pollId, voterServiceProviderId])
+}
+
+// Ticket Model
+enum TicketStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketCategory {
+  MAINTENANCE
+  COMPLAINT
+  GENERAL_REQUEST
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Ticket {
+  id          String          @id @default(uuid())
+  title       Json // Ticket title with translations {en: string, ar: string}
+  description Json // Ticket description with translations {en: string, ar: string}
+  category    TicketCategory?
+  priority    TicketPriority?
+  status      TicketStatus    @default(PENDING)
+  images      String[] // URLs of uploaded images
+  reason      Json? // Leader's approval/rejection reason {en: string, ar: string}
+
+  hoaId      String
+  hoa        Hoa    @relation(fields: [hoaId], references: [id])
+  createdBy  String
+  creator    User   @relation("TicketCreator", fields: [createdBy], references: [id])
+  reviewedBy String?
+  reviewer   User?  @relation("TicketReviewer", fields: [reviewedBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

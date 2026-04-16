@@ -1,0 +1,450 @@
+{
+  "info": {
+    "name": "JAAR - Ticket API",
+    "description": "Ticket module endpoints for JAAR platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://stag-api.jaar.sa/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "homeOwnerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "leaderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ticketId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "hoaId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Ticket (HomeOwner)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{homeOwnerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Water leakage in bathroom\",\n  \"description\": \"There is a water leak coming from the ceiling of my bathroom. It has been happening for 2 days.\",\n  \"category\": \"MAINTENANCE\",\n  \"priority\": \"HIGH\",\n  \"images\": []\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.ticket && jsonData.ticket.id) {",
+              "    pm.collectionVariables.set('ticketId', jsonData.ticket.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Create Ticket (Leader)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Parking area needs cleaning\",\n  \"description\": \"The parking area on level B2 needs thorough cleaning. Oil spills spotted.\",\n  \"category\": \"MAINTENANCE\",\n  \"priority\": \"MEDIUM\",\n  \"images\": [],\n  \"hoaId\": \"{{hoaId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.ticket && jsonData.ticket.id) {",
+              "    pm.collectionVariables.set('ticketId', jsonData.ticket.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Create Ticket - Complaint (HomeOwner)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{homeOwnerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Noise complaint from neighbor\",\n  \"description\": \"Loud construction noise from unit 5B every night after 10 PM.\",\n  \"category\": \"COMPLAINT\",\n  \"priority\": \"LOW\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket?lang=ar",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "ar"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Create Ticket - General Request (HomeOwner)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{homeOwnerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Request for guest parking pass\",\n  \"description\": \"I need a guest parking pass for this weekend. My relatives are visiting.\",\n  \"category\": \"GENERAL_REQUEST\",\n  \"priority\": \"LOW\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "5. Get My Tickets (HomeOwner)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{homeOwnerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ticket/my-tickets?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "my-tickets"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Get My Tickets (Leader)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ticket/my-tickets?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "my-tickets"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Get Pending Tickets (Leader)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ticket/pending?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "pending"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. Get Pending Tickets - Arabic (Leader)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ticket/pending?lang=ar",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "pending"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "ar"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "9. Get Tickets by HOA (Leader)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ticket/hoa/{{hoaId}}?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "hoa", "{{hoaId}}"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "10. Get Ticket by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{homeOwnerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/ticket/{{ticketId}}?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "{{ticketId}}"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "11. Approve Ticket (Leader)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"Approved. Maintenance team will be sent tomorrow.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket/{{ticketId}}/approve?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "{{ticketId}}", "approve"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "12. Reject Ticket (Leader)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"This issue has already been resolved last week.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket/{{ticketId}}/reject?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "{{ticketId}}", "reject"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "13. Approve Ticket - No Reason (Leader)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket/{{ticketId}}/approve?lang=en",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "{{ticketId}}", "approve"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "en"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "14. Reject Ticket - Arabic (Leader)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{leaderToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"reason\": \"تم حل هذه المشكلة بالفعل\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ticket/{{ticketId}}/reject?lang=ar",
+          "host": ["{{baseUrl}}"],
+          "path": ["ticket", "{{ticketId}}", "reject"],
+          "query": [
+            {
+              "key": "lang",
+              "value": "ar"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

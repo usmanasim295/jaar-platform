@@ -13,6 +13,7 @@ import { ApartmentModule } from './apartment/apartment.module';
 import { ChatModule } from './chat/chat.module';
 import { NafathAppModule } from './nafath-app/nafath-app.module';
 import { AdminModule } from './admin/admin.module';
+import { TicketModule } from './ticket/ticket.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AdminModule } from './admin/admin.module';
     ChatModule,
     NafathAppModule,
     AdminModule,
+    TicketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

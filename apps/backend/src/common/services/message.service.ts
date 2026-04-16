@@ -534,6 +534,40 @@ export class MessageService {
       ar: 'مطلوب ملف واحد على الأقل',
     },
 
+    // Ticket Errors
+    'ticket.not_found': {
+      en: 'Ticket not found',
+      ar: 'التذكرة غير موجودة',
+    },
+    'ticket.not_pending': {
+      en: 'Ticket is not in PENDING status',
+      ar: 'التذكرة ليست في حالة انتظار',
+    },
+    'ticket.unauthorized': {
+      en: 'You are not authorized to perform this action on this ticket',
+      ar: 'غير مخول لك تنفيذ هذا الإجراء على هذه التذكرة',
+    },
+    'ticket.hoa_not_linked': {
+      en: 'Your account is not linked to any HOA',
+      ar: 'حسابك غير مرتبط بأي جمعية ملاك',
+    },
+    'ticket.hoa_mismatch': {
+      en: 'You can only create tickets for your own HOA',
+      ar: 'يمكنك إنشاء تذاكر لجمعية الملاك الخاصة بك فقط',
+    },
+    'ticket.not_authorized_hoa': {
+      en: 'You are not authorized to manage tickets for this HOA',
+      ar: 'غير مخول لك إدارة تذاكر هذه الجمعية',
+    },
+    'ticket.user_not_found': {
+      en: 'User not found',
+      ar: 'المستخدم غير موجود',
+    },
+    'ticket.cannot_delete': {
+      en: 'Cannot delete ticket that is not in PENDING status',
+      ar: 'لا يمكن حذف التذكرة التي ليست في حالة انتظار',
+    },
+
     // File Validation Errors
     'file.required': {
       en: 'Document is required',
@@ -825,6 +859,24 @@ export class MessageService {
     'service.seeded': {
       en: 'Services seeded successfully!',
       ar: 'تم بذر الخدمات بنجاح!',
+    },
+
+    // Ticket Success
+    'ticket.created': {
+      en: 'Ticket created successfully',
+      ar: 'تم إنشاء التذكرة بنجاح',
+    },
+    'ticket.approved': {
+      en: 'Ticket approved successfully',
+      ar: 'تم الموافقة على التذكرة بنجاح',
+    },
+    'ticket.rejected': {
+      en: 'Ticket rejected successfully',
+      ar: 'تم رفض التذكرة بنجاح',
+    },
+    'ticket.deleted': {
+      en: 'Ticket deleted successfully',
+      ar: 'تم حذف التذكرة بنجاح',
     },
   };
 
