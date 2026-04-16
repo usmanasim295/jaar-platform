@@ -35,7 +35,14 @@ export class JobController {
       const transformedJob = this.languageService.transformObjectForLanguage(
         job,
         language,
-        ['title', 'description', 'timeSlot', 'experienceLevel'],
+        [
+          'title',
+          'description',
+          'timeSlot',
+          'workDuration',
+          'location',
+          'experienceLevel',
+        ],
       );
 
       // Transform HOA data

@@ -38,6 +38,14 @@ export class UpdateJobDto {
 
   @IsString()
   @IsOptional()
+  workDuration?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @IsString()
+  @IsOptional()
   experienceLevel?: string;
 
   @IsEnum(JobType, {
