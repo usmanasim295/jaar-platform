@@ -209,6 +209,7 @@ model Service {
   description             Json? // Service description with translations {en: string, ar: string}
   image                   String?
   jobs                    JobService[] // Jobs that require this service
+  tickets                 Ticket[] // Tickets associated with this service
   serviceProviderServices ServiceProviderService[]
   serviceRates            ServiceRate[]
   createdAt               DateTime                 @default(now())
@@ -497,12 +498,6 @@ enum TicketStatus {
   REJECTED
 }
 
-enum TicketCategory {
-  MAINTENANCE
-  COMPLAINT
-  GENERAL_REQUEST
-}
-
 enum TicketPriority {
   LOW
   MEDIUM
@@ -514,11 +509,13 @@ model Ticket {
   id          String          @id @default(uuid())
   title       Json // Ticket title with translations {en: string, ar: string}
   description Json // Ticket description with translations {en: string, ar: string}
-  category    TicketCategory?
   priority    TicketPriority?
   status      TicketStatus    @default(PENDING)
   images      String[] // URLs of uploaded images
   reason      Json? // Leader's approval/rejection reason {en: string, ar: string}
+
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
 
   hoaId      String
   hoa        Hoa    @relation(fields: [hoaId], references: [id])

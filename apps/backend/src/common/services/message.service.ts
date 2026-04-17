@@ -567,6 +567,10 @@ export class MessageService {
       en: 'Cannot delete ticket that is not in PENDING status',
       ar: 'لا يمكن حذف التذكرة التي ليست في حالة انتظار',
     },
+    'ticket.service_not_found': {
+      en: 'Service not found',
+      ar: 'الخدمة غير موجودة',
+    },
 
     // File Validation Errors
     'file.required': {
