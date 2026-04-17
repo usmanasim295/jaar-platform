@@ -8,14 +8,18 @@ import {
   Delete,
   Req,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
   Query,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { TicketService } from './ticket.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TicketPaginationQueryDto } from './dto/ticket-pagination-query.dto';
 import { AuthGuard, Roles } from '../auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
+import { S3Service } from '../common/services/s3.service';
 
 @Controller('ticket')
 @UseGuards(AuthGuard)
@@ -23,6 +27,7 @@ export class TicketController {
   constructor(
     private readonly ticketService: TicketService,
     private readonly languageService: LanguageService,
+    private readonly s3Service: S3Service,
   ) {}
 
   private transformTicketData(tickets: any[], language: 'en' | 'ar') {
@@ -41,19 +46,45 @@ export class TicketController {
         );
       }
 
+      if (transformed.service) {
+        transformed.service = this.languageService.transformObjectForLanguage(
+          transformed.service,
+          language,
+          ['name', 'description'],
+        );
+      }
+
       return transformed;
     });
   }
 
   @Post()
   @Roles('HOME_OWNER', 'LEADER')
+  @UseInterceptors(FilesInterceptor('images', 10))
   async create(
     @Body() createTicketDto: CreateTicketDto,
+    @UploadedFiles() files: Express.Multer.File[],
     @Req() req: any,
     @Query('lang') lang?: string,
   ) {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
+
+    // Upload images to S3 if provided
+    const imageUrls: string[] = [];
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const s3Key = this.s3Service.generateS3Key(
+          'ticket-images',
+          user.id,
+          file.originalname,
+        );
+        const imageUrl = await this.s3Service.uploadFileBuffer(file, s3Key);
+        imageUrls.push(imageUrl);
+      }
+    }
+    (createTicketDto as any).images = imageUrls;
+
     const result = await this.ticketService.create(
       createTicketDto,
       user.id,

@@ -3,10 +3,9 @@ import {
   IsNotEmpty,
   IsOptional,
   IsEnum,
-  IsArray,
   IsUUID,
 } from 'class-validator';
-import { TicketCategory, TicketPriority } from '@prisma/client';
+import { TicketPriority } from '@prisma/client';
 
 export class CreateTicketDto {
   @IsString()
@@ -17,22 +16,15 @@ export class CreateTicketDto {
   @IsNotEmpty({ message: 'Ticket description is required' })
   description: string;
 
-  @IsEnum(TicketCategory, {
-    message: 'Category must be MAINTENANCE, COMPLAINT, or GENERAL_REQUEST',
-  })
-  @IsOptional()
-  category?: TicketCategory;
+  @IsUUID()
+  @IsNotEmpty({ message: 'Service ID is required' })
+  serviceId: string;
 
   @IsEnum(TicketPriority, {
     message: 'Priority must be LOW, MEDIUM, HIGH, or URGENT',
   })
   @IsOptional()
   priority?: TicketPriority;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  images?: string[];
 
   @IsUUID()
   @IsOptional()

@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TicketPaginationQueryDto } from './dto/ticket-pagination-query.dto';
-import { TicketStatus, TicketCategory, Prisma } from '@prisma/client';
+import { TicketStatus, Prisma } from '@prisma/client';
 import { TranslationService } from '../common/services/translation.service';
 import { MessageService } from '../common/services/message.service';
 import {
@@ -106,6 +106,16 @@ export class TicketService {
       );
     }
 
+    const service = await this.prisma.service.findUnique({
+      where: { id: createTicketDto.serviceId },
+    });
+
+    if (!service) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('ticket.service_not_found', language),
+      );
+    }
+
     const [titleTranslations, descriptionTranslations] = await Promise.all([
       this.translationService.createTranslationObject(createTicketDto.title),
       this.translationService.createTranslationObject(
@@ -117,9 +127,9 @@ export class TicketService {
       data: {
         title: titleTranslations,
         description: descriptionTranslations,
-        category: createTicketDto.category,
+        serviceId: createTicketDto.serviceId,
         priority: createTicketDto.priority,
-        images: createTicketDto.images ?? [],
+        images: (createTicketDto as any).images ?? [],
         hoaId,
         createdBy: userId,
       },
@@ -142,8 +152,8 @@ export class TicketService {
     if (query.status) {
       where.status = query.status as TicketStatus;
     }
-    if (query.category) {
-      where.category = query.category as TicketCategory;
+    if (query.serviceId) {
+      where.serviceId = query.serviceId;
     }
 
     const [total, tickets] = await Promise.all([
@@ -231,8 +241,8 @@ export class TicketService {
     if (query.status) {
       where.status = query.status as TicketStatus;
     }
-    if (query.category) {
-      where.category = query.category as TicketCategory;
+    if (query.serviceId) {
+      where.serviceId = query.serviceId;
     }
 
     const [total, tickets] = await Promise.all([

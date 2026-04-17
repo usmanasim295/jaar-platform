@@ -24,5 +24,5 @@ export class TicketPaginationQueryDto {
 
   @IsOptional()
   @IsString()
-  category?: string;
+  serviceId?: string;
 }
