@@ -79,6 +79,13 @@ export class JobService {
       language,
       serviceIds,
     );
+    if (createJobDto.jobType === JobType.RFQ) {
+      await this.assertAllServiceQuestionsAnsweredForRfq(
+        createJobDto,
+        language,
+        serviceIds,
+      );
+    }
 
     const { hoaId, leaderId, initialStatus } =
       await this.resolveCreateJobPlacement(
@@ -984,6 +991,42 @@ export class JobService {
       throw new BadRequestException(
         this.messageService.getErrorMessage(
           'job.service_question_not_in_job_services',
+          language,
+        ),
+      );
+    }
+  }
+
+  /** For RFQ: every ServiceQuestion belonging to the selected services must be answered. */
+  private async assertAllServiceQuestionsAnsweredForRfq(
+    createJobDto: CreateJobDto,
+    language: Lang,
+    serviceIds: string[],
+  ): Promise<void> {
+    const serviceQuestions: { id: string; serviceId: string }[] =
+      await this.prisma.serviceQuestion.findMany({
+        where: { serviceId: { in: serviceIds } },
+        select: { id: true, serviceId: true },
+      });
+
+    if (serviceQuestions.length === 0) {
+      return;
+    }
+
+    const answeredQuestionIds = new Set(
+      this.flattenServiceQuestionAnswersFromDto(createJobDto).map(
+        (a) => a.serviceQuestionId,
+      ),
+    );
+
+    const missingQuestion = serviceQuestions.find(
+      (q) => !answeredQuestionIds.has(q.id),
+    );
+
+    if (missingQuestion) {
+      throw new BadRequestException(
+        this.messageService.getErrorMessage(
+          'job.rfq_questions_required',
           language,
         ),
       );

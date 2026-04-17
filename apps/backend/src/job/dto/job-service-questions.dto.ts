@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
@@ -18,14 +19,15 @@ export class CreateJobQuestionAnswerDto {
   answer: string;
 }
 
-/** A service on the job with its question answers. */
+/** A service on the job with its question answers (questions optional for HOME_SERVICE/COMMUNITY_SERVICE). */
 export class CreateJobServiceWithQuestionsDto {
   @IsUUID('4', { message: 'Service ID must be a valid UUID' })
   @IsNotEmpty()
   id: string;
 
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateJobQuestionAnswerDto)
-  questions: CreateJobQuestionAnswerDto[];
+  questions?: CreateJobQuestionAnswerDto[];
 }
