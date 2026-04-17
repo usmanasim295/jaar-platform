@@ -81,6 +81,10 @@ export class MessageService {
       en: 'Each service question must belong to one of the services selected for this job',
       ar: 'يجب أن ينتمي كل سؤال خدمة إلى إحدى الخدمات المختارة لهذه الوظيفة',
     },
+    'job.rfq_questions_required': {
+      en: 'All service questions must be answered for RFQ jobs',
+      ar: 'يجب الإجابة على جميع أسئلة الخدمة لوظائف طلب عرض الأسعار',
+    },
     'job.apartment_not_linked': {
       en: 'Your account is not linked to any apartment',
       ar: 'حسابك غير مرتبط بأي شقة',
