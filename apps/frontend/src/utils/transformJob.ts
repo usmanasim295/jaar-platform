@@ -41,5 +41,6 @@ export const transformJob = (
     status: apiJob.status,
     apartment: apiJob.apartment,
     services: apiJob.services,
+    serviceQuestionAnswers: apiJob.serviceQuestionAnswers,
   };
 };

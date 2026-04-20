@@ -125,6 +125,24 @@ export interface JobBid {
   serviceProvider: string;
 }
 
+export interface JobServiceQuestionAnswer {
+  id: string;
+  jobId: string;
+  serviceQuestionId: string;
+  answer: string;
+  createdAt: string;
+  updatedAt: string;
+  serviceQuestion: {
+    id: string;
+    serviceId: string;
+    question: string;
+    service?: {
+      id: string;
+      name: string;
+    };
+  };
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -136,7 +154,7 @@ export interface Job {
   apartmentId: string;
   leaderId: string | null;
   createdBy: string;
-  jobType: 'COMMUNITY_SERVICE' | 'HOME_SERVICE';
+  jobType: 'COMMUNITY_SERVICE' | 'HOME_SERVICE' | 'RFQ';
   status:
     | 'SENT_TO_LEADER'
     | 'POSTED_BY_LEADER'
@@ -152,6 +170,7 @@ export interface Job {
   creator: JobCreator;
   bids: JobBid[];
   completionRequests: JobCompletionRequest[];
+  serviceQuestionAnswers?: JobServiceQuestionAnswer[];
 }
 
 // Service Provider Jobs API Response

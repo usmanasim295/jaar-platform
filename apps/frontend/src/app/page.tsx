@@ -26,6 +26,7 @@ export default function Home() {
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  console.log('🚀 ~ Home ~ selectedJob:', selectedJob);
 
   const {
     data: profileData,

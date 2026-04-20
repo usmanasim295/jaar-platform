@@ -55,6 +55,19 @@ export type Job = {
       totalJobs: number;
     };
   }>;
+  serviceQuestionAnswers?: Array<{
+    id: string;
+    answer: string;
+    serviceQuestion: {
+      id: string;
+      serviceId: string;
+      question: string;
+      service?: {
+        id: string;
+        name: string;
+      };
+    };
+  }>;
 };
 
 export type JobDetailModalProps = {

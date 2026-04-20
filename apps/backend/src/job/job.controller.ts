@@ -88,6 +88,34 @@ export class JobController {
         }));
       }
 
+      // Transform RFQ serviceQuestionAnswers
+      if (transformedJob.serviceQuestionAnswers) {
+        transformedJob.serviceQuestionAnswers =
+          transformedJob.serviceQuestionAnswers.map((item: any) => ({
+            ...item,
+            answer: this.languageService.extractTranslation(
+              item.answer,
+              language,
+            ),
+            serviceQuestion: item.serviceQuestion
+              ? {
+                  ...item.serviceQuestion,
+                  question: this.languageService.extractTranslation(
+                    item.serviceQuestion.question,
+                    language,
+                  ),
+                  service: item.serviceQuestion.service
+                    ? this.languageService.transformObjectForLanguage(
+                        item.serviceQuestion.service,
+                        language,
+                        ['name', 'description'],
+                      )
+                    : item.serviceQuestion.service,
+                }
+              : item.serviceQuestion,
+          }));
+      }
+
       return transformedJob;
     });
   }
