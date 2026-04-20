@@ -178,20 +178,90 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                 <div className="flex items-center gap-2 text-sm flex-wrap">
                   <span className="font-medium">{t('Job Type')}:</span>
                   <span
-                    className={`px-2 py-1 rounded text-xs ${
+                    className={`px-2 py-1 rounded text-xs inline-flex items-center gap-1 ${
                       selectedJob.jobType === 'COMMUNITY_SERVICE'
                         ? 'bg-blue-100 text-blue-800'
-                        : 'bg-green-100 text-green-800'
+                        : selectedJob.jobType === 'RFQ'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-green-100 text-green-800'
                     }`}
                   >
-                    {selectedJob.jobType === 'COMMUNITY_SERVICE'
-                      ? t('Community Service')
-                      : t('Home Service')}
+                    <span>
+                      {selectedJob.jobType === 'COMMUNITY_SERVICE'
+                        ? '🏘️'
+                        : selectedJob.jobType === 'RFQ'
+                          ? '📋'
+                          : '🏠'}
+                    </span>
+                    <span>
+                      {selectedJob.jobType === 'COMMUNITY_SERVICE'
+                        ? t('Community Service')
+                        : selectedJob.jobType === 'RFQ'
+                          ? t('RFQ')
+                          : t('Home Service')}
+                    </span>
                   </span>
                 </div>
               )}
             </div>
           </div>
+
+          {/* RFQ Questions & Answers (only for RFQ type) */}
+          {selectedJob?.jobType === 'RFQ' &&
+            selectedJob?.serviceQuestionAnswers &&
+            selectedJob.serviceQuestionAnswers.length > 0 && (
+              <div>
+                <h4 className="text-(--primary-black) font-semibold typo-heading3 mb-3 sm:mb-4">
+                  {t('RFQ Details')}
+                </h4>
+                <div className="space-y-3">
+                  {Object.entries(
+                    selectedJob.serviceQuestionAnswers.reduce<
+                      Record<
+                        string,
+                        Array<{ question: string; answer: string }>
+                      >
+                    >((acc, item) => {
+                      const serviceName =
+                        item.serviceQuestion.service?.name || t('Service');
+                      if (!acc[serviceName]) acc[serviceName] = [];
+                      acc[serviceName].push({
+                        question: item.serviceQuestion.question,
+                        answer: item.answer,
+                      });
+                      return acc;
+                    }, {})
+                  ).map(([serviceName, qas]) => (
+                    <div
+                      key={serviceName}
+                      className="bg-purple-50 border border-purple-200 p-3 sm:p-4 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-purple-700">📋</span>
+                        <h5 className="font-semibold text-sm text-purple-900">
+                          {serviceName}
+                        </h5>
+                      </div>
+                      <div className="space-y-2">
+                        {qas.map((qa, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white p-3 rounded border border-purple-100"
+                          >
+                            <p className="text-xs font-semibold text-gray-700 mb-1">
+                              {t('Q')}: {qa.question}
+                            </p>
+                            <p className="text-sm text-gray-900 break-words">
+                              {t('A')}: {qa.answer}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           <div>
             <h4 className="text-(--primary-black) font-semibold typo-heading3 mb-3 sm:mb-4">

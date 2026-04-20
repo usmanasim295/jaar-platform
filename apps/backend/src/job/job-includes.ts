@@ -56,6 +56,16 @@ export const hoaWithLeadersInclude = {
   },
 } satisfies Prisma.HoaInclude;
 
+const serviceQuestionAnswersInclude = {
+  serviceQuestionAnswers: {
+    include: {
+      serviceQuestion: {
+        include: { service: true },
+      },
+    },
+  },
+} satisfies Prisma.JobInclude;
+
 /** Standard list/detail: services, hoa summary, leader, creator, bids (full provider). */
 export const jobListInclude: Prisma.JobInclude = {
   ...jobServicesInclude,
@@ -63,6 +73,7 @@ export const jobListInclude: Prisma.JobInclude = {
   leader: { select: userSummarySelect },
   creator: { select: userSummarySelect },
   bids: bidsOrderedAsc(serviceProviderBidFull),
+  ...serviceQuestionAnswersInclude,
 };
 
 /** Public job listing (findAll): includes creator; bids use basic provider fields. */
@@ -72,14 +83,16 @@ export const jobPublicListInclude: Prisma.JobInclude = {
   leader: { select: userSummarySelect },
   creator: { select: userSummarySelect },
   bids: bidsOrderedAsc(serviceProviderBidBasic),
+  ...serviceQuestionAnswersInclude,
 };
 
-/** Single job detail: hoa includes address; bids ordered with full provider. */
+/** Single job detail: hoa includes address; bids ordered with full provider; RFQ answers included. */
 export const jobDetailInclude: Prisma.JobInclude = {
   ...jobServicesInclude,
   hoa: { select: hoaDetailSelect },
   leader: { select: userSummarySelect },
   bids: bidsOrderedAsc(serviceProviderBidFull),
+  ...serviceQuestionAnswersInclude,
 };
 
 /** Leader’s job list: no creator on primary query (matches previous behavior). */
