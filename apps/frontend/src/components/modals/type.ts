@@ -9,7 +9,7 @@ export type Job = {
   endDate?: string;
   timeSlot?: string;
   experienceLevel?: string | null;
-  jobType?: 'COMMUNITY_SERVICE' | 'HOME_SERVICE';
+  jobType?: 'COMMUNITY_SERVICE' | 'HOME_SERVICE' | 'RFQ';
   status?:
     | 'SENT_TO_LEADER'
     | 'POSTED_BY_LEADER'
