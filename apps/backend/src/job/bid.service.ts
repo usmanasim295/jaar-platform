@@ -426,7 +426,7 @@ export class BidService {
           bid.jobId,
           bid.serviceProviderId,
         );
-      } catch (error) {
+      } catch (error: any) {
         // If chat already exists or creation fails, log but don't fail the bid acceptance
         console.log('Chat creation info:', error.message);
       }
