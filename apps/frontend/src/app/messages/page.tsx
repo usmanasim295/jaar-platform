@@ -113,6 +113,12 @@ function ChatUIContent() {
 
   // Get chat display name
   const getChatDisplayName = (chat: Chat) => {
+    // For SERVICE_CHAT, prefer the job title (what the chat is about)
+    if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
+      if (typeof chat.job.title === 'string') return chat.job.title;
+      return (chat.job.title as any).en || (chat.job.title as any).ar || '';
+    }
+
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
       const otherParticipant = chat.participants?.find(p => p.user);
       if (otherParticipant?.user) {
@@ -129,6 +135,17 @@ function ChatUIContent() {
 
   // Get chat avatar
   const getChatAvatar = (chat: Chat) => {
+    // For SERVICE_CHAT, use the job title for avatar initials
+    if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
+      const title =
+        typeof chat.job.title === 'string'
+          ? chat.job.title
+          : (chat.job.title as any).en ||
+            (chat.job.title as any).ar ||
+            'Service';
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=random`;
+    }
+
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
       const otherParticipant = chat.participants?.find(p => p.user);
       if (otherParticipant?.user) {

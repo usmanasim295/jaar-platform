@@ -92,7 +92,17 @@ export const ChatList: React.FC<ChatListProps> = ({
     });
 
   const getChatDisplayName = (chat: Chat) => {
-    // For service provider chats, show the other participant's name
+    // For SERVICE_CHAT, prefer the job title (what the chat is about)
+    if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
+      if (typeof chat.job.title === 'string') return chat.job.title;
+      return (
+        (chat.job.title as any).en ||
+        (chat.job.title as any).ar ||
+        t('Service Chat')
+      );
+    }
+
+    // For ONE_TO_ONE or SERVICE_CHAT (without job), show the other participant's name
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
       const otherParticipant = chat.participants?.find(p => p.user);
       if (otherParticipant?.user) {
@@ -111,16 +121,9 @@ export const ChatList: React.FC<ChatListProps> = ({
   };
 
   const getChatSubtitle = (chat: Chat) => {
-    // For service chats, show the job title
-    if (chat.type === 'SERVICE_CHAT' && chat.job && chat.job.title) {
-      // Handle both string and object formats
-      if (typeof chat.job.title === 'string') {
-        return chat.job.title;
-      }
-      // If it's an object with language keys
-      if (typeof chat.job.title === 'object') {
-        return (chat.job.title as any).en || (chat.job.title as any).ar || '';
-      }
+    // For service chats, the job title is now the main name, so show "Service Chat" label
+    if (chat.type === 'SERVICE_CHAT') {
+      return t('Service Chat');
     }
     return '';
   };
