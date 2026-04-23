@@ -89,13 +89,13 @@ export default function ProfileCard({
             className={`font-semibold ${isMobile ? 'text-base' : 'typo-label'} text-(--primary) pb-${isMobile ? '1' : '2'}`}
           >
             {isProfileLoading ? (
-              <div className="h-6 w-16 bg-gray-200 animate-pulse rounded" />
+              <div className="h-6 w-16 bg-gray-200 animate-pulse rounded " />
             ) : (
               `﷼${profileData?.totalEarnings || 0}`
             )}
           </h2>
           <p
-            className={`font-normal ${isMobile ? 'text-xs text-gray-600' : 'typo-small'}`}
+            className={`mt-1 font-normal ${isMobile ? 'text-xs text-gray-600' : 'typo-small'}`}
           >
             {t('Total Earnings')}
           </p>
@@ -111,7 +111,7 @@ export default function ProfileCard({
             )}
           </h2>
           <p
-            className={`font-normal ${isMobile ? 'text-xs text-gray-600' : 'typo-small'}`}
+            className={`mt-1 font-normal ${isMobile ? 'text-xs text-gray-600' : 'typo-small'}`}
           >
             {t('Total Jobs')}
           </p>
