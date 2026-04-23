@@ -111,12 +111,18 @@ function ChatUIContent() {
     markMessagesAsRead(chatId);
   };
 
+  const pickLang = (obj: { en?: string; ar?: string } | undefined) => {
+    if (!obj) return '';
+    const preferAr = i18n.language === 'ar';
+    return preferAr ? obj.ar || obj.en || '' : obj.en || obj.ar || '';
+  };
+
   // Get chat display name
   const getChatDisplayName = (chat: Chat) => {
     // For SERVICE_CHAT, prefer the job title (what the chat is about)
     if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
       if (typeof chat.job.title === 'string') return chat.job.title;
-      return (chat.job.title as any).en || (chat.job.title as any).ar || '';
+      return pickLang(chat.job.title as any);
     }
 
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
@@ -127,10 +133,10 @@ function ChatUIContent() {
     }
 
     if (chat.type === 'COMMUNITY_GROUP' && chat.community) {
-      return chat.community.name?.en || chat.community.name?.ar || 'Community';
+      return pickLang(chat.community.name as any) || 'Community';
     }
 
-    return chat.name?.en || chat.name?.ar || 'Unknown Chat';
+    return pickLang(chat.name as any) || 'Unknown Chat';
   };
 
   // Get chat avatar
@@ -140,9 +146,7 @@ function ChatUIContent() {
       const title =
         typeof chat.job.title === 'string'
           ? chat.job.title
-          : (chat.job.title as any).en ||
-            (chat.job.title as any).ar ||
-            'Service';
+          : pickLang(chat.job.title as any) || 'Service';
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=random`;
     }
 

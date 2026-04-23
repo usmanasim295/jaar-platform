@@ -91,15 +91,17 @@ export const ChatList: React.FC<ChatListProps> = ({
       return bTime - aTime; // Most recent first
     });
 
+  const pickLang = (obj: { en?: string; ar?: string } | undefined) => {
+    if (!obj) return '';
+    const preferAr = i18n.language === 'ar';
+    return preferAr ? obj.ar || obj.en || '' : obj.en || obj.ar || '';
+  };
+
   const getChatDisplayName = (chat: Chat) => {
     // For SERVICE_CHAT, prefer the job title (what the chat is about)
     if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
       if (typeof chat.job.title === 'string') return chat.job.title;
-      return (
-        (chat.job.title as any).en ||
-        (chat.job.title as any).ar ||
-        t('Service Chat')
-      );
+      return pickLang(chat.job.title as any) || t('Service Chat');
     }
 
     // For ONE_TO_ONE or SERVICE_CHAT (without job), show the other participant's name
@@ -112,12 +114,10 @@ export const ChatList: React.FC<ChatListProps> = ({
 
     // For community chats, show the community name
     if (chat.type === 'COMMUNITY_GROUP' && chat.community) {
-      return (
-        chat.community.name?.en || chat.community.name?.ar || t('Community')
-      );
+      return pickLang(chat.community.name as any) || t('Community');
     }
 
-    return chat.name?.en || chat.name?.ar || t('Unknown Chat');
+    return pickLang(chat.name as any) || t('Unknown Chat');
   };
 
   const getChatSubtitle = (chat: Chat) => {
@@ -129,6 +129,15 @@ export const ChatList: React.FC<ChatListProps> = ({
   };
 
   const getChatAvatar = (chat: Chat) => {
+    // For SERVICE_CHAT, use the job title for avatar initials
+    if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
+      const title =
+        typeof chat.job.title === 'string'
+          ? chat.job.title
+          : pickLang(chat.job.title as any) || 'Service';
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=random`;
+    }
+
     // For service provider chats, show the other participant's avatar
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
       const otherParticipant = chat.participants?.find(p => p.user);
@@ -143,7 +152,7 @@ export const ChatList: React.FC<ChatListProps> = ({
       return `https://ui-avatars.com/api/?name=Community&background=random`;
     }
 
-    const chatName = chat.name?.en || chat.name?.ar || 'Chat';
+    const chatName = pickLang(chat.name as any) || 'Chat';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(chatName)}&background=random`;
   };
 
