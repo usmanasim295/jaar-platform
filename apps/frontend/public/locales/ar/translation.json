@@ -426,5 +426,10 @@
   "Direct Message": "رسالة مباشرة",
   "User deleted successfully": "تم حذف المستخدم بنجاح",
   "Something went wrong": "حدث خطأ ما",
-  "PageNotFoundMessage": "الصفحة التي تبحث عنها غير موجودة."
+  "PageNotFoundMessage": "الصفحة التي تبحث عنها غير موجودة.",
+  "RFQ Details": "تفاصيل طلب عرض السعر",
+  "RFQ": "طلب عرض سعر",
+  "Question": "سؤال",
+  "Answer": "إجابة",
+  "Work Duration": "مدة العمل"
 }

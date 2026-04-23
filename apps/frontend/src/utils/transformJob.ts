@@ -36,6 +36,8 @@ export const transformJob = (
     startDate: apiJob.startDate,
     endDate: apiJob.endDate,
     timeSlot: apiJob.timeSlot,
+    workDuration: apiJob.workDuration,
+    location: apiJob.location,
     experienceLevel: apiJob.experienceLevel,
     jobType: apiJob.jobType,
     status: apiJob.status,

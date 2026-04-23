@@ -174,6 +174,22 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                   </span>
                 </div>
               )}
+              {selectedJob?.jobType === 'RFQ' && selectedJob?.workDuration && (
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <Clock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <span className="font-medium">{t('Work Duration')}:</span>
+                  <span className="break-words">
+                    {selectedJob.workDuration}
+                  </span>
+                </div>
+              )}
+              {selectedJob?.jobType === 'RFQ' && selectedJob?.location && (
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <span className="font-medium">{t('Location')}:</span>
+                  <span className="break-words">{selectedJob.location}</span>
+                </div>
+              )}
               {selectedJob?.jobType && (
                 <div className="flex items-center gap-2 text-sm flex-wrap">
                   <span className="font-medium">{t('Job Type')}:</span>
@@ -249,10 +265,10 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
                             className="bg-white p-3 rounded border border-purple-100"
                           >
                             <p className="text-xs font-semibold text-gray-700 mb-1">
-                              {t('Q')}: {qa.question}
+                              {t('Question')}: {qa.question}
                             </p>
                             <p className="text-sm text-gray-900 break-words">
-                              {t('A')}: {qa.answer}
+                              {t('Answer')}: {qa.answer}
                             </p>
                           </div>
                         ))}

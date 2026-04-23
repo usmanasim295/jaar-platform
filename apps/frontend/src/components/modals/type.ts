@@ -8,6 +8,8 @@ export type Job = {
   startDate?: string;
   endDate?: string;
   timeSlot?: string;
+  workDuration?: string | null;
+  location?: string | null;
   experienceLevel?: string | null;
   jobType?: 'COMMUNITY_SERVICE' | 'HOME_SERVICE' | 'RFQ';
   status?:

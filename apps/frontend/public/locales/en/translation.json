@@ -425,5 +425,10 @@
   "Direct Message": "Direct Message",
   "User deleted successfully": "User deleted successfully",
   "Something went wrong": "Something went wrong",
-  "PageNotFoundMessage": "The page you are looking for does not exist."
+  "PageNotFoundMessage": "The page you are looking for does not exist.",
+  "RFQ Details": "RFQ Details",
+  "RFQ": "RFQ",
+  "Question": "Question",
+  "Answer": "Answer",
+  "Work Duration": "Work Duration"
 }
