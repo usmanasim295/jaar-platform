@@ -351,13 +351,22 @@ export class BidService {
     let isAuthorized = false;
 
     if (bid.job.jobType === 'HOME_SERVICE') {
-      // For home service jobs, only the job creator (home owner) can accept/reject bids
-      if (userRole === 'HOME_OWNER' && bid.job.createdBy === userId) {
+      // For HOME_SERVICE jobs, the job creator can accept/reject bids
+      // (HomeOwner or Leader - whoever created the job)
+      if (bid.job.createdBy === userId) {
         isAuthorized = true;
       }
     } else if (bid.job.jobType === 'COMMUNITY_SERVICE') {
-      // For community service jobs, only the leader can accept/reject bids
+      // For COMMUNITY_SERVICE jobs, only the leader can accept/reject bids
       if (userRole === 'LEADER' && bid.job.leaderId === userId) {
+        isAuthorized = true;
+      }
+    } else if (bid.job.jobType === 'RFQ') {
+      // For RFQ jobs, the leader who created it can accept/reject bids
+      if (
+        userRole === 'LEADER' &&
+        (bid.job.leaderId === userId || bid.job.createdBy === userId)
+      ) {
         isAuthorized = true;
       }
     }
