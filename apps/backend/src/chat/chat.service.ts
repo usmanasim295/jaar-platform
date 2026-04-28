@@ -651,6 +651,13 @@ export class ChatService {
         );
       }
       participants.push({ chatId: chat.id, userId: job.creator.id });
+    } else if (job.jobType === 'RFQ') {
+      // For RFQ, chat with the leader who created the job
+      if (!job.creator) {
+        await this.prisma.chat.delete({ where: { id: chat.id } });
+        throw new NotFoundException('Job creator not found for this RFQ job');
+      }
+      participants.push({ chatId: chat.id, userId: job.creator.id });
     }
 
     await this.prisma.chatParticipant.createMany({
