@@ -3,6 +3,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectAclCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -51,7 +52,7 @@ export class S3Service {
         Key: key,
         Body: file,
         ContentType: contentType,
-        ACL: 'private', // Make files private by default
+        ACL: 'public-read',
       });
 
       await this.s3Client.send(command);
@@ -128,7 +129,7 @@ export class S3Service {
     expiresIn: number = 3600,
   ): Promise<string> {
     try {
-      const command = new PutObjectCommand({
+      const command = new GetObjectAclCommand({
         Bucket: this.bucketName,
         Key: key,
       });
