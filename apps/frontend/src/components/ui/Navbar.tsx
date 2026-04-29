@@ -1,25 +1,20 @@
-'use client';
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import LanguageToggleButton from '../LanguageToggleButton';
 import { useTranslation } from 'react-i18next';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import Button from './Button';
 import { useGetProfileQuery } from '@/store/api';
+import { NAV_ITEMS } from '@/features/navbar/constants/NavItems';
+import UserDropdown from '@/features/navbar/components/UserDropdown';
+import { useNavbar } from '@/features/navbar/hooks/useNavbar';
+import { MobileMenu } from '@/features/navbar/components/MobileMenu';
 
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
   const {
     data: profileData,
     isLoading: isProfileLoading,
@@ -33,43 +28,16 @@ export default function Navbar() {
       refetchOnMountOrArgChange: true,
     }
   );
-
-  const navItems = [
-    { label: 'Find Jobs', path: '/' },
-    { label: 'Ongoing Jobs', path: '/ongoingjobs' },
-    { label: 'My Bids', path: '/my-bids' },
-    { label: 'Messages', path: '/messages' },
-  ];
-
+  const { isOpen, setIsOpen, showUserMenu, setShowUserMenu, userMenuRef } =
+    useNavbar(isAuthenticated, user, refetchProfile);
   const handleLogout = () => {
     logout();
     setShowUserMenu(false);
   };
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      refetchProfile();
-    }
-  }, [isAuthenticated, user?.id, refetchProfile]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowUserMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   return (
     <div className="sticky top-0 left-0 z-[90] py-2.5 px-4 sm:px-6 lg:px-10 bg-white w-full flex justify-center shadow-light font-jakarta">
+      <title>(t{'Navbar'})</title>
       <div className="w-full max-w-[1300px] flex items-center justify-between">
         <Link href="/">
           <Image
@@ -77,16 +45,16 @@ export default function Navbar() {
             width={57}
             height={60}
             alt="JAR logo"
-            className=""
+            fetchPriority="high"
+            priority
           />
         </Link>
-
         <div className="flex items-center gap-10">
           <div className="hidden lg:flex items-center gap-10">
             <LanguageToggleButton />
             {!isLoading &&
               isAuthenticated &&
-              navItems.map(item => {
+              NAV_ITEMS.map(item => {
                 const isActive = pathname === item.path;
                 return (
                   <Link
@@ -114,71 +82,16 @@ export default function Navbar() {
             </div>
           ) : isAuthenticated ? (
             <div className="hidden lg:flex gap-4 items-center">
-              {/* <div className="flex items-center justify-center rounded-full h-11 w-11 bg-(--primary) shrink-0">
-                <Image
-                  src={"/assets/icons/Bell.svg"}
-                  width={24}
-                  height={24}
-                  alt="bell"
-                />
-              </div> */}
-
               {/* User Profile Dropdown */}
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                    {user?.name && profileData ? (
-                      // <span className="text-sm font-semibold text-gray-700 capitalize">
-                      //   {user.name.charAt(0).toUpperCase()}
-                      // </span>
-                      <img
-                        src={profileData.profilePictureUrl || ''}
-                        alt="Profile"
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-4 h-4 text-gray-600" />
-                    )}
-                  </div>
-                  <span className="hidden md:block text-sm font-medium text-gray-700">
-                    {profileData?.name || user?.name || 'User'}
-                  </span>
-                </button>
-
-                {showUserMenu && (
-                  <div
-                    className={`absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 ${i18n.language === 'ar' ? 'left-0' : 'right-0'}`}
-                  >
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user?.name}
-                      </p>
-                      <div className="max-w-[150px]">
-                        <p
-                          className={`text-xs text-gray-500 truncate `}
-                          style={{
-                            direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
-                            unicodeBidi: 'plaintext',
-                          }}
-                          title={user?.email}
-                        >
-                          {user?.email}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {t('Logout')}
-                    </button>
-                  </div>
-                )}
-              </div>
+              <UserDropdown
+                user={user}
+                profileData={profileData}
+                showUserMenu={showUserMenu}
+                setShowUserMenu={setShowUserMenu}
+                handleLogout={handleLogout}
+                userMenuRef={userMenuRef}
+                t={t}
+              />
             </div>
           ) : null}
           <button
@@ -194,68 +107,11 @@ export default function Navbar() {
             )}
           </button>
         </div>
-        {isOpen && (
-          <div className="lg:hidden absolute top-14 w-[90%] right-2 mt-2 bg-white rounded-xl shadow-dark p-3 space-y-2">
-            <LanguageToggleButton />
-            {isAuthenticated ? (
-              <>
-                {navItems.map(item => {
-                  const isActive = pathname === item.path;
-                  return (
-                    <Link
-                      key={item.path}
-                      href={item.path}
-                      prefetch={false}
-                      className={`block px-4 py-2 text-sm rounded-md transition-colors duration-300 ${
-                        isActive
-                          ? 'text-[#2d6a87] font-medium bg-blue-50'
-                          : 'text-gray-700 hover:text-[#2d6a87] hover:bg-gray-100'
-                      }`}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {t(item.label)}
-                    </Link>
-                  );
-                })}
-                <div className="border-t border-gray-200 pt-2 cursor-pointer">
-                  <div className="px-4 py-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {user?.name}
-                    </p>
-                    <p className="text-xs text-gray-500">{user?.email}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsOpen(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    {t('Logout')}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="space-y-2">
-                <Link
-                  href="/signin"
-                  className="block px-4 py-2 text-sm rounded-md hover:bg-gray-100"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {t('Sign In')}
-                </Link>
-                <Link
-                  href="/signup"
-                  className="block px-4 py-2 text-sm rounded-md hover:bg-gray-100"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {t('Sign Up')}
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+        <MobileMenu
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          handleLogout={handleLogout}
+        />
       </div>
     </div>
   );
