@@ -5,6 +5,7 @@ import i18n from '@/i18n';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminNavbar } from './AdminNavbar';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { useTranslation } from 'react-i18next';
 
 type AdminPageLayoutProps = {
   title: string;
@@ -17,6 +18,8 @@ export function AdminPageLayout({
   subtitle,
   children,
 }: AdminPageLayoutProps) {
+  const { t } = useTranslation();
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRTL, setIsRTL] = useState(false);
   const [currentLang, setCurrentLang] = useState<'en' | 'ar'>(
@@ -80,8 +83,8 @@ export function AdminPageLayout({
           className={`flex w-full flex-col ${isRTL ? 'lg:mr-72' : 'lg:ml-72'}`}
         >
           <AdminNavbar
-            title={title}
-            subtitle={subtitle}
+            title={t(title)}
+            subtitle={subtitle ? t(subtitle) : ''}
             isRTL={isRTL}
             currentLang={currentLang}
             onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
