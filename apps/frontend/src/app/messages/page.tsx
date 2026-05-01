@@ -22,7 +22,7 @@ function ChatUIContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 
- // Handle RTL detection
+  // Handle RTL detection
   React.useEffect(() => {
     setIsRTL(i18n.language === 'ar');
   }, [i18n.language]);
@@ -49,8 +49,16 @@ function ChatUIContent() {
     fetchChats,
     markMessagesAsRead,
   } = useChat(selectedChat?.id, addMessage);
+  useEffect(() => {
+    if (!selectedChat || chats.length === 0) return;
 
-  // Auto-select chat from URL parameter - MUST BE BEFORE CONDITIONAL RETURNS
+    const updatedChat = chats.find(c => c.id === selectedChat.id);
+
+    if (updatedChat) {
+      setSelectedChat(updatedChat);
+    }
+  }, [chats]);
+
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       const chatIdFromUrl = searchParams.get('chatId');
@@ -117,26 +125,27 @@ function ChatUIContent() {
     return preferAr ? obj.ar || obj.en || '' : obj.en || obj.ar || '';
   };
 
-  // Get chat display name
   const getChatDisplayName = (chat: Chat) => {
     // For SERVICE_CHAT, prefer the job title (what the chat is about)
     if (chat.type === 'SERVICE_CHAT' && chat.job?.title) {
       if (typeof chat.job.title === 'string') return chat.job.title;
-      return pickLang(chat.job.title as any);
+      return pickLang(chat.job.title as any) || t('Service Chat');
     }
 
+    // For ONE_TO_ONE or SERVICE_CHAT (without job), show the other participant's name
     if (chat.type === 'SERVICE_CHAT' || chat.type === 'ONE_TO_ONE') {
       const otherParticipant = chat.participants?.find(p => p.user);
       if (otherParticipant?.user) {
-        return otherParticipant.user.nationalId || 'Unknown User';
+        return otherParticipant.user.nationalId || t('Unknown User');
       }
     }
 
+    // For community chats, show the community name
     if (chat.type === 'COMMUNITY_GROUP' && chat.community) {
-      return pickLang(chat.community.name as any) || 'Community';
+      return pickLang(chat.community.name as any) || t('Community');
     }
 
-    return pickLang(chat.name as any) || 'Unknown Chat';
+    return pickLang(chat.name as any) || t('Unknown Chat');
   };
 
   // Get chat avatar
@@ -197,14 +206,14 @@ function ChatUIContent() {
 
         {/* Sidebar */}
         <div
-        className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${isRTL ? 'right-0' : 'left-0'}  ${
-        sidebarOpen
-          ? 'translate-x-0'
-          : isRTL
-            ? 'translate-x-full lg:translate-x-0'
-            : '-translate-x-full lg:translate-x-0'
-      }`}
-      dir={isRTL ? 'rtl' : 'ltr'}
+          className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${isRTL ? 'right-0' : 'left-0'}  ${
+            sidebarOpen
+              ? 'translate-x-0'
+              : isRTL
+                ? 'translate-x-full lg:translate-x-0'
+                : '-translate-x-full lg:translate-x-0'
+          }`}
+          dir={isRTL ? 'rtl' : 'ltr'}
           // className={`absolute shadow-2xl top-0 left-0 h-full w-[85%] sm:w-[320px] bg-white border-r border-[#F3F3F3] transform transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:w-[360px] ${
           //   sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           // }`}

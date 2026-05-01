@@ -33,7 +33,7 @@ export default function SigninForm() {
       await login(data.email, data.password, i18n.language as 'en' | 'ar');
     } catch (err: any) {
       // console.error('Sign In Error:', err);
-      setCustomError(err?.message || t('Invalid credentials'));
+      setCustomError(t(err?.message)|| t('Invalid credentials'));
     }
   };
 
@@ -85,7 +85,7 @@ export default function SigninForm() {
           error={errors.password?.message}
         />
         {(customError || error) && (
-          <p className="text-red-500 text-sm">{customError || error}</p>
+          <p className="text-red-500 text-sm">{t(customError) || error}</p>
         )}
 
         <Button

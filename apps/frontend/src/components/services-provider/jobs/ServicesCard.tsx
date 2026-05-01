@@ -2,10 +2,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { serviceIconMap, defaultServiceIcon } from '@/constants/serviceIcons';
-import type {
-  ServiceProviderService,
-  ServiceProviderRate,
-} from '@/types/api';
+import type { ServiceProviderService, ServiceProviderRate } from '@/types/api';
+import i18n from '@/i18n';
 
 interface ServicesCardProps {
   isProfileLoading: boolean;
@@ -20,7 +18,13 @@ export default function ServicesCard({
 }: ServicesCardProps) {
   const { t } = useTranslation();
   const isMobile = variant === 'mobile';
-
+  const formatNumberByLang = (value: number | string, lang: string) => {
+    const num = String(value);
+    if (lang.startsWith('ar')) {
+      return num.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+    }
+    return num;
+  };
   return (
     <div
       className={`bg-(--white) ${isMobile ? 'p-4 sm:p-6 mb-4' : 'p-6 my-6'} rounded-${isMobile ? 'xl' : 'lg'} shadow-dark`}
@@ -76,7 +80,8 @@ export default function ServicesCard({
                       <p
                         className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-600`}
                       >
-                        ﷼{rate.rate}/{t('hour')}
+                        ﷼{formatNumberByLang(rate.rate, i18n.language)}/
+                        {t('hour')}
                       </p>
                     )}
                   </div>
