@@ -280,9 +280,12 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
             )}
 
           <div>
-            <h4 className="text-(--primary-black) font-semibold typo-heading3 mb-3 sm:mb-4">
-              {t('Work Schedule')}
-            </h4>
+            {selectedJob?.jobType !== 'RFQ' && (
+              <h4 className="text-(--primary-black) font-semibold typo-heading3 mb-3 sm:mb-4">
+                {t('Work Schedule')}
+              </h4>
+            )}
+
             <div className="flex flex-wrap gap-2 items-center">
               {selectedJob?.startDate && selectedJob?.endDate && (
                 <div className="bg-[#f3f3f3] px-2 sm:px-3 py-[6px] rounded-lg typo-small text-[#15120F] font-medium flex items-center gap-2">
