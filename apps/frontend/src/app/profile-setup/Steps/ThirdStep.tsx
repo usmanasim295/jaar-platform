@@ -37,16 +37,11 @@ const iconMap: Record<string, React.ElementType> = {
 };
 const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
   const { t, i18n } = useTranslation();
-  const [selectedServices, setSelectedServices] = useState<string[]>(() => {
-    const stored = localStorage.getItem('selectedServices');
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedServicesName, setSelectedServicesName] = useState<string[]>(
-    () => {
-      const stored = localStorage.getItem('selectedServicesName');
-      return stored ? JSON.parse(stored) : [];
-    }
+    []
   );
+
   const [serviceProviderId, setServiceProviderId] = useState<string>('');
   const [selectServices, { error }] = useSelectServicesMutation();
   const { data: fetchedServices, isLoading: isServicesLoading } =
@@ -54,7 +49,12 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
   useEffect(() => {
     const id = localStorage.getItem('serviceProviderId');
+    const storedIds = localStorage.getItem('selectedServices');
+    const storedNames = localStorage.getItem('selectedServicesName');
+
     if (id) setServiceProviderId(id);
+    if (storedIds) setSelectedServices(JSON.parse(storedIds));
+    if (storedNames) setSelectedServicesName(JSON.parse(storedNames));
   }, []);
   const toggleService = (id: string, name: string) => {
     setSelectedServices(prev => {
@@ -66,8 +66,8 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
       return updated;
     });
     setSelectedServicesName(prev => {
-      const updated = prev.includes(name)
-        ? prev.filter(s => s !== name)
+      const updated = selectedServices.includes(id)
+        ? prev.filter((_, idx) => selectedServices[idx] !== id)
         : [...prev, name];
 
       localStorage.setItem('selectedServicesName', JSON.stringify(updated));
@@ -81,7 +81,7 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
     }
 
     try {
-      const res = await selectServices({
+      await selectServices({
         data: {
           serviceProviderId,
           serviceIds: selectedServices,
@@ -149,3 +149,4 @@ const ThirdStep = forwardRef(({ data, setData }: StepProps, ref) => {
 });
 
 export default ThirdStep;
+
