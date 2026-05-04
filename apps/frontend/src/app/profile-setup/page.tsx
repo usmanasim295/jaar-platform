@@ -18,9 +18,27 @@ const Page = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const { isClient, isRTL } = useRTL();
+  const [currentStep, setCurrentStep] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('currentStep');
+      return saved ? Number(saved) : 0;
+    }
+    return 0;
+  });
+  useEffect(() => {
+    localStorage.setItem('currentStep', String(currentStep));
+  }, [currentStep]);
+  const [stepData, setStepData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('stepData');
+      return saved ? JSON.parse(saved) : INITIAL_STEP_DATA;
+    }
+    return INITIAL_STEP_DATA;
+  });
+  useEffect(() => {
+    localStorage.setItem('stepData', JSON.stringify(stepData));
+  }, [stepData]);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [stepData, setStepData] = useState(INITIAL_STEP_DATA);
   const [loading, setLoading] = useState(false);
 
   const stepRefs = useRef<any[]>([]);
@@ -57,6 +75,8 @@ const Page = () => {
         localStorage.removeItem('name');
         localStorage.removeItem('selectedServices');
         localStorage.removeItem('selectedServicesName');
+        localStorage.removeItem('stepData');
+        localStorage.removeItem('currentStep');
       }
       // Redirect to signin page to complete authentication
       router.push('/signin');
@@ -112,3 +132,4 @@ const Page = () => {
 };
 
 export default Page;
+

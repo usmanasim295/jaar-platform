@@ -116,7 +116,7 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
                 type="text"
                 value={location}
                 onChange={e => setLocation(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-(--black)"
+                className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-gray-400"
                 placeholder={t('Muheel Facilities Managment')}
               />
             </div>
@@ -130,7 +130,7 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
                 type="text"
                 value={landmark}
                 onChange={e => setLandmark(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium placeholder:text-(--black)"
+                className="w-full placeholder:text-gray-400 bg-transparent border-none outline-none text-(--black) text-sm sm:text-base lg:typo-body font-jakarta font-medium "
                 placeholder={t('Tea House')}
               />
             </div>
@@ -148,3 +148,4 @@ const FifthStep = forwardRef(({ data, setData }: StepProps, ref) => {
 });
 
 export default FifthStep;
+
