@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { serviceIconMap, defaultServiceIcon } from '@/constants/serviceIcons';
 import type { ServiceProviderService, ServiceProviderRate } from '@/types/api';
 import i18n from '@/i18n';
+import { formatNumberByLang } from '@/utils/format';
 
 interface ServicesCardProps {
   isProfileLoading: boolean;
@@ -18,13 +19,7 @@ export default function ServicesCard({
 }: ServicesCardProps) {
   const { t } = useTranslation();
   const isMobile = variant === 'mobile';
-  const formatNumberByLang = (value: number | string, lang: string) => {
-    const num = String(value);
-    if (lang.startsWith('ar')) {
-      return num.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
-    }
-    return num;
-  };
+
   return (
     <div
       className={`bg-(--white) ${isMobile ? 'p-4 sm:p-6 mb-4' : 'p-6 my-6'} rounded-${isMobile ? 'xl' : 'lg'} shadow-dark`}
