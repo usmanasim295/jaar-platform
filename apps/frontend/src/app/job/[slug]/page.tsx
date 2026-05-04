@@ -14,11 +14,16 @@ import { tagIcons } from '@/components/modals/tagIcons';
 import React, { useRef, useState, ChangeEvent, useEffect, use } from 'react';
 import Button from '@/components/ui/Button';
 import { useTranslation } from 'react-i18next';
-import { useGetJobByIdQuery, useSubmitBidMutation } from '@/store/api';
+import {
+  useGetJobByIdQuery,
+  useGetProfileQuery,
+  useSubmitBidMutation,
+} from '@/store/api';
 import { useAuth } from '@/contexts/AuthContext';
 import i18n from '@/i18n';
 import type { Language, Job as ApiJob } from '@/types/api';
 import { toast } from 'react-toastify';
+import { formatNumberByLang } from '@/utils/format';
 
 interface Job {
   title: string;
@@ -66,6 +71,32 @@ export default function JobDetails({ params }: JobDetailsProps) {
     lang: i18n.language as Language,
   });
 
+  const { updateUser } = useAuth();
+
+  const {
+    data: profileData,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useGetProfileQuery(
+    isAuthenticated && user
+      ? { serviceProviderId: user.id, lang: i18n.language as 'en' | 'ar' }
+      : { serviceProviderId: '', lang: 'en' as 'en' | 'ar' },
+    {
+      skip: !isAuthenticated || !user,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      refetchProfile();
+    }
+  }, [isAuthenticated, user?.id, refetchProfile, i18n.language]);
+  useEffect(() => {
+    if (profileData) {
+      updateUser(profileData);
+    }
+  }, [profileData]);
   // Submit bid mutation
   const [submitBid] = useSubmitBidMutation();
 
@@ -370,7 +401,11 @@ export default function JobDetails({ params }: JobDetailsProps) {
                       <span className="font-medium">
                         {t('Your Bid Amount')}:
                       </span>{' '}
-                      ﷼{userBidStatus.totalPrice}
+                      ﷼
+                      {formatNumberByLang(
+                        userBidStatus.totalPrice,
+                        i18n.language
+                      )}
                     </div>
                     <div className="text-xs sm:text-sm">
                       <span className="font-medium">{t('Cover Letter')}:</span>

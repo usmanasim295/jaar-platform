@@ -11,3 +11,11 @@ export function formatPhoneForDisplay(
   if (digits.length === 0) return '—';
   return '+' + digits;
 }
+
+export const formatNumberByLang = (value: number | string, lang: string) => {
+  const num = String(value);
+  if (lang.startsWith('ar')) {
+    return num.replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+  }
+  return num;
+};
