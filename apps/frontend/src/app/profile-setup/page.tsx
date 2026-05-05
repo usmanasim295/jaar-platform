@@ -28,7 +28,7 @@ const Page = () => {
   useEffect(() => {
     localStorage.setItem('currentStep', String(currentStep));
   }, [currentStep]);
-  const [stepData, setStepData] = useState(() => {
+  const [stepData, setStepData] = useState<typeof INITIAL_STEP_DATA>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('stepData');
       return saved ? JSON.parse(saved) : INITIAL_STEP_DATA;
