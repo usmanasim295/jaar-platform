@@ -114,8 +114,9 @@ export class S3Service {
     originalName: string,
   ): string {
     const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
     const extension = originalName.split('.').pop() || 'pdf';
-    return `${objectName}/${userId}/${timestamp}.${extension}`;
+    return `${objectName}/${userId}/${timestamp}-${random}.${extension}`;
   }
 
   /**
