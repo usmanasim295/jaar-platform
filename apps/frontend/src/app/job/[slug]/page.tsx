@@ -526,7 +526,7 @@ ${user?.name || t('Service Provider')}`
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     style={{ display: 'none' }}
-                    accept="application/pdf, image/png, image/jpeg, .doc, .docx"
+                    accept="application/pdf, .doc, .docx, .docm"
                   />
 
                   <div

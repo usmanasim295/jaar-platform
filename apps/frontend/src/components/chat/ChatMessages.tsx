@@ -633,7 +633,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
             >
               <source
                 src={message.fileUrl || ''}
-                type={message.mimeType || 'audio/mp4'}
+                type={'audio/mp4'}
               />
               Your browser does not support the audio element.
             </video>
