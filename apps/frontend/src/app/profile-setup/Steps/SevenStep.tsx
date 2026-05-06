@@ -51,12 +51,26 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
       'image/png',
       'image/gif',
     ];
-    const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif'];
+    const allowedExtensions = [
+      'pdf',
+      'doc',
+      'docx',
+      'xls',
+      'xlsx',
+      'ppt',
+      'pptx',
+      'jpg',
+      'jpeg',
+      'png',
+      'gif',
+    ];
     const ext = file.name.split('.').pop()?.toLowerCase();
     const typeOk = allowedTypes.includes(file.type);
     const extOk = ext && allowedExtensions.includes(ext);
     if (!typeOk && !extOk) {
-      toast.error(t('Please select a PDF, Word, Excel, PowerPoint or image file.'));
+      toast.error(
+        t('Please select a PDF, Word, Excel, PowerPoint or image file.')
+      );
       setSelectedFile(null);
       return;
     }
@@ -241,7 +255,7 @@ const SevenStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
         <FileUpload
           label=""
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
+          accept=".pdf,.doc,.docx"
           required
           onFileSelect={handleFileSelect}
           className="cursor-pointer [appearance:none]"
