@@ -751,7 +751,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 onClick={() => window.open(message.fileUrl, '_blank')}
                 className="px-2 sm:px-3 py-0.5 sm:py-1 bg-(--primary) text-white text-[10px] sm:text-xs rounded hover:opacity-90 transition-colors flex-shrink-0"
               >
-                {t('Download')}
+                {t('Download')}{' '}
               </button>
             </div>
             {getMessageContent(message) && (
