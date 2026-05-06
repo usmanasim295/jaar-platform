@@ -835,6 +835,12 @@ export class ChatService {
       });
     }
 
+    // Update chat's updatedAt so chats are ordered by latest activity
+    await this.prisma.chat.update({
+      where: { id: dto.chatId },
+      data: { updatedAt: new Date() },
+    });
+
     // Emit real-time event for new message
     this.realtimeService.emitNewMessage(dto.chatId, message);
 
