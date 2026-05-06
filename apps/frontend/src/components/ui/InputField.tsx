@@ -143,6 +143,7 @@ const InputField = <T extends FieldValues>({
                   field.onChange(value);
                   onChange?.(value);
                 }}
+                onWheel={e => e.currentTarget.blur()}
                 onKeyDown={e => {
                   // Prevent + and - keys for number inputs
                   if (type === 'number' && (e.key === '+' || e.key === '-')) {
