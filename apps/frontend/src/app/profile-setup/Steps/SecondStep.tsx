@@ -94,7 +94,7 @@ const SecondStep = forwardRef(({ data, setData }: StepProps, ref) => {
 
       <FileUpload
         label=""
-        accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+        accept=".pdf,.doc,.docx"
         required
         onFileSelect={file => {
           // Clear previous validation errors
