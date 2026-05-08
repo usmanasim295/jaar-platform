@@ -15,18 +15,22 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
 
   // Get localized job data
   const job = completionRequest.job;
-  const jobTitle = job.title[currentLang] || job.title.en;
-  const jobDescription = job.description[currentLang] || job.description.en;
-  const jobTimeSlot = job.timeSlot[currentLang] || job.timeSlot.en;
-  const jobExperienceLevel = job.experienceLevel
-    ? job.experienceLevel[currentLang] || job.experienceLevel.en
-    : null;
-  const apartmentName = job.apartment?.name
-    ? job.apartment.name[currentLang] || job.apartment.name.en
-    : null;
-  const apartmentCity = job.apartment?.city
-    ? job.apartment.city[currentLang] || job.apartment.city.en
-    : null;
+
+  const jobTitle = job?.title?.[currentLang] || job?.title?.en || '';
+
+  const jobDescription =
+    job?.description?.[currentLang] || job?.description?.en || '';
+
+  const jobTimeSlot = job?.timeSlot?.[currentLang] || job?.timeSlot?.en || null;
+
+  const jobExperienceLevel =
+    job?.experienceLevel?.[currentLang] || job?.experienceLevel?.en || null;
+
+  const apartmentName =
+    job?.apartment?.name?.[currentLang] || job?.apartment?.name?.en || null;
+
+  const apartmentCity =
+    job?.apartment?.city?.[currentLang] || job?.apartment?.city?.en || null;
 
   // Format date
   const resolveLocale = () => {
