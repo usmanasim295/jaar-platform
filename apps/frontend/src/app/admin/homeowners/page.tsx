@@ -17,6 +17,7 @@ import {
 } from '@/store/api';
 import type { AdminHomeownerRow, Language } from '@/types/api';
 import i18n from '@/i18n';
+import { formatDateByLang, formatNumberByLang } from '@/utils/format';
 
 export default function AdminHomeownersPage() {
   const { t } = useTranslation();
@@ -55,18 +56,18 @@ export default function AdminHomeownersPage() {
           </Link>
         ),
       },
-      {
-        key: 'createdDate',
-        label: t('Created Date'),
-        render: row =>
-          row.createdDate
-            ? new Date(row.createdDate).toLocaleDateString(currentLang)
-            : '—',
-      },
+{
+  key: 'createdDate',
+  label: t('Created Date'),
+  render: row =>
+    row.createdDate
+      ? formatDateByLang(row.createdDate, currentLang)
+      : '—',
+},
       {
         key: 'apartments',
         label: t('Number of Apartments'),
-        render: row => <span>{row.apartments ?? 0}</span>,
+        render: row => <span>{formatNumberByLang(row.apartments ?? 0,currentLang)}</span>,
       },
       { key: 'status', label: t('Status') },
     ],

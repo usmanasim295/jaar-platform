@@ -1,6 +1,7 @@
 'use client';
 import { AdminDataTableColumn } from '@/components/admin/AdminDataTable';
 import { AdminLeaderRow } from '@/types/api';
+import { formatDateByLang, formatNumberByLang } from '@/utils/format';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
@@ -24,13 +25,13 @@ export const useLeaderColumns = (t: any, currentLang: string) => {
         label: t('Created Date'),
         render: row =>
           row.createdDate
-            ? new Date(row.createdDate).toLocaleDateString(currentLang)
+            ? formatDateByLang(row.createdDate, currentLang)
             : '—',
       },
       {
         key: 'apartments',
         label: t('Number of Apartments'),
-        render: row => <span>{row.apartments ?? 0}</span>,
+        render: row => <span>{formatNumberByLang(row.apartments ?? 0,currentLang)}</span>,
       },
       {
         key: 'communityId',
