@@ -14,8 +14,11 @@ import Link from 'next/link';
 import { tagIcons } from './tagIcons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatNumberByLang } from '@/utils/format';
 const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
   const { t, i18n } = useTranslation();
+  const currentLang = i18n.language;
+
   const resolveLocale = () => {
     const lang = i18n.language;
     if (!lang) return undefined;
@@ -132,7 +135,7 @@ const JobDetails = ({ selectedJob, onClose, isOpen }: JobDetailModalProps) => {
               {selectedJob?.title}
             </h3>
             <p className="typo-body font-medium text-(--primary-black) leading-relaxed break-words">
-              {selectedJob?.desc}
+              {formatNumberByLang(selectedJob?.desc as string, currentLang)}
             </p>
           </div>
 

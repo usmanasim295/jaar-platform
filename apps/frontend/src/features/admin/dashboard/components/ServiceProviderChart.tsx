@@ -73,7 +73,7 @@ export const ServiceProviderChart = () => {
         <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-lg">
           <p className="text-xs font-semibold text-slate-500">{label}</p>
           <p className="mt-1 text-sm font-bold text-slate-800">
-            {payload[0].value.toLocaleString(currentLang)}
+            {formatNumberByLang( payload[0].value.toLocaleString(currentLang),currentLang)}
           </p>
         </div>
       );

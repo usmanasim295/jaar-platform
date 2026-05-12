@@ -2,6 +2,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlignBottom, Star } from '@/components/assets/icons';
+import { formatNumberByLang } from '@/utils/format';
+import i18n from '@/i18n';
 
 interface ProfileCardProps {
   isProfileLoading: boolean;
@@ -18,7 +20,7 @@ export default function ProfileCard({
 }: ProfileCardProps) {
   const { t } = useTranslation();
   const isMobile = variant === 'mobile';
-
+  const currentLang = i18n.language as 'en' | 'ar';
   return (
     <div
       className={`bg-(--white) ${isMobile ? 'p-4 sm:p-6' : 'p-6'} rounded-2xl shadow-dark`}
@@ -31,7 +33,7 @@ export default function ProfileCard({
             <div className="w-full h-full bg-gray-200 animate-pulse" />
           ) : profileData?.profilePictureUrl ? (
             <img
-              src={profileData.profilePictureUrl}
+              src={profileData?.profilePictureUrl}
               alt="Profile"
               className="w-full h-full object-cover"
             />
@@ -55,9 +57,9 @@ export default function ProfileCard({
           {profileData?.bio && (
             <p
               className={`text-sm text-gray-600 mt-1 line-clamp-2 ${!isMobile && 'truncate'}`}
-              title={profileData.bio}
+              title={profileData?.bio}
             >
-              {profileData.bio}
+              {profileData?.bio}
             </p>
           )}
         </div>
@@ -77,7 +79,7 @@ export default function ProfileCard({
           {isProfileLoading ? (
             <div className="h-4 w-8 bg-gray-200 animate-pulse rounded" />
           ) : (
-            profileData?.rating || 0
+            formatNumberByLang(profileData?.rating, currentLang) || formatNumberByLang("0", currentLang)
           )}
         </div>
       </div>
@@ -91,7 +93,7 @@ export default function ProfileCard({
             {isProfileLoading ? (
               <div className="h-6 w-16 bg-gray-200 animate-pulse rounded " />
             ) : (
-              `﷼${profileData?.totalEarnings || 0}`
+              `﷼${formatNumberByLang(profileData?.totalEarnings , currentLang) || formatNumberByLang("0", currentLang)}`
             )}
           </h2>
           <p
@@ -107,7 +109,7 @@ export default function ProfileCard({
             {isProfileLoading ? (
               <div className="h-6 w-8 bg-gray-200 animate-pulse rounded" />
             ) : (
-              profileData?.totalJobs || 0
+              formatNumberByLang(profileData?.totalJobs, currentLang) ||  formatNumberByLang("0", currentLang)
             )}
           </h2>
           <p

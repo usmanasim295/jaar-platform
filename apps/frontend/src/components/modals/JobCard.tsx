@@ -4,6 +4,7 @@ import { Clock, CalenderBlank, MapPin } from '@/components/assets/icons';
 import { tagIcons } from '@/components/modals/tagIcons';
 import { useTranslation } from 'react-i18next';
 import JobCompletionRequestModal from './JobCompletionRequestModal';
+import { formatDateByLang, formatNumberByLang } from '@/utils/format';
 const JobCard: FC<JobCardProps> = ({
   title,
   description,
@@ -20,6 +21,7 @@ const JobCard: FC<JobCardProps> = ({
   jobId,
 }) => {
   const { t, i18n } = useTranslation();
+  const currentLang = i18n.language as 'en' | 'ar';
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
 
   const resolveLocale = () => {
@@ -91,19 +93,19 @@ const JobCard: FC<JobCardProps> = ({
     <div className="bg-[#FFFFFF] shadow-dark rounded-xl lg:rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 font-jakarta leading-[100%]">
       <div className="flex flex-col sm:flex-row lg:justify-between lg:items-start gap-2 sm:gap-0">
         <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black) capitalize">
-          {title}
+          {formatNumberByLang(title, currentLang)}
         </h3>
         {acceptedBidsCount > 0 && (
           <div className="flex items-center gap-2 text-(--danger) text-sm lg:typo-body font-normal">
             <span className="h-2.5 sm:h-3 lg:h-3 w-2.5 sm:w-3 lg:w-3 bg-(--danger) rounded-full font-normal"></span>
-            {acceptedBidsCount} {t('Bids')}
+            {formatNumberByLang(acceptedBidsCount, currentLang)} {t('Bids')}
           </div>
         )}
       </div>
 
       {description && (
         <p className="text-sm sm:text-base lg:typo-body font-medium text-(--primary-black) my-3 sm:my-4 lg:my-4">
-          {description}
+          {formatNumberByLang(description, currentLang)}
         </p>
       )}
 
@@ -124,7 +126,7 @@ const JobCard: FC<JobCardProps> = ({
           {/* Date */}
           {date && (
             <span className="flex items-center gap-1 sm:gap-[6px] lg:gap-[6px] p-2 sm:p-2.5 lg:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:text-sm lg:typo-small rounded-lg font-medium">
-              <CalenderBlank size={16} /> {formatDate(date)}
+              <CalenderBlank size={16} /> {formatDateByLang(date,currentLang)}
             </span>
           )}
 

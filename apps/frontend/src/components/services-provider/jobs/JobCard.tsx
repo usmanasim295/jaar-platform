@@ -5,6 +5,9 @@ import Button from '@/components/ui/Button';
 import { MapPin, Star } from '@/components/assets/icons';
 import { tagIcons } from '@/components/modals/tagIcons';
 import { Job } from '@/components/modals/type';
+import { formatNumberByLang } from '@/utils/format';
+import i18n from '@/i18n';
+import { Language } from '@/types/api';
 
 interface JobCardProps {
   job: Job & { jobType?: 'COMMUNITY_SERVICE' | 'HOME_SERVICE' | 'RFQ' };
@@ -41,7 +44,7 @@ export default function JobCard({
   onView,
 }: JobCardProps) {
   const { t } = useTranslation();
-
+const currentLang=i18n.language as Language
   return (
     <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-dark bg-[#ffffff]">
       <div className="flex justify-between items-start gap-2">
@@ -50,7 +53,7 @@ export default function JobCard({
         </h3>
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className="text-xs sm:typo-small font-medium text-(--grey-text) whitespace-nowrap">
-            {t('Posted')} {job.posted}
+            {t('Posted')} {formatNumberByLang(job.posted,currentLang)}
           </span>
           {hasBidded && userBidStatus && (
             <span className="text-xs sm:typo-small font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded whitespace-nowrap">
@@ -60,14 +63,14 @@ export default function JobCard({
         </div>
       </div>
       <p className="leading-[22px] text-xs sm:text-sm font-medium text-(--primary-black) mt-3 sm:mt-4">
-        {job.desc}
+        {formatNumberByLang( job.desc,currentLang)}
       </p>
 
       <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-600">
         {job.timeSlot && (
           <span className="flex items-center gap-2">
             <Star className="w-4 h-4 text-gray-500" />
-            <span className="font-medium">{job.timeSlot}</span>
+            <span className="font-medium">{formatNumberByLang(job.timeSlot,currentLang)}</span>
           </span>
         )}
         {job.experienceLevel && (
