@@ -10,6 +10,7 @@ import { AdminPageLayout } from '@/components/admin/AdminPageLayout';
 import { AdminRouteProtection } from '@/components/admin/AdminRouteProtection';
 import { useGetAdminUserDetailQuery } from '@/store/api';
 import type { Language } from '@/types/api';
+import { formatDateByLang, formatNumberByLang } from '@/utils/format';
 
 const formatDate = (value?: string, lang: Language = 'en') => {
   if (!value) return '—';
@@ -85,7 +86,10 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                 >
                   <p className="text-sm text-slate-500">{card.label}</p>
                   <p className="mt-2 font-anevir text-3xl text-slate-800">
-                    {card.value.toLocaleString(currentLang)}
+                    {formatNumberByLang(
+                      card.value.toLocaleString(currentLang),
+                      currentLang
+                    )}
                   </p>
                 </div>
               ))}
@@ -103,7 +107,10 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                         {t('National ID')}
                       </p>
                       <p className="mt-1 font-semibold text-slate-800">
-                        {detail.nationalId || '—'}
+                        {formatNumberByLang(
+                          detail.nationalId || '—',
+                          currentLang
+                        )}
                       </p>
                     </div>
                     <div>
@@ -137,7 +144,7 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                         {t('Joined On')}
                       </p>
                       <p className="mt-1 font-semibold text-slate-800">
-                        {formatDate(detail.createdAt, currentLang)}
+                        {formatDateByLang(detail.createdAt, currentLang)}
                       </p>
                     </div>
                   </div>
@@ -250,9 +257,9 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                                     {t('Jobs Posted')}
                                   </p>
                                   <p className="font-semibold text-slate-800">
-                                    {community.jobsCount.toLocaleString(
+                                    {formatNumberByLang(community.jobsCount.toLocaleString(
                                       currentLang
-                                    )}
+                                    ),currentLang)}
                                   </p>
                                 </div>
                               </div>
@@ -285,7 +292,7 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                     </div>
                     <div className="flex items-center justify-between">
                       <span>{t('Joined On')}</span>
-                      <span>{formatDate(detail.createdAt, currentLang)}</span>
+                      <span>{formatDateByLang(detail.createdAt, currentLang)}</span>
                     </div>
                   </div>
                 </div>
@@ -299,7 +306,7 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                     {t('Jobs Created')}
                   </h2>
                   <span className="text-sm text-slate-500">
-                    {createdJobs.length.toLocaleString(currentLang)}
+                    {formatNumberByLang( createdJobs.length.toLocaleString(currentLang),currentLang)}
                   </span>
                 </div>
                 <div className="mt-4 space-y-4">

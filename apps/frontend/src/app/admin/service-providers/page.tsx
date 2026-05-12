@@ -18,6 +18,7 @@ import {
 } from '@/store/api';
 import type { AdminServiceProviderRow, Language } from '@/types/api';
 import i18n from '@/i18n';
+import { formatDateByLang } from '@/utils/format';
 
 type TabType = 'all' | 'pending';
 
@@ -92,7 +93,7 @@ export default function AdminServiceProvidersPage() {
           label: t('Created Date'),
           render: row =>
             row.createdDate
-              ? new Date(row.createdDate).toLocaleDateString(currentLang)
+              ? formatDateByLang(row.createdDate, currentLang)
               : '—',
         },
       ];

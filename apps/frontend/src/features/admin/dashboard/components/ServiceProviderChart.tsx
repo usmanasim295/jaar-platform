@@ -15,6 +15,7 @@ import { Language } from '@/types/api';
 import { useGetAdminServiceProviderStatsQuery } from '@/store/api';
 import { FilterPills } from './FilterPills';
 import { useFilterState } from '../hooks/useFilterState';
+import { formatDateBylang, formatNumberByLang } from '@/utils/format';
 
 export const ServiceProviderChart = () => {
   const { t } = useTranslation();
@@ -29,32 +30,34 @@ export const ServiceProviderChart = () => {
     lang: currentLang,
     filter,
   });
-  const chartData = useMemo(() => {
-    const stats = serviceProviderStatsData?.data ?? [];
-    return stats.map(point => {
-      const date = new Date(point.date);
-      let label: string;
+ const chartData = useMemo(() => {
+  const stats = serviceProviderStatsData?.data ?? [];
 
-      if (filter === 'weekly') {
-        label = date.toLocaleDateString(currentLang, { weekday: 'long' });
-      } else if (filter === 'monthly') {
-        label = date.toLocaleDateString(currentLang, {
-          month: 'short',
-          day: 'numeric',
-        });
-      } else {
-        label = date.toLocaleDateString(currentLang, {
-          month: 'short',
-        });
-      }
+  return stats.map(point => {
+    const date = new Date(point.date);
+    let label: string;
 
-      return {
-        label,
-        count: point.count,
-        date: point.date,
-      };
-    });
-  }, [serviceProviderStatsData, filter, currentLang]);
+    if (filter === 'weekly') {
+      label = date.toLocaleDateString(
+        currentLang.startsWith('ar') ? 'ar' : 'en-US',
+        { weekday: 'long' }
+      );
+    } else if (filter === 'monthly') {
+      label = formatDateBylang(point.date, currentLang);
+    } else {
+      label = date.toLocaleDateString(
+        currentLang.startsWith('ar') ? 'ar' : 'en-US',
+        { month: 'short' }
+      );
+    }
+
+    return {
+      label,
+      count: point.count,
+      date: point.date,
+    };
+  });
+}, [serviceProviderStatsData, filter, currentLang]);
 
   const ServiceProviderTooltip = ({
     active,
@@ -94,10 +97,10 @@ export const ServiceProviderChart = () => {
           </h2>
           <p className="text-sm text-slate-500">
             {t('New Service Providers')}:{' '}
-            <span className="font-semibold text-slate-800">
+            <span className="font-bold text-slate-800">
               {serviceProviderStatsData?.total
-                ? serviceProviderStatsData.total.toLocaleString(currentLang)
-                : '0'}
+                ? formatNumberByLang(serviceProviderStatsData.total.toLocaleString(currentLang),currentLang)
+                :formatNumberByLang('0',currentLang)}
             </span>
           </p>
         </div>

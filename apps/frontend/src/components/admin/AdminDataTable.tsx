@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useMemo, useState, useRef } from 'react';
 import { MoreVertical, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
+import { formatNumberByLang } from '@/utils/format';
 
 type AdminDataRow = {
   deletedAt?: string;
@@ -78,7 +79,7 @@ export function AdminDataTable<T extends AdminDataRow>({
     left?: number;
   } | null>(null);
   const buttonRefs = useRef<Map<string | number, HTMLButtonElement>>(new Map());
-
+  const curentlang = i18n.language;
   useEffect(() => {
     setIsRTL(i18n.language === 'ar');
     const handleLanguageChange = () => {
@@ -481,7 +482,7 @@ export function AdminDataTable<T extends AdminDataRow>({
           >
             {itemsPerPageOptions.map(option => (
               <option key={option} value={option}>
-                {option}
+                {formatNumberByLang(option, curentlang)}
               </option>
             ))}
           </select>
@@ -493,9 +494,7 @@ export function AdminDataTable<T extends AdminDataRow>({
           }`}
         >
           <div
-            className={`flex items-center justify-center gap-1 text-sm text-slate-600 ${
-              isRTL ? 'flex-row-reverse' : ''
-            }`}
+            className={`flex items-center justify-center gap-1 text-sm text-slate-600 `}
           >
             <button
               type="button"
@@ -503,7 +502,7 @@ export function AdminDataTable<T extends AdminDataRow>({
               className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className={`h-4 w-4 ${isRTL ? 'rotate-180' : ''}`} />
             </button>
             {pageNumbers.map(page => (
               <button
@@ -516,7 +515,7 @@ export function AdminDataTable<T extends AdminDataRow>({
                     : 'text-slate-500 hover:bg-slate-100'
                 }`}
               >
-                {page}
+                {formatNumberByLang(page, curentlang)}
               </button>
             ))}
             <button
@@ -525,7 +524,9 @@ export function AdminDataTable<T extends AdminDataRow>({
               className="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={currentPage === totalPages}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight
+                className={`h-4 w-4 ${isRTL ? 'rotate-180' : ''}`}
+              />{' '}
             </button>
           </div>
           <p
@@ -534,9 +535,9 @@ export function AdminDataTable<T extends AdminDataRow>({
             }`}
           >
             {t('Showing {{start}} to {{end}} of {{total}}', {
-              start: startNumber,
-              end: endNumber,
-              total: totalItems,
+              start: formatNumberByLang(startNumber, curentlang),
+              end: formatNumberByLang(endNumber, curentlang),
+              total: formatNumberByLang(totalItems, curentlang),
             })}
           </p>
         </div>

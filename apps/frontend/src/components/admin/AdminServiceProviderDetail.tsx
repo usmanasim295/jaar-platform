@@ -11,7 +11,12 @@ import { AdminPageLayout } from '@/components/admin/AdminPageLayout';
 import { AdminRouteProtection } from '@/components/admin/AdminRouteProtection';
 import { useGetAdminServiceProviderDetailQuery } from '@/store/api';
 import type { Language } from '@/types/api';
-import { formatPhoneForDisplay } from '@/utils/format';
+import {
+  formatDateByLang,
+  formatNumberByLang,
+  formatPhoneForDisplay,
+} from '@/utils/format';
+import { current } from '@reduxjs/toolkit';
 
 const formatDate = (value?: string, lang: Language = 'en') => {
   if (!value) return '—';
@@ -100,8 +105,11 @@ export function AdminServiceProviderDetailView() {
                   <p className="text-sm text-slate-500">{card.label}</p>
                   <p className="mt-2 font-anevir text-3xl text-slate-800">
                     {card.id === 'rating'
-                      ? Number(card.value).toFixed(1)
-                      : formatNumber(card.value, currentLang)}
+                      ? formatNumberByLang(
+                          Number(card.value).toFixed(1),
+                          currentLang
+                        )
+                      : formatNumberByLang(String(card.value), currentLang)}
                   </p>
                 </div>
               ))}
@@ -161,7 +169,7 @@ export function AdminServiceProviderDetailView() {
                         {t('Joined On')}
                       </p>
                       <p className="mt-1 font-semibold text-slate-800">
-                        {formatDate(detail.createdAt, currentLang)}
+                        {formatDateByLang(detail.createdAt, currentLang)}
                       </p>
                     </div>
                     <div>
@@ -262,7 +270,7 @@ export function AdminServiceProviderDetailView() {
                           >
                             <span>{rate.name || '—'}</span>
                             <span className="font-semibold text-slate-800">
-                              {rate.rate}
+                              {formatNumberByLang(rate.rate, currentLang)}
                             </span>
                           </li>
                         ))}
@@ -325,7 +333,9 @@ export function AdminServiceProviderDetailView() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span>{t('Created On')}</span>
-                      <span>{formatDate(detail.createdAt, currentLang)}</span>
+                      <span>
+                        {formatDateByLang(detail.createdAt, currentLang)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>{t('Total Earnings')}</span>
@@ -386,7 +396,7 @@ export function AdminServiceProviderDetailView() {
                       )}
                       <p className="mt-2 text-xs text-slate-400">
                         {t('Submitted At')}:{' '}
-                        {formatDate(item.submittedAt, currentLang)}
+                        {formatDateByLang(item.submittedAt, currentLang)}
                       </p>
                     </div>
                   ))

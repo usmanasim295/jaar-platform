@@ -8,6 +8,7 @@ import { Building2, Home } from 'lucide-react';
 import { filterLabels } from '../types';
 import { FilterPills } from './FilterPills';
 import { useFilterState } from '../hooks/useFilterState';
+import { formatNumberByLang } from '@/utils/format';
 
 export const UserStatsCard = () => {
   const { t } = useTranslation();
@@ -54,8 +55,8 @@ export const UserStatsCard = () => {
                 </p>
                 <p className="text-lg font-semibold text-slate-800">
                   {userStatsData?.homeOwners
-                    ? userStatsData.homeOwners.toLocaleString()
-                    : '0'}
+                    ?formatNumberByLang( userStatsData.homeOwners.toLocaleString(),currentLang)
+                    :  formatNumberByLang('0',currentLang)}
                 </p>
               </div>
             </div>
@@ -77,8 +78,8 @@ export const UserStatsCard = () => {
                 </p>
                 <p className="text-lg font-semibold text-slate-800">
                   {userStatsData?.leaders
-                    ? userStatsData.leaders.toLocaleString()
-                    : '0'}
+                    ?formatNumberByLang(userStatsData.leaders.toLocaleString(),currentLang)
+                    : formatNumberByLang('0',currentLang)}
                 </p>
               </div>
             </div>

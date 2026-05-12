@@ -6,6 +6,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Language } from '@/types/api';
 import { SummaryCard } from '../types';
+import { formatNumberByLang } from '@/utils/format';
 
 export const SummaryCards = () => {
   const { t } = useTranslation();
@@ -24,7 +25,7 @@ export const SummaryCards = () => {
         id: 'homeowners',
         label: 'Homeowners',
         value: summaryData?.totals?.homeOwners
-          ? summaryData.totals.homeOwners.toLocaleString()
+          ? formatNumberByLang(summaryData?.totals?.homeOwners?.toLocaleString(),currentLang)
           : '0',
         icon: <Users className="h-6 w-6 text-[#0E7490]" />,
       },
@@ -32,7 +33,7 @@ export const SummaryCards = () => {
         id: 'hoa-leaders',
         label: 'HOA Leaders',
         value: summaryData?.totals?.leaders
-          ? summaryData.totals.leaders.toLocaleString()
+          ?  formatNumberByLang(summaryData?.totals?.leaders?.toLocaleString(),currentLang)
           : '0',
         icon: <Building2 className="h-6 w-6 text-[#0E7490]" />,
       },
@@ -40,7 +41,7 @@ export const SummaryCards = () => {
         id: 'service-providers',
         label: 'Service Providers',
         value: summaryData?.totals?.serviceProviders
-          ? summaryData.totals.serviceProviders.toLocaleString()
+          ?  formatNumberByLang(summaryData?.totals?.serviceProviders?.toLocaleString(),currentLang)
           : '0',
         icon: <UserCircle2 className="h-6 w-6 text-[#0E7490]" />,
       },

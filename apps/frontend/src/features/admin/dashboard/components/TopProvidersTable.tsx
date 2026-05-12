@@ -5,6 +5,7 @@ import i18n from '@/i18n';
 import { Language } from '@/types/api';
 import { useGetAdminTopServiceProvidersQuery } from '@/store/api';
 import { getStatusTone } from '../utils/statusTone';
+import { formatDateByLang } from '@/utils/format';
 
 export const TopProvidersTable = () => {
   const { t } = useTranslation();
@@ -56,7 +57,7 @@ export const TopProvidersTable = () => {
                   </td>
                   <td className="px-4 py-4">
                     {row.createdDate
-                      ? new Date(row.createdDate).toLocaleDateString()
+                      ? formatDateByLang(row.createdDate, currentLang)
                       : '-'}
                   </td>
                   <td className="px-4 py-4">
