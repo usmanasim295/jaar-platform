@@ -278,10 +278,10 @@ export default function JobDetails({ params }: JobDetailsProps) {
         <div className="w-full lg:w-[77%] mx-auto bg-white rounded-xl sm:rounded-2xl shadow-dark p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5 md:space-y-6">
           <div>
             <h2 className="text-xl sm:text-2xl md:typo-heading3 font-semibold text-(--primary)">
-              {jobData.title}
+              {formatNumberByLang(jobData.title,i18n.language)}
             </h2>
             <p className="text-sm sm:text-base md:typo-body font-medium text-(--primary-black) mt-3 sm:mt-4">
-              {jobData.description}
+               {formatNumberByLang(jobData.description,i18n.language)}
             </p>
 
             {/* Job details */}

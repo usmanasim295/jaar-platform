@@ -344,7 +344,7 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                         </p>
                         <p className="mt-2 text-xs text-slate-400">
                           {t('Created On')}:{' '}
-                          {formatDate(job.createdAt, currentLang)}
+                          {formatDateByLang(job.createdAt, currentLang)}
                         </p>
                       </div>
                     ))

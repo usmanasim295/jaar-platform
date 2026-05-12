@@ -26,7 +26,11 @@ const urduMonths: Record<number, string> = {
   11: 'دسمبر',
 };
 
-export const formatNumberByLang = (value: number | string, lang: string) => {
+
+export const formatNumberByLang = (
+  value: number | string,
+  lang: string
+): string => {
   const num = String(value);
 
   if (lang.startsWith('ar') || lang.startsWith('ur')) {

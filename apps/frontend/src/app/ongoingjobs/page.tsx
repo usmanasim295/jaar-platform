@@ -18,6 +18,7 @@ import {
 import { Job, JobCompletionRequest } from '@/types/api';
 import CompletionRequestCard from '@/components/modals/CompletionRequestCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatNumberByLang } from '@/utils/format';
 
 export default function OngoingJobsPage() {
   const { t, i18n } = useTranslation();
@@ -313,14 +314,14 @@ export default function OngoingJobsPage() {
         <p className="text-xs sm:text-sm text-gray-600">
           {activeTab === 'completion-requests' ? (
             <>
-              {t('Showing')} {completionRequests.length}{' '}
+              {t('Showing')} {formatNumberByLang( completionRequests.length,currentLang)}{' '}
               {t('completion requests')}
               {activeTabConfig.description &&
                 ` - ${t(activeTabConfig.description)}`}
             </>
           ) : (
             <>
-              {t('Showing')} {transformedJobs.length} {t('jobs')}
+              {t('Showing')} {formatNumberByLang(transformedJobs.length,currentLang)} {t('jobs')}
               {activeTabConfig.description &&
                 ` - ${t(activeTabConfig.description)}`}
             </>

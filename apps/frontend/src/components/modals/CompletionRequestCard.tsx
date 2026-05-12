@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { JobCompletionRequest } from '@/types/api';
 import { useTranslation } from 'react-i18next';
 import { Clock, CalenderBlank, MapPin } from '@/components/assets/icons';
+import { formatDateByLang, formatNumberByLang } from '@/utils/format';
 
 interface CompletionRequestCardProps {
   completionRequest: JobCompletionRequest;
@@ -79,7 +80,7 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
     <div className="bg-[#FFFFFF] shadow-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 font-jakarta leading-[100%]">
       <div className="flex justify-between items-start gap-3 sm:gap-0 mb-3">
         <h3 className="text-lg sm:text-xl lg:typo-heading3 font-semibold text-(--primary-black) leading-tight capitalize">
-          {jobTitle}
+          {formatNumberByLang( jobTitle,currentLang)}
         </h3>
         <span
           className={`px-3 py-1 text-xs sm:text-sm font-medium rounded-lg text-white self-start sm:self-auto ${getStatusColor(completionRequest.status)}`}
@@ -89,7 +90,7 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
       </div>
 
       <p className="text-sm sm:text-base lg:typo-body font-medium text-(--primary-black) mb-4 leading-relaxed">
-        {jobDescription}
+        {formatNumberByLang(jobDescription,currentLang)}
       </p>
 
       {/* Completion Notes */}
@@ -107,7 +108,7 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
         {/* Date */}
         <span className="flex items-center gap-1 sm:gap-[6px] p-2 sm:p-[10px] bg-(--light-grey) text-[#15120F] text-xs sm:typo-small rounded-lg font-medium">
           <CalenderBlank size={14} className="sm:w-4 sm:h-4" />{' '}
-          {formatDate(job.startDate)}
+          {formatDateByLang(job.startDate,currentLang)}
         </span>
 
         {/* Time Slot */}
@@ -183,7 +184,7 @@ const CompletionRequestCard: FC<CompletionRequestCardProps> = ({
       {/* Request Details */}
       <div className="flex justify-between items-center gap-2 sm:gap-0 text-xs sm:text-sm text-gray-500">
         <span>
-          {t('Submitted')}: {formatDate(completionRequest.createdAt)}
+          {t('Submitted')}: {formatDateByLang(completionRequest.createdAt,currentLang)}
         </span>
         <span>
           {t('Job Type')}:{' '}

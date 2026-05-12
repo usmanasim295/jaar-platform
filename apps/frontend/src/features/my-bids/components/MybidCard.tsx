@@ -8,7 +8,7 @@ import {
 } from '../utils/bidHelpers';
 import { useRouter } from 'next/navigation';
 
-import { formatNumberByLang } from '@/utils/format';
+import { formatDateByLang, formatNumberByLang } from '@/utils/format';
 import { File, MapPin, Star } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Language, MyBid } from '@/types/api';
@@ -123,7 +123,7 @@ export const MybidCard = ({ bid, setDeleteConfirmId, canDeleteBid }: Props) => {
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200">
         <div className="text-xs sm:text-sm text-gray-500">
-          {t('Submitted on')} {formatDate(bid.createdAt)}
+          {t('Submitted on')} {formatDateByLang(bid.createdAt,i18n.language)}
         </div>
         <div className="flex flex-wrap justify-end gap-1.5 sm:gap-3">
           {bid.documentUrl && (
