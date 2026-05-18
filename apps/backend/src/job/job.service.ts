@@ -629,7 +629,76 @@ export class JobService {
       job: updatedJob,
     };
   }
+  async findByJobType(
+    userId: string,
+    userRole: string,
+    jobType: PrismaJobType,
+    status?: JobStatus,
+  ) {
+    const statusFilter = status ? { status } : {};
 
+    if (userRole === 'HOME_OWNER') {
+      return this.prisma.job.findMany({
+        where: {
+          createdBy: userId,
+          jobType,
+          ...statusFilter,
+        },
+        include: jobListInclude,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    }
+
+    if (userRole === 'LEADER') {
+      return this.prisma.job.findMany({
+        where: {
+          createdBy: userId,
+          jobType,
+          ...statusFilter,
+        },
+        include: jobListInclude,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    }
+
+    throw new ForbiddenException('Only HOME_OWNER and LEADER can access jobs');
+  }
+  
+  async findMyJobById(
+    jobId: string,
+    userId: string,
+    userRole: string,
+    language: Lang = 'en',
+  ) {
+    const whereClause: Prisma.JobWhereInput = {
+      id: jobId,
+    };
+
+    if (userRole === 'LEADER') {
+      whereClause.createdBy = userId;
+    }
+
+    if (userRole === 'HOME_OWNER') {
+      whereClause.createdBy = userId;
+    }
+
+    const job = await this.prisma.job.findFirst({
+      where: whereClause,
+      include: jobDetailInclude,
+    });
+
+    if (!job) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
+    }
+
+    return job;
+  }
   async findServiceProviderJobs(
     serviceProviderId: string,
     jobType?: string,
@@ -638,23 +707,28 @@ export class JobService {
     const whereClause: Prisma.JobWhereInput = {
       bids: {
         some: {
-          serviceProviderId: serviceProviderId,
-          status: 'ACCEPTED',
+          serviceProviderId,
         },
       },
     };
 
-    if (jobType) {
-      whereClause.jobType = jobType as PrismaJobType;
-    }
-
     if (status) {
       whereClause.status = status as JobStatus;
     }
-
+    if (jobType) {
+      whereClause.jobType = jobType as PrismaJobType;
+    }
     return this.prisma.job.findMany({
       where: whereClause,
-      include: serviceProviderAcceptedJobsInclude(serviceProviderId),
+      include: {
+        ...serviceProviderAcceptedJobsInclude(serviceProviderId),
+
+        bids: {
+          where: {
+            serviceProviderId,
+          },
+        },
+      },
       orderBy: {
         createdAt: 'desc',
       },

@@ -19,7 +19,8 @@ import { AuthGuard } from '../auth/auth.guard';
 import { Roles } from '../auth/auth.guard';
 import { LanguageService } from '../common/services/language.service';
 import { MessageService } from '../common/services/message.service';
-
+import { BadRequestException } from '@nestjs/common';
+import { JobType as PrismaJobType } from '@prisma/client';
 @Controller('job')
 @UseGuards(AuthGuard)
 export class JobController {
@@ -184,21 +185,27 @@ export class JobController {
 
   @Get('my-jobs')
   @Roles('HOME_OWNER', 'LEADER')
-  async findMyJobs(
+  async filterByJobType(
     @Req() req: any,
-    @Query('lang') lang?: string,
-    @Query('jobType') jobType?: string,
+
+    @Query('jobType') jobType: PrismaJobType,
     @Query('status') status?: JobStatus,
+    @Query('lang') lang?: string,
   ) {
     const user = req['user'];
+
+    if (!jobType) {
+      throw new BadRequestException('jobType is required');
+    }
+
     const language = this.languageService.validateLanguage(lang);
-    const jobs = await this.jobService.findByCreator(
+
+    const jobs = await this.jobService.findByJobType(
       user.id,
       user.role,
-      status,
       jobType,
+      status,
     );
-
     return this.transformJobData(jobs, language);
   }
 
@@ -396,5 +403,25 @@ export class JobController {
     const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
     return this.jobService.remove(id, user.id, language);
+  }
+
+  @Get('my-jobs/:id')
+  @Roles('HOME_OWNER', 'LEADER')
+  async getMyJobDetail(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+
+    const job = await this.jobService.findMyJobById(
+      id,
+      user.id,
+      user.role,
+      language,
+    );
+
+    return this.transformJobData([job], language)[0];
   }
 }
