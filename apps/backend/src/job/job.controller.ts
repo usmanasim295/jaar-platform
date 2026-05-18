@@ -268,7 +268,25 @@ export class JobController {
 
     return this.transformJobData([job], language)[0];
   }
+  @Delete(':id')
+  @Roles('HOME_OWNER', 'LEADER')
+  async deleteJob(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
 
+    const result = await this.jobService.deleteJob(
+      id,
+      user.id,
+      user.role,
+      language,
+    );
+
+    return result;
+  }
   @Patch(':id/approve')
   @Roles('LEADER')
   async approveCommunityJob(

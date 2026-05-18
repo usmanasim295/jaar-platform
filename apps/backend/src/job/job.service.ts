@@ -667,7 +667,52 @@ export class JobService {
 
     throw new ForbiddenException('Only HOME_OWNER and LEADER can access jobs');
   }
-  
+  async deleteJob(
+    jobId: string,
+    userId: string,
+    userRole: string,
+    language: Lang = 'en',
+  ) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+    });
+
+    if (!job) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage('job.job_not_found', language),
+      );
+    }
+
+    if (job.createdBy !== userId) {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'job.not_authorized_delete',
+          language,
+        ),
+      );
+    }
+
+    const updatedJob = await this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        status: 'CANCELLED',
+      },
+    });
+
+    return {
+      message: this.messageService.getSuccessMessage(
+        'job.deleted_success',
+        language,
+      ),
+      job: {
+        isDeleted: updatedJob.isDeleted,
+        deletedAt: updatedJob.deletedAt,
+        status: updatedJob.status,
+      },
+    };
+  }
   async findMyJobById(
     jobId: string,
     userId: string,

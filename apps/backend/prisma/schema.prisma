@@ -260,6 +260,8 @@ model Job {
   bids                   Bid[] // Bids received for this job
   completionRequests     JobCompletionRequest[] // Completion requests for this job
   chats                  Chat[] // Chats related to this job
+  isDeleted              Boolean                 @default(false)
+  deletedAt              DateTime?
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   serviceQuestionAnswers ServiceQuestionAnswer[]
@@ -518,11 +520,11 @@ model Ticket {
   service   Service @relation(fields: [serviceId], references: [id])
 
   hoaId      String
-  hoa        Hoa    @relation(fields: [hoaId], references: [id])
+  hoa        Hoa     @relation(fields: [hoaId], references: [id])
   createdBy  String
-  creator    User   @relation("TicketCreator", fields: [createdBy], references: [id])
+  creator    User    @relation("TicketCreator", fields: [createdBy], references: [id])
   reviewedBy String?
-  reviewer   User?  @relation("TicketReviewer", fields: [reviewedBy], references: [id])
+  reviewer   User?   @relation("TicketReviewer", fields: [reviewedBy], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
