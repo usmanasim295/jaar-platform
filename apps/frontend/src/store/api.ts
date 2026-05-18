@@ -135,9 +135,9 @@ const baseQueryWithErrorHandling = async (
         }
 
         // If the user is currently on an admin route, send them to the admin login
-        if (window.location.pathname.startsWith('/admin')) {
-          window.location.href = '/admin';
-        }
+        // if (window.location.pathname.startsWith('/admin')) {
+        //   window.location.href = '/admin';
+        // }
       } else {
         try {
           localStorage.removeItem('token');

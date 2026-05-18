@@ -55,7 +55,7 @@ export const getTabConfig = () => [
   {
     id: 'community',
     label: 'Community Service Jobs',
-    jobType: 'COMMUNITY_SERVICE' as const,
+    jobType: 'RFQ' as const,
     status: undefined,
     description: 'Community service related jobs',
   },
