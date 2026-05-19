@@ -337,7 +337,7 @@ export const api = createApi({
       Job[],
       {
         lang: Language;
-        jobType?: 'HOME_SERVICE' | 'COMMUNITY_SERVICE';
+        jobType?: 'HOME_SERVICE' | 'COMMUNITY_SERVICE' | 'RFQ';
         status?: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'OPEN';
       }
     >({
@@ -450,7 +450,7 @@ export const api = createApi({
       JobCompletionRequest[],
       {
         lang: Language;
-        jobType?: 'HOME_SERVICE' | 'COMMUNITY_SERVICE';
+        jobType?: 'HOME_SERVICE' | 'COMMUNITY_SERVICE' | 'RFQ';
         status?: 'PENDING' | 'APPROVED' | 'REJECTED';
       }
     >({
