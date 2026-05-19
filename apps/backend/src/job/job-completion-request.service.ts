@@ -255,7 +255,6 @@ export class JobCompletionRequestService {
       },
     });
   }
-
   async findPendingRequests(
     userId: string,
     userRole: string,
@@ -266,14 +265,19 @@ export class JobCompletionRequestService {
     };
 
     if (userRole === 'LEADER') {
-      // Leader can see completion requests for jobs in apartments they manage
+      // Leader sees completion requests for HOAs where they are the leader
       whereClause.job = {
         hoa: {
-          leaderId: userId,
+          userHOAs: {
+            some: {
+              userId: userId,
+              isLeader: true,
+            },
+          },
         },
       };
     } else if (userRole === 'HOME_OWNER') {
-      // Home owner can see completion requests for jobs they created
+      // Home owner sees completion requests for jobs they created
       whereClause.job = {
         createdBy: userId,
       };
@@ -305,6 +309,7 @@ export class JobCompletionRequestService {
               },
             },
             leader: {
+              // Keep if this relation exists on Job
               select: {
                 id: true,
                 nationalId: true,
@@ -334,74 +339,6 @@ export class JobCompletionRequestService {
         createdAt: 'desc',
       },
     });
-  }
-
-  async findOne(id: string, language: 'en' | 'ar' = 'en') {
-    const completionRequest = await this.prisma.jobCompletionRequest.findUnique(
-      {
-        where: { id },
-        include: {
-          job: {
-            include: {
-              services: {
-                include: {
-                  service: true,
-                },
-              },
-              hoa: {
-                select: {
-                  id: true,
-                  name: true,
-                  hoaNumber: true,
-                  city: true,
-                },
-              },
-              leader: {
-                select: {
-                  id: true,
-                  nationalId: true,
-                  role: true,
-                },
-              },
-              creator: {
-                select: {
-                  id: true,
-                  nationalId: true,
-                  role: true,
-                },
-              },
-            },
-          },
-          serviceProvider: {
-            select: {
-              id: true,
-              name: true,
-              rating: true,
-              totalJobs: true,
-              totalEarnings: true,
-            },
-          },
-          reviewer: {
-            select: {
-              id: true,
-              nationalId: true,
-              role: true,
-            },
-          },
-        },
-      },
-    );
-
-    if (!completionRequest) {
-      throw new NotFoundException(
-        this.messageService.getErrorMessage(
-          'job.completion_request_not_found',
-          language,
-        ),
-      );
-    }
-
-    return completionRequest;
   }
 
   async updateStatus(
@@ -445,21 +382,22 @@ export class JobCompletionRequestService {
       );
     }
 
-    // Check authorization based on job type and user role
     let isAuthorized = false;
 
-    if (completionRequest.job.jobType === 'HOME_SERVICE') {
-      // For home service jobs, only the job creator (home owner) can approve/reject
-      if (
-        userRole === 'HOME_OWNER' &&
-        completionRequest.job.createdBy === userId
-      ) {
+    if (userRole === 'HOME_OWNER') {
+      isAuthorized = completionRequest.job.createdBy === userId;
+    } else if (userRole === 'LEADER') {
+      if (completionRequest.job.leaderId === userId) {
         isAuthorized = true;
-      }
-    } else if (completionRequest.job.jobType === 'COMMUNITY_SERVICE') {
-      // For community service jobs, only the leader can approve/reject
-      if (userRole === 'LEADER' && completionRequest.job.leaderId === userId) {
-        isAuthorized = true;
+      } else if (completionRequest.job.hoaId) {
+        const isLeader = await this.prisma.userHOA.findFirst({
+          where: {
+            userId,
+            hoaId: completionRequest.job.hoaId,
+            isLeader: true,
+          },
+        });
+        isAuthorized = !!isLeader;
       }
     }
 
@@ -558,6 +496,85 @@ export class JobCompletionRequestService {
       message: this.messageService.getSuccessMessage(messageKey, language),
       completionRequest: updatedRequest,
     };
+  }
+
+  async findOne(
+    id: string,
+    userId: string,
+    userRole: string,
+    language: 'en' | 'ar' = 'en',
+  ) {
+    const completionRequest = await this.prisma.jobCompletionRequest.findUnique(
+      {
+        where: { id },
+        include: {
+          job: {
+            include: {
+              services: {
+                include: { service: true },
+              },
+              hoa: {
+                include: {
+                  userHOAs: true, // Needed for authorization
+                },
+              },
+              leader: {
+                select: { id: true, nationalId: true, role: true },
+              },
+              creator: {
+                select: { id: true, nationalId: true, role: true },
+              },
+            },
+          },
+          serviceProvider: {
+            select: {
+              id: true,
+              name: true,
+              rating: true,
+              totalJobs: true,
+              totalEarnings: true,
+            },
+          },
+          reviewer: {
+            select: { id: true, nationalId: true, role: true },
+          },
+        },
+      },
+    );
+
+    if (!completionRequest) {
+      throw new NotFoundException(
+        this.messageService.getErrorMessage(
+          'job.completion_request_not_found',
+          language,
+        ),
+      );
+    }
+
+    // Authorization Check
+    let isAuthorized = false;
+
+    if (userRole === 'LEADER') {
+      isAuthorized =
+        completionRequest.job.hoa?.userHOAs?.some(
+          (u) => u.userId === userId && u.isLeader === true,
+        ) || completionRequest.job.leaderId === userId;
+    } else if (userRole === 'HOME_OWNER') {
+      isAuthorized = completionRequest.job.createdBy === userId;
+    } else if (userRole === 'SERVICE_PROVIDER') {
+      isAuthorized = completionRequest.serviceProviderId === userId;
+    }
+
+    if (!isAuthorized) {
+      throw new ForbiddenException(
+        this.messageService.getErrorMessage(
+          'job.not_authorized_to_view',
+          language,
+        ),
+      );
+    }
+
+    return completionRequest;
   }
 
   async getServiceProviderJobs(
