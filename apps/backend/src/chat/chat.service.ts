@@ -705,6 +705,8 @@ export class ChatService {
       fileName?: string;
       fileSize?: number;
       mimeType?: string;
+      latitude?: number;
+      longitude?: number;
     },
     language: 'en' | 'ar' = 'en',
   ) {
@@ -712,9 +714,7 @@ export class ChatService {
       where: { id: dto.chatId },
       include: {
         participants: true,
-        community: {
-          include: { members: true },
-        },
+        community: { include: { members: true } },
       },
     });
 
@@ -724,7 +724,6 @@ export class ChatService {
       );
     }
 
-    // Check if sender is authorized to send messages in this chat
     const senderId = sender.id;
     const isAuthorized = await this.checkChatPermission(senderId, chat);
     if (!isAuthorized) {
@@ -733,7 +732,7 @@ export class ChatService {
       );
     }
 
-    // Handle translation for content
+    // Handle content translation
     let contentTranslation: any = undefined;
     if (dto.content) {
       contentTranslation =
@@ -754,11 +753,12 @@ export class ChatService {
       fileName: dto.fileName,
       fileSize: dto.fileSize,
       mimeType: dto.mimeType,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
       pollId: dto.pollId,
       replyToId: dto.replyToId,
     };
 
-    // Set the appropriate sender field based on sender type
     if (isServiceProvider) {
       messageData.senderServiceProviderId = senderId;
       messageData.senderId = null;
@@ -770,19 +770,9 @@ export class ChatService {
     const message = await this.prisma.message.create({
       data: messageData,
       include: {
-        sender: {
-          select: {
-            id: true,
-            nationalId: true,
-            role: true,
-          },
-        },
+        sender: { select: { id: true, nationalId: true, role: true } },
         senderServiceProvider: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+          select: { id: true, name: true, email: true },
         },
         replyTo: {
           include: {
@@ -802,51 +792,32 @@ export class ChatService {
             },
           },
         },
-        poll: {
-          include: {
-            options: true,
-          },
-        },
+        poll: { include: { options: true } },
       },
     });
 
-    // Update sender's lastReadAt to prevent their own messages from being counted as unread
+    // Update lastReadAt for sender
     if (isServiceProvider) {
-      // For service providers, update their chat participant record
       await this.prisma.chatParticipant.updateMany({
-        where: {
-          chatId: dto.chatId,
-          serviceProviderId: senderId,
-        },
-        data: {
-          lastReadAt: new Date(),
-        },
+        where: { chatId: dto.chatId, serviceProviderId: senderId },
+        data: { lastReadAt: new Date() },
       });
     } else {
-      // For regular users, update their chat participant record
       await this.prisma.chatParticipant.updateMany({
-        where: {
-          chatId: dto.chatId,
-          userId: senderId,
-        },
-        data: {
-          lastReadAt: new Date(),
-        },
+        where: { chatId: dto.chatId, userId: senderId },
+        data: { lastReadAt: new Date() },
       });
     }
 
-    // Update chat's updatedAt so chats are ordered by latest activity
     await this.prisma.chat.update({
       where: { id: dto.chatId },
       data: { updatedAt: new Date() },
     });
 
-    // Emit real-time event for new message
     this.realtimeService.emitNewMessage(dto.chatId, message);
 
     return message;
   }
-
   async getMessages(
     chatId: string,
     dto: QueryMessagesDto,
