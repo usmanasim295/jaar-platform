@@ -33,7 +33,7 @@ export const transformJobToJobCard = (job: Job): JobCardProps => {
 // Filter jobs by type and status
 export const filterJobs = (
   jobs: Job[],
-  jobType?: 'HOME_SERVICE' | 'COMMUNITY_SERVICE',
+  jobType?: 'HOME_SERVICE' | 'COMMUNITY_SERVICE' | 'RFQ',
   status?: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'OPEN'
 ): Job[] => {
   return jobs.filter(job => {
@@ -55,7 +55,7 @@ export const getTabConfig = () => [
   {
     id: 'community',
     label: 'Community Service Jobs',
-    jobType: 'RFQ' as const,
+    jobType: 'RFQ' as const, 
     status: undefined,
     description: 'Community service related jobs',
   },
