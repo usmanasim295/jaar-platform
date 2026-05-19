@@ -423,6 +423,8 @@ model Message {
   senderServiceProvider   ServiceProvider? @relation(fields: [senderServiceProviderId], references: [id])
   type                    MessageType      @default(TEXT)
   content                 Json? // Message content with translations {en: string, ar: string}
+  latitude                Float?
+  longitude               Float?
   fileUrl                 String? // For file attachments
   fileName                String? // Original file name
   fileSize                Int? // File size in bytes
@@ -445,6 +447,7 @@ enum MessageType {
   IMAGE
   VOICE_NOTE
   FILE
+  LOCATION
   POLL
   SYSTEM
 }

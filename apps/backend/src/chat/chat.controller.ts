@@ -28,6 +28,7 @@ import { MessageService } from 'src/common/services/message.service';
 import { S3Service } from 'src/common/services/s3.service';
 import { FileManagementService } from './file-management.service';
 import { AuthGuard, Roles } from 'src/auth/auth.guard';
+import { SendLocationMessageDto } from './dto/send-location-messagedto';
 
 @Controller('chat')
 @UseGuards(AuthGuard)
@@ -566,6 +567,35 @@ export class ChatController {
     return this.chatService.getUserCommunity(userId, language);
   }
 
+  @Post('message/location')
+  async sendLocationMessage(
+    @Req() req: Request,
+    @Body() body: SendLocationMessageDto,
+
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
+    const language = this.languageService.validateLanguage(lang);
+    const messageDto = {
+      chatId: body.chatId,
+      content: body.content || '📍 Location shared',
+      type: 'LOCATION' as const,
+      latitude: body.latitude,
+      longitude: body.longitude,
+    };
+
+    const message = await this.chatService.sendMessage(
+      user,
+      messageDto,
+      language,
+    );
+    return {
+      location: {
+        latitude: body.latitude,
+        longitude: body.longitude,
+      },
+    };
+  }
   // Mark messages as read
   @Post('chat/:chatId/mark-read')
   async markMessagesAsRead(
