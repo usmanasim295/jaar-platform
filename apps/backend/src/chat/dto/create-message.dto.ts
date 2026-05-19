@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsEnum, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+  IsNumber,
+} from 'class-validator';
 import { MessageType } from '@prisma/client';
 
 export class CreateMessageDto {
@@ -20,6 +26,14 @@ export class CreateMessageDto {
   @IsOptional()
   @IsUUID()
   replyToId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 }
 
 export class CreateMessageWithFileDto extends CreateMessageDto {

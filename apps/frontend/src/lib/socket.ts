@@ -93,7 +93,7 @@ class SocketService {
   sendMessage(messageData: {
     chatId: string;
     content: string;
-    type?: 'TEXT' | 'IMAGE' | 'VOICE_NOTE' | 'FILE';
+    type?: 'TEXT' | 'IMAGE' | 'VOICE_NOTE' | 'FILE' | 'LOCATION';
     replyToId?: string;
   }) {
     if (this.socket?.connected) {
