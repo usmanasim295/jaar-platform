@@ -218,10 +218,18 @@ export class JobCompletionRequestController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string, @Query('lang') lang?: string) {
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Query('lang') lang?: string,
+  ) {
+    const user = req['user'];
     const language = this.languageService.validateLanguage(lang);
+
     const request = await this.jobCompletionRequestService.findOne(
       id,
+      user.id, // ← userId
+      user.role, // ← userRole
       language,
     );
 
