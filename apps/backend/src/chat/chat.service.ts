@@ -449,7 +449,70 @@ export class ChatService {
     });
 
     if (existingChat) {
-      return existingChat;
+      return this.prisma.chat.findUnique({
+        where: { id: existingChat.id },
+        include: {
+          participants: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  nationalId: true,
+                  role: true,
+                },
+              },
+              serviceProvider: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  profilePictureUrl: true,
+                },
+              },
+            },
+          },
+          job: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              jobType: true,
+            },
+          },
+          community: {
+            select: {
+              id: true,
+              hoaNumber: true,
+              name: true,
+            },
+          },
+          messages: {
+            take: 20,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  nationalId: true,
+                  role: true,
+                },
+              },
+              senderServiceProvider: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              messages: true,
+            },
+          },
+        },
+      });
     }
 
     // Get service provider details for chat name
