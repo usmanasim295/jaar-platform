@@ -49,7 +49,7 @@ const currentLang=i18n.language as Language
     <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-dark bg-[#ffffff]">
       <div className="flex justify-between items-start gap-2">
         <h3 className="text-base sm:typo-heading3 font-semibold text-(--primary-black) flex-1 capitalize">
-          {job.title}
+          {formatNumberByLang(job.title, currentLang)}
         </h3>
         <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className="text-xs sm:typo-small font-medium text-(--grey-text) whitespace-nowrap">
