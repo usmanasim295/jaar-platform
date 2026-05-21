@@ -241,7 +241,7 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                                     {t('Community')}
                                   </p>
                                   <p className="font-semibold text-slate-800">
-                                    {community.name || '—'}
+                                    {formatNumberByLang(community.name || '—', currentLang) || '—'}
                                   </p>
                                 </div>
                                 <div>
@@ -249,7 +249,7 @@ export function AdminUserDetailView({ titleKey }: AdminUserDetailViewProps) {
                                     {t('City')}
                                   </p>
                                   <p className="font-semibold text-slate-800">
-                                    {community.city || '—'}
+                                    {formatNumberByLang(community.city || '—', currentLang) || '—'}
                                   </p>
                                 </div>
                                 <div>
