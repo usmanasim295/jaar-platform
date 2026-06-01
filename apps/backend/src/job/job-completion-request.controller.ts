@@ -10,7 +10,7 @@ import {
   UseGuards,
   ForbiddenException,
   UseInterceptors,
-  UploadedFile,
+  UploadedFiles,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
@@ -44,7 +44,7 @@ export class JobCompletionRequestController {
   @UseInterceptors(AnyFilesInterceptor())
   async create(
     @Body() createDto: CreateJobCompletionRequestDto,
-    @UploadedFile() files?: Express.Multer.File[],
+    @UploadedFiles() files?: Express.Multer.File[],
     @Req() req?: any,
     @Query('lang') lang?: string,
   ) {
