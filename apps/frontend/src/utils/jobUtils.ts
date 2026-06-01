@@ -55,7 +55,7 @@ export const getTabConfig = () => [
   {
     id: 'community',
     label: 'Community Service Jobs',
-    jobType: 'RFQ' as const, 
+    jobType: 'RFQ' as const,
     status: undefined,
     description: 'Community service related jobs',
   },
@@ -80,12 +80,20 @@ export const getTabConfig = () => [
     status: 'COMPLETED' as const,
     description: 'Successfully completed jobs',
   },
+  // {
+  //   id: 'cancelled',
+  //   label: 'Cancelled Jobs',
+  //   jobType: undefined,
+  //   status: 'CANCELLED' as const,
+  //   description: 'Cancelled jobs',
+  // },
   {
-    id: 'cancelled',
-    label: 'Cancelled Jobs',
+    id: 'rejected-completion-requests',
+    label: 'Rejected Completion Requests',
     jobType: undefined,
-    status: 'CANCELLED' as const,
-    description: 'Cancelled jobs',
+    status: undefined,
+    completionRequestStatus: 'REJECTED' as const,
+    description: 'Rejected jobs',
   },
   {
     id: 'completion-requests',

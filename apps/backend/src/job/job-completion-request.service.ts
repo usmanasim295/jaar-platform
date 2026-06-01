@@ -6,6 +6,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { CreateJobCompletionRequestDto } from './dto/create-job-completion-request.dto';
 import {
   UpdateJobCompletionRequestDto,
@@ -22,7 +23,6 @@ export class JobCompletionRequestService {
     private translationService: TranslationService,
     private messageService: MessageService,
   ) {}
-
   async create(
     createDto: CreateJobCompletionRequestDto & { completionImages?: string[] },
     serviceProviderId: string,
@@ -76,11 +76,11 @@ export class JobCompletionRequestService {
       );
     }
 
-    // Check if service provider has an accepted bid for this job
+    // Verify accepted bid
     const acceptedBid = await this.prisma.bid.findFirst({
       where: {
         jobId: createDto.jobId,
-        serviceProviderId: serviceProviderId,
+        serviceProviderId,
         status: 'ACCEPTED',
       },
     });
@@ -91,36 +91,75 @@ export class JobCompletionRequestService {
       );
     }
 
-    // Check if completion request already exists
-    const existingRequest = await this.prisma.jobCompletionRequest.findUnique({
+    // Get latest request (if any)
+    const existingRequest = await this.prisma.jobCompletionRequest.findFirst({
       where: {
-        jobId_serviceProviderId: {
-          jobId: createDto.jobId,
-          serviceProviderId: serviceProviderId,
-        },
+        jobId: createDto.jobId,
+        serviceProviderId,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 
-    if (existingRequest) {
-      throw new ConflictException(
-        this.messageService.getErrorMessage(
-          'job.completion_already_exists',
-          language,
-        ),
-      );
-    }
-
-    // Translate completion notes
     const completionNotesTranslations =
       await this.translationService.createTranslationObject(
         createDto.completionNotes,
       );
 
-    // Create the completion request
+    if (existingRequest?.status === 'REJECTED') {
+      const updatedRequest = await this.prisma.jobCompletionRequest.update({
+        where: {
+          id: existingRequest.id,
+        },
+        data: {
+          completionNotes: completionNotesTranslations,
+          completionImages: createDto.completionImages || [],
+          additionalDocumentUrl: createDto.additionalDocumentUrl,
+
+          status: 'PENDING',
+
+          reviewNotes: Prisma.JsonNull,
+          reviewedBy: null,
+          updatedAt: new Date(),
+        },
+        include: {
+          job: {
+            include: {
+              services: { include: { service: true } },
+              hoa: true,
+              leader: true,
+              creator: true,
+            },
+          },
+          serviceProvider: true,
+        },
+      });
+
+      return {
+        message: this.messageService.getSuccessMessage(
+          'job.completion_submitted',
+          language,
+        ),
+        completionRequest: updatedRequest,
+      };
+    }
+
+    if (
+      existingRequest &&
+      ['PENDING', 'APPROVED'].includes(existingRequest.status)
+    ) {
+      throw new ConflictException(
+        this.messageService.getErrorMessage(
+          'job.compl etion_already_exists',
+          language,
+        ),
+      );
+    }
     const completionRequest = await this.prisma.jobCompletionRequest.create({
       data: {
         jobId: createDto.jobId,
-        serviceProviderId: serviceProviderId,
+        serviceProviderId,
         completionNotes: completionNotesTranslations,
         completionImages: createDto.completionImages || [],
         additionalDocumentUrl: createDto.additionalDocumentUrl,

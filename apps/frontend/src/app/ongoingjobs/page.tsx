@@ -76,7 +76,11 @@ export default function OngoingJobsPage() {
     }
   );
 
-  // Fetch completion requests for the completion-requests tab
+  const isCompletionRequestTab = activeTab === 'completion-requests';
+
+  const isRejectedCompletionRequestTab =
+    activeTab === 'rejected-completion-requests';
+
   const {
     data: completionRequests = [],
     isLoading: isLoadingCompletionRequests,
@@ -85,13 +89,16 @@ export default function OngoingJobsPage() {
     {
       lang: currentLang,
       jobType: completionJobTypeFilter || undefined,
-      status: completionStatusFilter || undefined,
+      status: isRejectedCompletionRequestTab
+        ? 'REJECTED'
+        : completionStatusFilter || undefined,
     },
     {
-      skip: !isAuthenticated || activeTab !== 'completion-requests', // Skip if not authenticated or not on completion-requests tab
+      skip:
+        !isAuthenticated ||
+        (!isCompletionRequestTab && !isRejectedCompletionRequestTab),
     }
   );
-
   // Determine which data to use
   const jobs = activeTab === 'all' ? allJobs : filteredJobs;
 
@@ -105,7 +112,8 @@ export default function OngoingJobsPage() {
   const error =
     activeTab === 'all'
       ? errorAll
-      : activeTab === 'completion-requests'
+      : activeTab === 'completion-requests' ||
+          activeTab === 'rejected-completion-requests'
         ? errorCompletionRequests
         : errorFiltered;
 
@@ -113,10 +121,10 @@ export default function OngoingJobsPage() {
   const isLoading =
     activeTab === 'all'
       ? isLoadingAll
-      : activeTab === 'completion-requests'
+      : activeTab === 'completion-requests' ||
+          activeTab === 'rejected-completion-requests'
         ? isLoadingCompletionRequests
         : isLoadingFiltered;
-
   // Loading state - Show skeleton while auth is loading OR data is loading
   if (isAuthLoading || isLoading) {
     return (
@@ -314,14 +322,25 @@ export default function OngoingJobsPage() {
         <p className="text-xs sm:text-sm text-gray-600">
           {activeTab === 'completion-requests' ? (
             <>
-              {t('Showing')} {formatNumberByLang( completionRequests.length,currentLang)}{' '}
+              {t('Showing')}{' '}
+              {formatNumberByLang(completionRequests.length, currentLang)}{' '}
               {t('completion requests')}
+              {activeTabConfig.description &&
+                ` - ${t(activeTabConfig.description)}`}
+            </>
+          ) : activeTab === 'rejected-completion-requests' ? (
+            <>
+              {t('Showing')}{' '}
+              {formatNumberByLang(completionRequests.length, currentLang)}{' '}
+              {t('rejected completion requests')}
               {activeTabConfig.description &&
                 ` - ${t(activeTabConfig.description)}`}
             </>
           ) : (
             <>
-              {t('Showing')} {formatNumberByLang(transformedJobs.length,currentLang)} {t('jobs')}
+              {t('Showing')}{' '}
+              {formatNumberByLang(transformedJobs.length, currentLang)}{' '}
+              {t('jobs')}
               {activeTabConfig.description &&
                 ` - ${t(activeTabConfig.description)}`}
             </>
@@ -330,7 +349,8 @@ export default function OngoingJobsPage() {
       </div>
 
       {/* Content List */}
-      {activeTab === 'completion-requests' ? (
+      {activeTab === 'completion-requests' ||
+      activeTab === 'rejected-completion-requests' ? (
         // Completion Requests List
         completionRequests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
