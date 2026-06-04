@@ -2,6 +2,60 @@ import { Injectable } from '@nestjs/common';
 
 export type SupportedLanguage = 'en' | 'ar';
 
+const enumTranslations: Record<string, string> = {
+  // Roles
+  HOME_OWNER: 'صاحب المنزل',
+  LEADER: 'قائد',
+  ADMIN: 'مسؤول',
+  SERVICE_PROVIDER: 'مقدم خدمة',
+
+  // JobStatus
+  SENT_TO_LEADER: 'أرسلت للقائد',
+  POSTED_BY_LEADER: 'نشرت من القائد',
+  OPEN: 'مفتوح',
+  IN_PROGRESS: 'قيد التنفيذ',
+  COMPLETED: 'مكتمل',
+  CANCELLED: 'ملغى',
+
+  // JobType
+  HOME_SERVICE: 'خدمة منزلية',
+  COMMUNITY_SERVICE: 'خدمة مجتمعية',
+  RFQ: 'طلب تسعير',
+
+  // BidStatus & JobCompletionRequestStatus & TicketStatus
+  PENDING: 'قيد الانتظار',
+  ACCEPTED: 'مقبول',
+  REJECTED: 'مرفوض',
+  APPROVED: 'موافق عليه',
+
+  // TicketPriority
+  LOW: 'منخفض',
+  MEDIUM: 'متوسط',
+  HIGH: 'عالي',
+  URGENT: 'عاجل',
+
+  // ChatType
+  COMMUNITY_GROUP: 'مجموعة مجتمعية',
+  ONE_TO_ONE: 'محادثة خاصة',
+  SERVICE_CHAT: 'محادثة خدمة',
+
+  // MessageType
+  TEXT: 'نص',
+  IMAGE: 'صورة',
+  VOICE_NOTE: 'ملاحظة صوتية',
+  FILE: 'ملف',
+  POLL: 'تصويت',
+  SYSTEM: 'نظام',
+};
+
+const enumFieldsToTranslate = new Set([
+  'status',
+  'jobType',
+  'role',
+  'priority',
+  'type',
+]);
+
 @Injectable()
 export class LanguageService {
   /**
@@ -59,6 +113,19 @@ export class LanguageService {
       }
     }
 
+    // Transform enums if lang is Arabic
+    if (lang === 'ar') {
+      for (const field of Object.keys(obj)) {
+        if (
+          enumFieldsToTranslate.has(field) &&
+          typeof obj[field] === 'string' &&
+          enumTranslations[obj[field]]
+        ) {
+          result[field] = enumTranslations[obj[field]];
+        }
+      }
+    }
+
     return result;
   }
 
@@ -98,6 +165,19 @@ export class LanguageService {
     for (const field of mainTranslatableFields) {
       if (obj[field] && typeof obj[field] === 'object' && !Array.isArray(obj[field])) {
         result[field] = this.extractTranslation(obj[field], lang);
+      }
+    }
+
+    // Transform main object enums if lang is Arabic
+    if (lang === 'ar') {
+      for (const field of Object.keys(obj)) {
+        if (
+          enumFieldsToTranslate.has(field) &&
+          typeof obj[field] === 'string' &&
+          enumTranslations[obj[field]]
+        ) {
+          result[field] = enumTranslations[obj[field]];
+        }
       }
     }
 
