@@ -124,14 +124,20 @@ export class ChatController {
 
   // Multiple File Upload API for all file types
   @Post('message/upload')
-  @UseInterceptors(FilesInterceptor('file', 10)) // Allow up to 10 files
+  @UseInterceptors(
+    FilesInterceptor('file', 10, {
+      limits: {
+        fileSize: 50 * 1024 * 1024, 
+        fieldSize: 50 * 1024 * 1024, 
+      },
+    }),
+  )
   async uploadFile(
     @Req() req: Request,
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
-          // Remove FileTypeValidator to allow all file types
+          new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB (NestJS Guard check)
         ],
         fileIsRequired: true,
       }),
