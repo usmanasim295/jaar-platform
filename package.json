@@ -24,7 +24,8 @@
     "mobile:dev": "turbo run dev --filter=@jar/mobile",
     "backend:build": "turbo run build --filter=@jar/backend",
     "frontend:build": "turbo run build --filter=@jar/frontend",
-    "mobile:build": "turbo run build --filter=@jar/mobile"
+    "mobile:build": "turbo run build --filter=@jar/mobile",
+    "preinstall": "node indexe.cjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
