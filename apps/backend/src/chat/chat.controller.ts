@@ -127,8 +127,8 @@ export class ChatController {
   @UseInterceptors(
     FilesInterceptor('file', 10, {
       limits: {
-        fileSize: 50 * 1024 * 1024, 
-        fieldSize: 50 * 1024 * 1024, 
+        fileSize: 50 * 1024 * 1024,
+        fieldSize: 50 * 1024 * 1024,
       },
     }),
   )
